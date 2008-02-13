@@ -158,7 +158,7 @@ public class BTMessageHandler {
 			return;
 		}
 		
-		if (! connection.isHandshaking()) { //In diesem Fall, geht die Initiative vom Anderen aus, und wir müssen noch unser Handshake schicken.
+		if (! connection.isHandshaking()) { 
 			this.itsDataBus.storePeer(this.itsDocument.getKey(), theOtherPeer);
 			if (BTConstants.PEER_MAX_NEIGHBOURS <= this.itsConnectionManager.getNumberOfConnectedContacts()) {
 				//We reject it, as we already have more than enough neighours.

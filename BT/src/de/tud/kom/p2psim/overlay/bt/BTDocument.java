@@ -22,7 +22,6 @@ import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 public class BTDocument implements Document {
 	/*
 	 * TODO: Die festen Grenzen errechnen und angeben, die sich aus der Implementierung ergeben:
-	 * Anzahl Pieces, größe Pieces, Anzahl Blöcke, größe Blöcke, Faktoren aus mehreren der Zahlen...
 	 */
 	
 	
@@ -65,7 +64,7 @@ public class BTDocument implements Document {
 	private OverlayKey itsKey;
 	
 	/**
-	 * Größe der Datei in Byte.
+	 * Grï¿½ï¿½e der Datei in Byte.
 	 */
 	private long itsSize;
 	
