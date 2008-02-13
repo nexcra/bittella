@@ -11,6 +11,11 @@
             <properties/>
             <folders>
                 <source-folder>
+                    <label>PeerfactSim</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
                     <label>src</label>
                     <type>java</type>
                     <location>src</location>
@@ -22,18 +27,13 @@
                     <location>test</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
-                <source-folder>
-                    <label>PeerfactSim</label>
-                    <location>.</location>
-                    <encoding>UTF-8</encoding>
-                </source-folder>
             </folders>
             <ide-actions>
                 <action name="build">
                     <target>build</target>
                 </action>
                 <action name="clean">
-                    <target>clean</target>
+                    <target>cleanall</target>
                 </action>
                 <action name="javadoc">
                     <target>javadoc</target>
@@ -42,7 +42,7 @@
                     <target>RunSimulator</target>
                 </action>
                 <action name="rebuild">
-                    <target>clean</target>
+                    <target>cleanall</target>
                     <target>build</target>
                 </action>
             </ide-actions>
@@ -68,6 +68,7 @@
                     <ide-action name="run"/>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
