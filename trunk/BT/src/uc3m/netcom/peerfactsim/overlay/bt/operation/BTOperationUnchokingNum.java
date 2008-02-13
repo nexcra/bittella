@@ -134,6 +134,11 @@ public class BTOperationUnchokingNum<OwnerType extends DistributionStrategy> ext
 	}
         
         
+        @Override
+        public String toString(){
+            
+            return "JODER VAYA MIERDA";
+        }
     
     
     
