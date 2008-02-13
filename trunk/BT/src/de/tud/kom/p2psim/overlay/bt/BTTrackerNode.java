@@ -119,7 +119,7 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 		}
 		
 		//switch over the different reasons, why a client could contact the tracker.
-		// Schöner als so ein "switch" wäre hier natürlich ein Tabellen-Lookup. Allerdings ist der Aufwand dafür in Java immens. Ich müsste für jeden Fall eine extra-Klasse schreiben, in der ich die Aktion kapsle. First-Order-Functions sind halt doch nicht ganz unnütze... was erklärt, warum Java sie nicht hat.
+                
 		switch (theRequest.getReason()) {
 			case STOPPED :
 				this.itsDataBus.removePeer(theRequest.getDocument(), requestingPeerP2PAddress);

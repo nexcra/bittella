@@ -43,7 +43,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 
         /*****************
          *Hay que modificar estas constantes en BTConstants para ajustarlas al
-         *nuevo dise–o.
+         *nuevo diseno.
          */
         
         private static final long itsPeriod = BTConstants.CHOKING_OPTIMISTIC_CHOKING_RECALC_PERIOD;
@@ -79,7 +79,7 @@ public class BTAlgorithmUploadPeerNumSelection {
 	 */
     
    /*   Creo que incrementar el numero de conexiones siendo seed no tiene mucho sentido. A menos que se quiera
-      probar el rendimiento global si los seeder sirve a más peers, aunque esto puede depender de otros
+      probar el rendimiento global si los seeder sirve a mï¿½s peers, aunque esto puede depender de otros
       factores tales como el ancho de banda que se desee proporcionar a cada peer.*/
 
     

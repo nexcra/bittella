@@ -198,8 +198,8 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		BTContact theOtherPeer = new BTContact(theBTMessage.getSender(), theMessageEvent.getSenderTransInfo());
 		
 		//A table lookup for the message type would be better than this case statement. But this is much to much overhead in Java, as we don't have first class functions.
-		//TODO: Aufräumen, so dass man nicht jedes mal das gleiche macht. Am besten nur nachschauen von wem die Nachricht ist, nachschlagen in welchem Torrent dieser Peer ist und fertig.
-		switch (theBTMessage.getType()) {
+
+                switch (theBTMessage.getType()) {
 			case REQUEST: {
 				BTPeerMessageRequest theRequest = (BTPeerMessageRequest) theBTMessage;
 				OverlayKey theDocument = theRequest.getRequest().getOverlayKey();
