@@ -361,8 +361,9 @@ public class UC3MNetLayer extends AbstractNetLayer {
                             next_trx = time+((long)trx_time);
                             subNet.sendWithDelay(netMsg,(long)trx_time);                        
                         }else{                 
-                            next_trx +=trx_time;
+                            
                             long trx_delay = (next_trx-time)+((long)trx_time);
+                            next_trx +=trx_time;
                             subNet.sendWithDelay(netMsg, trx_delay);
                             
                         }
