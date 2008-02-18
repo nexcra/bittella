@@ -73,6 +73,8 @@
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
             <src path="test" />
+            <src path="../BT/src" />
+            <src path="../BT/test" />
             <!--<exclude name="de/tud/kom/p2psim/util/churn/"/>-->
             <classpath refid="PeerfactSim.classpath"/>
         </javac>

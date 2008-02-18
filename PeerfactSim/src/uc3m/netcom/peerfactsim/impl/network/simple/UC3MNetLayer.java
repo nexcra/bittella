@@ -296,6 +296,8 @@
 
 package uc3m.netcom.peerfactsim.impl.network.simple;
 
+import java.util.ArrayList;
+        
 import org.apache.log4j.Logger;
 
 import de.tud.kom.p2psim.api.common.Message;
@@ -314,6 +316,8 @@ import de.tud.kom.p2psim.impl.simengine.Simulator;
 import de.tud.kom.p2psim.impl.transport.AbstractTransMessage;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
+import de.tud.kom.p2psim.impl.application.bt.BTSimulation;
+
 
 public class UC3MNetLayer extends AbstractNetLayer {
 
@@ -329,8 +333,9 @@ public class UC3MNetLayer extends AbstractNetLayer {
         
         private long next_trx = -1;
         
-        private long next_rx = -1;
+        private long last_rx = -1;
         
+        private ArrayList<NetMessage> incoming_events; 
         
 
 	public UC3MNetLayer(UC3MSubnet subNet, SimpleNetID netID, NetPosition netPosition, double downBandwidth, double upBandwidth, int headerSize) {
@@ -340,6 +345,7 @@ public class UC3MNetLayer extends AbstractNetLayer {
 		this.online = true;
 		subNet.registerNetLayer(this);
                 this.netHeaderSize = headerSize;
+                this.incoming_events = new ArrayList<NetMessage>();
 	}
 
 	public boolean isSupported(TransProtocol transProtocol) {
@@ -350,6 +356,8 @@ public class UC3MNetLayer extends AbstractNetLayer {
 	}
 
 	public void send(Message msg, NetID receiver, NetProtocol netProtocol) {
+            
+                        
 		TransProtocol usedTransProtocol = ((AbstractTransMessage) msg).getProtocol();
 		if (this.isSupported(usedTransProtocol)) {
 			NetMessage netMsg = new UC3MNetMessage(netHeaderSize,msg, receiver, myID, netProtocol);
@@ -379,15 +387,39 @@ public class UC3MNetLayer extends AbstractNetLayer {
 		if (this.isOnline()) {
                     long time = Simulator.getCurrentTime();
                     double downloadTime = Simulator.SECOND_UNIT*(message.getSize()/this.getMaxDownloadBandwidth());
+                    int pos = this.incoming_events.indexOf(message);
                     
-                        if(next_rx > time){
-                            this.subNet.notifyMeAt(message, next_rx);     
-                            next_rx += ((long)downloadTime);
+                        if(pos == -1 && last_rx > time){
+                            
+                            this.subNet.notifyMeAt(message, last_rx);     
+                            last_rx += ((long)downloadTime);
+                            this.incoming_events.add(message);
+                            BTSimulation.logger.process(this.getClass().toString(),new Object[]{message, Simulator.getCurrentTime(), "RcvWait"});
                                                   
+                        }else if(pos == -1 && last_rx <= time){
+                            
+                            last_rx = ((long)downloadTime)+time;
+                            deliverMessage(message);
+                            BTSimulation.logger.process(this.getClass().toString(),new Object[]{message, Simulator.getCurrentTime(), "Rcv"});
+                            
+                        }else if(pos == 0){
+                            this.incoming_events.remove(0);
+                            deliverMessage(message);
+                            BTSimulation.logger.process(this.getClass().toString(),new Object[]{message, Simulator.getCurrentTime(), "ReRcv"});
+                            
                         }else{
-                    
-                        next_rx = ((long)downloadTime)+time;
-			Simulator.getMonitor().netMsgEvent(message, myID, Reason.RECEIVE);
+                            System.out.println("Dropping Message");
+                            System.out.println(message.toString());
+                        }
+                      
+		} else
+			Simulator.getMonitor().netMsgEvent(message, myID, Reason.DROP);
+	}
+                
+                
+        private void deliverMessage(NetMessage message){
+            
+            			Simulator.getMonitor().netMsgEvent(message, myID, Reason.RECEIVE);
 			NetMsgEvent event = new NetMsgEvent(message, this);
                         
 			if (msgListeners == null || msgListeners.isEmpty()) {
@@ -398,13 +430,9 @@ public class UC3MNetLayer extends AbstractNetLayer {
 					listener.messageArrived(event);
 				}
 			}
-                      }
-		} else
-			Simulator.getMonitor().netMsgEvent(message, myID, Reason.DROP);
-	}
-                
-                
-                
+            
+            }
+        
 	public double getCurrentDownloadBandwidth() {
 		return this.currentDownBandwidth;
 	}
