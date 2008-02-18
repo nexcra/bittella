@@ -46,6 +46,7 @@ import de.tud.kom.p2psim.overlay.bt.operation.BTOperationPeerStarter;
 
 import uc3m.netcom.peerfactsim.impl.network.simple.UC3MNetFactory;
 import uc3m.netcom.peerfactsim.impl.network.simple.UC3MLatencyModel;
+import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
 
 public class BTSimulation extends SimulatorTest implements SupportOperations {
 
@@ -60,6 +61,8 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
     private static final short DISTRIBUTION_NODE_PORT = 1;
     private static final short SEARCH_NODE_PORT = 2;
     private static final short TRACKER_NODE_PORT = 3;
+    
+    public static UC3MLogBT logger = new UC3MLogBT();
 
     @Override
     public void setUp() {
@@ -149,7 +152,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> SpecialLeecherTypeI = new LinkedList<BTClientApplication>();
         LinkedList<Long> SpecialLeecherTypeIStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[1]; i++) {
-            System.out.println("There are TypeI Special nodes with UR = " + UROfLeechersArray[0] + " and DR = " + DROfLeechersArray[0]);
+            //System.out.println("There are TypeI Special nodes with UR = " + UROfLeechersArray[0] + " and DR = " + DROfLeechersArray[0]);
             SpecialLeecherTypeI.addLast(this.createAppl(UROfLeechersArray[0], DROfLeechersArray[0]));
         }
         for (int i = 0; i < numberOfLeechersArray[1]; i++) {
@@ -160,7 +163,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> SpecialLeecherTypeII = new LinkedList<BTClientApplication>();
         LinkedList<Long> SpecialLeecherTypeIIStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[3]; i++) {
-            System.out.println("There are TypeII Special nodes with UR = " + UROfLeechersArray[1] + " and DR = " + DROfLeechersArray[1]);
+            //System.out.println("There are TypeII Special nodes with UR = " + UROfLeechersArray[1] + " and DR = " + DROfLeechersArray[1]);
             SpecialLeecherTypeII.addLast(this.createAppl(UROfLeechersArray[1], DROfLeechersArray[1]));
         }
         for (int i = 0; i < numberOfLeechersArray[3]; i++) {
@@ -171,7 +174,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> SpecialLeecherTypeIII = new LinkedList<BTClientApplication>();
         LinkedList<Long> SpecialLeecherTypeIIIStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[5]; i++) {
-            System.out.println("There are TypeIII Special nodes with UR = " + UROfLeechersArray[2] + " and DR = " + DROfLeechersArray[2]);
+            //System.out.println("There are TypeIII Special nodes with UR = " + UROfLeechersArray[2] + " and DR = " + DROfLeechersArray[2]);
             SpecialLeecherTypeIII.addLast(this.createAppl(UROfLeechersArray[2], DROfLeechersArray[2]));
         }
         for (int i = 0; i < numberOfLeechersArray[5]; i++) {
@@ -182,7 +185,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> SpecialLeecherTypeIV = new LinkedList<BTClientApplication>();
         LinkedList<Long> SpecialLeecherTypeIVStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[7]; i++) {
-            System.out.println("There are TypeIV Special nodes with UR = " + UROfLeechersArray[3] + " and DR = " + DROfLeechersArray[3]);
+            //System.out.println("There are TypeIV Special nodes with UR = " + UROfLeechersArray[3] + " and DR = " + DROfLeechersArray[3]);
             SpecialLeecherTypeIV.addLast(this.createAppl(UROfLeechersArray[3], DROfLeechersArray[3]));
         }
         for (int i = 0; i < numberOfLeechersArray[7]; i++) {
@@ -195,7 +198,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> leecherTypeI = new LinkedList<BTClientApplication>();
         LinkedList<Long> leecherTypeIStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[0]; i++) {
-            System.out.println("There are TypeI Regular nodes with UR = " + UROfLeechersArray[0] + " and DR = " + DROfLeechersArray[0]);
+            //System.out.println("There are TypeI Regular nodes with UR = " + UROfLeechersArray[0] + " and DR = " + DROfLeechersArray[0]);
             leecherTypeI.addLast(this.createAppl(UROfLeechersArray[0], DROfLeechersArray[0]));
         }
         for (int i = 0; i < numberOfLeechersArray[0]; i++) {
@@ -206,7 +209,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> leecherTypeII = new LinkedList<BTClientApplication>();
         LinkedList<Long> leecherTypeIIStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[2]; i++) {
-            System.out.println("There are TypeII Regular nodes with UR = " + UROfLeechersArray[1] + " and DR = " + DROfLeechersArray[1]);
+            //System.out.println("There are TypeII Regular nodes with UR = " + UROfLeechersArray[1] + " and DR = " + DROfLeechersArray[1]);
             leecherTypeII.addLast(this.createAppl(UROfLeechersArray[1], DROfLeechersArray[1]));
         }
         for (int i = 0; i < numberOfLeechersArray[2]; i++) {
@@ -217,7 +220,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> leecherTypeIII = new LinkedList<BTClientApplication>();
         LinkedList<Long> leecherTypeIIIStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[4]; i++) {
-            System.out.println("There are TypeIII Regular nodes with UR = " + UROfLeechersArray[2] + " and DR = " + DROfLeechersArray[2]);
+            //System.out.println("There are TypeIII Regular nodes with UR = " + UROfLeechersArray[2] + " and DR = " + DROfLeechersArray[2]);
             leecherTypeII.addLast(this.createAppl(UROfLeechersArray[2], DROfLeechersArray[2]));
         }
         for (int i = 0; i < numberOfLeechersArray[4]; i++) {
@@ -228,7 +231,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         LinkedList<BTClientApplication> leecherTypeIV = new LinkedList<BTClientApplication>();
         LinkedList<Long> leecherTypeIVStartTimes = new LinkedList<Long>();
         for (int i = 0; i < numberOfLeechersArray[6]; i++) {
-            System.out.println("There are TypeIV Regular nodes with UR = " + UROfLeechersArray[3] + " and DR = " + DROfLeechersArray[3]);
+            //System.out.println("There are TypeIV Regular nodes with UR = " + UROfLeechersArray[3] + " and DR = " + DROfLeechersArray[3]);
             leecherTypeII.addLast(this.createAppl(UROfLeechersArray[3], DROfLeechersArray[3]));
         }
         for (int i = 0; i < numberOfLeechersArray[6]; i++) {
@@ -306,7 +309,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         SpecialPeerTypeIIStarter.scheduleImmediately();
         SpecialPeerTypeIIIStarter.scheduleImmediately();
         SpecialPeerTypeIVStarter.scheduleImmediately();
-        System.out.println("Duracion de la simulacion " + theDuration);
+        //System.out.println("Duracion de la simulacion " + theDuration);
         runSimulation(theDuration);
 
         seeder.close(Operations.EMPTY_CALLBACK);
@@ -444,8 +447,8 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
 //		String fileResult = "" + numberOfLeecher + "," + fileSize + "," + requiredMilliSeconds + ";\r\n";
 
 //		Collection<BTCompressedStatistic> compressedStatistics = new LinkedList<BTCompressedStatistic>();
-        System.out.println("Finished simulation. Results:");
-        System.out.println(result);
+        //System.out.println("Finished simulation. Results:");
+        //System.out.println(result);
 //		FileWriter resultFile = null;
         Date currentDate = new Date();
         String textResults = "Real time: " + currentDate.toString() + "\n";
@@ -466,6 +469,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
         if (filename != null) {
             FileWriter textFile = null;
             try {
+                BTSimulation.logger.finish();
 //				resultFile = new FileWriter("c:\\temp\\BA_SimResult.csv", true);
                 textFile = new FileWriter(filename, true);
                 textFile.write(textResults + "\n");

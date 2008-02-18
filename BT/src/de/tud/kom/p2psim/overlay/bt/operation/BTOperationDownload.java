@@ -149,10 +149,21 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
 			long requiredMinutes = requiredSeconds / 60;
 			long requiredHours = requiredMinutes / 60;
 			long requiredDays = requiredHours / 24;
+                        long ellapsedSeconds = requiredSeconds;
+                        requiredSeconds = requiredSeconds % 60;
+                        requiredMinutes = requiredMinutes % 60;
+                        requiredHours = requiredHours % 24;
+                        
+                        String rSec = requiredSeconds<10 ? "0"+requiredSeconds : ""+requiredSeconds ;
+                        String rMin = requiredMinutes<10 ? "0"+requiredMinutes : ""+requiredMinutes;
+                        String rHor = requiredHours<10   ? "0"+requiredHours   : ""+requiredHours;
+                        
 			theirNumberOfActiveNodes -= 1;
-			log.info("This is an special node: "+ itsDataBus.isGeneralDataStored("Special")+" +++Download finished at time " + Simulator.getCurrentTime() + " after '" + requiredDays + "' days, '" + (requiredHours % 24) + "' hours, '" + (requiredMinutes % 60) + "' minutes, '" + (requiredSeconds % 60) + "' seconds (" + requiredSeconds + ") at '" + this.itsOwnContact.getOverlayID() + "'. There are still " + theirNumberOfActiveNodes + " downloads active.");
+			//log.info("This is an special node: "+ itsDataBus.isGeneralDataStored("Special")+" +++Download finished at time " + Simulator.getCurrentTime() + " after '" + requiredDays + "' days, '" + (requiredHours % 24) + "' hours, '" + (requiredMinutes % 60) + "' minutes, '" + (requiredSeconds % 60) + "' seconds (" + requiredSeconds + ") at '" + this.itsOwnContact.getOverlayID() + "'. There are still " + theirNumberOfActiveNodes + " downloads active.");
                         //System.out.println("This is an special node: "+ itsDataBus.isGeneralDataStored("Special")+ "+++Download finished at time " + Simulator.getCurrentTime() + " after '" + requiredDays + "' days, '" + (requiredHours % 24) + "' hours, '" + (requiredMinutes % 60) + "' minutes, '" + (requiredSeconds % 60) + "' seconds (" + requiredSeconds + ") at '" + this.itsOwnContact.getOverlayID() + "'. There are still " + theirNumberOfActiveNodes + " downloads active.");
-			this.itsStatistic.stopDownload();
+                        
+			System.out.println("+DLF\t"+this.itsOwnContact.getOverlayID()+"\t"+theirNumberOfActiveNodes+"\t"+itsDataBus.isGeneralDataStored("Special")+"\t\t\t\t"+Simulator.getCurrentTime()+"\t"+rHor+":"+rMin+":"+rSec+"\t"+ellapsedSeconds);
+                        this.itsStatistic.stopDownload();
 			return;
 		}
 		
