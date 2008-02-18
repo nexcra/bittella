@@ -314,6 +314,9 @@ import de.tud.kom.p2psim.impl.network.simple.SimpleNetMessage;
 import de.tud.kom.p2psim.impl.simengine.Simulator;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
+import de.tud.kom.p2psim.overlay.bt.message.*;
+import de.tud.kom.p2psim.impl.application.bt.BTSimulation;
+
 /**
  * The default implementation of the SubNet interface.
  * 
@@ -322,7 +325,7 @@ import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 public class UC3MSubnet extends SimpleSubnet implements SimulationEventHandler {
 
         private static Logger log = SimLogger.getLogger(UC3MSubnet.class);
-
+        
 	Map<NetID, NetLayer> netLayers;
 
 	UC3MNetLatencyModel netLatencyModel;
@@ -331,7 +334,7 @@ public class UC3MSubnet extends SimpleSubnet implements SimulationEventHandler {
 
 	public UC3MSubnet() {
                 netLayers = new HashMap<NetID, NetLayer>();
-	}
+        }
 
 	@Override
 	public void registerNetLayer(NetLayer net) {
@@ -371,6 +374,8 @@ public class UC3MSubnet extends SimpleSubnet implements SimulationEventHandler {
 			log.debug("arrival time adjusted to " + newArrivalTime);
 		}
 		links.put(link, newArrivalTime);
+                //BTSimulation.logger.process(this.getClass().toString(),new Object[]{msg,newArrivalTime,"Sending"});
+                //this.proccessMessage(msg, newArrivalTime, "Sending");
 		Simulator.scheduleEvent(msg, newArrivalTime, this, SimulationEvent.Type.MESSAGE_RECEIVED);
 	}
 
@@ -379,6 +384,92 @@ public class UC3MSubnet extends SimpleSubnet implements SimulationEventHandler {
 		return lastArrivalTime;
 	}
 
+        
+        protected void processMessage(NetMessage msg,long eat,String sense){
+            
+            BTMessage ms = (BTMessage) msg.getPayload().getPayload();
+            String sender = ms.getSender().toString();
+            String receiver = ms.getReceiver().toString();
+            String type = ms.getType().toString();
+            if(type.equals("HAVE"))
+                type += "\t"+((BTPeerMessageHave)ms).getPieceNumber()+"\t  ";
+            else if(type.equals("PIECE"))
+                type += "\t"+((BTPeerMessagePiece)ms).getPieceNumber()+"\t"+((BTPeerMessagePiece)ms).getBlockNumber();
+            else if(type.equals("REQUEST"))
+                type += "\t"+((BTPeerMessageRequest)ms).getRequest().getPieceNumber()+"\t"+((BTPeerMessageRequest)ms).getRequest().getBlockNumber();
+            else if(type.equals("CANCEL"))
+                type += "\t"+((BTPeerMessageCancel)ms).getPieceNumber()+"\t"+((BTPeerMessageCancel)ms).getBlockNumber();
+            else if(type.equals("TRACKER_REQUEST"))
+                type = "TR_RQ\t  \t  ";
+            else if(type.equals("TRACKER_REPLY"))
+                type = "TR_RP\t  \t  ";
+            else if(type.equals("INTERESTED"))
+                type = "INTER\t  \t  ";
+            else if(type.equals("UNINTERESTED"))
+                type = "UNINTR\t  \t  ";
+            else if(type.equals("HANDSHAKE"))
+                type = "HANDSHK\t  \t  ";
+            else if(type.equals("BITFIELD"))
+                type = "BITFLD\t  \t  ";
+            else if(type.equals("KEEPALIVE"))
+                type = "KEEPAL\t  \t  ";
+            else
+                type += "\t  \t  ";
+            
+            long t = ms.getTimestamp();
+            long size = ms.getSize();
+            
+            long t_msec  = t/Simulator.MILLISECOND_UNIT;
+            long t_sec = t_msec/1000;
+            long t_min  = t_sec/60;
+            long t_h = t_min/60;
+            t_msec -= (t_sec*1000);
+            t_sec -= (t_min*60);
+            t_min -= (t_h*60);
+            String t_aux = "";
+            if(t_h<10) t_aux+="0";
+            t_aux += t_h+":";
+            if(t_min<10) t_aux+="0";
+            t_aux += t_min+":";
+            if(t_sec < 10) t_aux+="0";
+            t_aux += t_sec+".";
+            if(t_msec < 100) t_aux+="0";
+            if(t_msec < 10) t_aux+="0";
+            t_aux += t_msec;
+            
+            t_msec = eat/Simulator.MILLISECOND_UNIT;
+            t_sec = t_msec/1000;
+            t_min  = t_sec/60;
+            t_h = t_min/60;
+            t_msec -= (t_sec*1000);
+            t_sec -= (t_min*60);
+            t_min -= (t_h*60);
+            String eat_aux = "";
+            if(t_h<10) eat_aux+="0";
+            eat_aux += t_h+":";
+            if(t_min<10) eat_aux+="0";
+            eat_aux += t_min+":";
+            if(t_sec < 10) eat_aux+="0";
+            eat_aux += t_sec+".";
+            if(t_msec < 100) eat_aux+="0";
+            if(t_msec < 10) eat_aux+="0";
+            eat_aux += t_msec;
+            
+            String output = null;
+            
+            if(sense.equals("Sending"))
+                output = sense+"\t"+sender+"\t"+receiver+"\t"+type+"\t"+size+"\t"+t+"\t"+t_aux+"\t"+eat+"\t"+eat_aux;
+            else
+                output = sense+"\t"+sender+"\t"+receiver+"\t"+type+"\t"+size+"\t"+eat+"\t"+eat_aux+"\t"+t+"\t"+t_aux;
+            
+            System.out.println(output);
+            
+            
+            
+            
+        }
+                
+                
 	static class LinkID {
 		private NetID srcId;
 
@@ -423,6 +514,7 @@ public class UC3MSubnet extends SimpleSubnet implements SimulationEventHandler {
         
         @Override
  public void eventOccurred(SimulationEvent se) {
+            
 		NetMessage msg = (NetMessage) se.getData();
 		NetID senderID = msg.getSender();
 		NetID receiverID = msg.getReceiver();
@@ -434,11 +526,11 @@ public class UC3MSubnet extends SimpleSubnet implements SimulationEventHandler {
 			log.debug("Remove obsolete link " + linkID);
 			assert !links.containsKey(linkID);
 		}
-
 		((AbstractNetLayer) receiver).receive(msg);
 	}
         
         public void notifyMeAt(NetMessage msg,long newArrivalTime) {
+            
             Simulator.scheduleEvent(msg, newArrivalTime, this, SimulationEvent.Type.MESSAGE_RECEIVED);
 		
 	}
