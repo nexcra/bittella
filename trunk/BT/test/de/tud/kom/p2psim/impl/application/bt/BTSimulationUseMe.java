@@ -20,21 +20,12 @@ public class BTSimulationUseMe {
         	public static void main(String[] args) {
 		String filename = "/tmp/BA_SimResult." + (System.currentTimeMillis() / 1000) + ".txt";
 		long fileSize = 10 * 1024 * 1024; //Size of the file in byte.
-		int numberOfLeechers = 100; //Number of the leecher.
-                //int numberOfSpecialLeecher = 0; //Number of modified leechers.
+	        int numberOfLeechers = 50; //Number of the leecher.
 		long duration = 1 * 24 * Simulator.HOUR_UNIT; //Maximum simulated time.
-		long seederDuration = 1 * 6 * Simulator.HOUR_UNIT; //How long the seeder stays online.
+	        long seederDuration = 1 * 1 * Simulator.HOUR_UNIT; //How long the seeder stays online.
 		long leecherDuration = 1 * Simulator.MINUTE_UNIT; //How long leecher stay online after their download is finished.
 		long startWindow = 10*Simulator.MINUTE_UNIT; //In this time window, all leecher get started.
-		
                 int numberOfLeechersType = 4;
-                /*Number of each type of leechers from Microsoft paper*/
-               /*
-                int numberOfTypeILeechers = (int) (0.3* numberOfLeechers);
-                int numberOfTypeIILeechers = (int) (0.4* numberOfLeechers);
-                int numberOfTypeIIILeechers = (int) (0.25* numberOfLeechers);
-                int numberOfTypeIVLeechers = (int) (0.15* numberOfLeechers); 
-                */
                 
                 int numberOfTypeILeechers = (int) (0.5* numberOfLeechers);
                 int numberOfTypeIILeechers = (int) (0.5* numberOfLeechers);
@@ -42,23 +33,23 @@ public class BTSimulationUseMe {
                 int numberOfTypeIVLeechers = (int) (0.0* numberOfLeechers); 
                 
                 /*Download Rate for each type of leacher in bytes*/
-                int DRTypeILeechers = 100*1024*1024;//784 * (1024/8);
-                int DRTypeIILeechers = 100*1024*1024; //1500 * (1024/8);
-                int DRTypeIIILeechers = 10*1024*1024;//3000 * (1024/8);
-                int DRTypeIVLeechers = 1250001;//10000 * (1024/8);
+                int DRTypeILeechers = 100*1024*1024;
+                int DRTypeIILeechers = 100*1024*1024;
+                int DRTypeIIILeechers = 10*1024*1024;
+                int DRTypeIVLeechers = 1250001;
                 
                 /*Upload Rate for each type of leacher in bytes*/
-                int URTypeILeechers = 20*1024;//128 * (1024/8);
-                int URTypeIILeechers = 20*1024;//384 * (1024/8);
-                int URTypeIIILeechers = 5*1024;//1000 * (1024/8);
-                int URTypeIVLeechers = 625001;//5000 * (1024/8);
+                int URTypeILeechers = 20*1024*1024;
+                int URTypeIILeechers = 20*1024*1024;
+                int URTypeIIILeechers = 5*1024;
+                int URTypeIVLeechers = 625001;
                 
                 /*Fraction of Special Leechers*/
                 double fractionOfSpecialLeechers = 0.0;
           
                 /* Seeder Download and Upload Rates*/
-                int DRSeeder = 100*1024*1024;//10000 * (1024/8);
-                int URSeeder = 100*1024*1024;// * (1024/8);
+                int DRSeeder = 100*1024*1024;
+                int URSeeder = 100*1024*1024;
                
                 /*Array with the number of users of each type*/
                 int numberOfLeechersArray[] = new int[numberOfLeechersType*2];
@@ -86,8 +77,6 @@ public class BTSimulationUseMe {
                 UROfLeechersArray[3] = URTypeIVLeechers;
                  
                BTSimulation.runSimulationMutipleTypesOfLeechers (filename, fileSize, numberOfLeechersArray, duration, seederDuration, leecherDuration, startWindow, URSeeder, DRSeeder, UROfLeechersArray, DROfLeechersArray);
-		//BTSimulation.runSimulation(filename, fileSize, numberOfLeecher, numberOfSpecialLeecher,duration, seederDuration, leecherDuration, startWindow, seederUpload, seederDownload, leecherUpload, leecherDownload);
-
 	}
 
 

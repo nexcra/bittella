@@ -110,7 +110,8 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
                         if(itsDataBus.isGeneralDataStored("Special"))
                             this.itsUnchockingNumOperation.stop(true);
 			this.itsStatistic.stopUpload();
-			log.info("---Upload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
+			//log.info("---Upload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
+                        System.out.println("+ULF\t"+this.itsOwnContact.getOverlayID()+"\t"+Simulator.getCurrentTime());
 			return;
 		}
 		if(this.itsIsFirstTime) {

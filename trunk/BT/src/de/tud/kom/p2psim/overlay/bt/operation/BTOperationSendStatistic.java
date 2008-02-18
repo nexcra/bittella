@@ -97,7 +97,8 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		this.scheduleWithDelay(theirCallPeriod);
 		
 		if (this.itsOverlayID.toString().equals("0")) { //TODO: Tells the user, what time it is in the simulation.
-			log.info("Simulated Time: " + (Simulator.getCurrentTime() / Simulator.MINUTE_UNIT) + " Minutes; Real time: " + (new Date()).toString() + ";");
+			//log.info("Simulated Time: " + (Simulator.getCurrentTime() / Simulator.MINUTE_UNIT) + " Minutes; Real time: " + (new Date()).toString() + ";");
+                        System.out.println("SimTime\t"+ (Simulator.getCurrentTime() / Simulator.MINUTE_UNIT) + "\tMin");
 		}
 	}
 	
