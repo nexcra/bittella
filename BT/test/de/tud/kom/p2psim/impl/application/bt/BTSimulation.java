@@ -178,7 +178,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
             SpecialLeecherTypeIII.addLast(this.createAppl(UROfLeechersArray[2], DROfLeechersArray[2]));
         }
         for (int i = 0; i < numberOfLeechersArray[5]; i++) {
-            SpecialLeecherTypeIIIStartTimes.addLast(startTimeOffset + (i * (startTimeWindow / numberOfLeechersArray[5])));
+            SpecialLeecherTypeIIIStartTimes.addLast(15*Simulator.MINUTE_UNIT);//startTimeOffset + (i * (startTimeWindow / numberOfLeechersArray[5])));
         } //This results in a (nearly) equidistant number of start times.
 
         //Type IV Special Leechers
@@ -213,7 +213,7 @@ public class BTSimulation extends SimulatorTest implements SupportOperations {
             leecherTypeII.addLast(this.createAppl(UROfLeechersArray[1], DROfLeechersArray[1]));
         }
         for (int i = 0; i < numberOfLeechersArray[2]; i++) {
-            leecherTypeIIStartTimes.addLast(startTimeOffset + (i * (startTimeWindow / numberOfLeechersArray[2])));
+            leecherTypeIIStartTimes.addLast(15*Simulator.MINUTE_UNIT);//startTimeOffset + (i * (startTimeWindow / numberOfLeechersArray[2])));
         } //This results in a (nearly) equidistant number of start times.                
 
         //Type III Regular Leechers

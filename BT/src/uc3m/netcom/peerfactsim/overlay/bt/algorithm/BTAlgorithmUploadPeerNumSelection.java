@@ -95,7 +95,8 @@ public class BTAlgorithmUploadPeerNumSelection {
                 double currentUR = uploadRate(theContacts);
                 int newState = stateMachine[calcRow(currentDR)][calcColumn(currentUR)];            
                 updateAlgorithm(currentDR, currentUR, newState);
-                return new int[]{currentRU,currentOU};
+                //return new int[]{currentRU,currentOU};
+                return new int[]{15,1};
 	}
 	
 

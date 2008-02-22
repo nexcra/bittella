@@ -122,7 +122,7 @@ public class BTConstants {
 	/**
 	 * How many peers should be unchoked as regular unchokes?
 	 */
-     public final static byte CHOKING_NUMBER_OF_REGULAR_UNCHOKES = 6;
+     public final static byte CHOKING_NUMBER_OF_REGULAR_UNCHOKES = 3;
 	
 	/**
 	 * How many peers should be unchoked as optimistic unchokes?
