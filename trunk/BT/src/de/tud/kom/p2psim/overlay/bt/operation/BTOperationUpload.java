@@ -102,7 +102,9 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 	 * Is the peer choked?
 	 * Do we have the requested data?
 	 */
-	@Override
+	
+
+        @Override         
 	protected void execute() {
 		if (this.isFinished()) {
 			this.itsChokingOperation.stop(true);
