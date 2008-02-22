@@ -410,6 +410,7 @@ public class UC3MNetLayer extends AbstractNetLayer {
                         }else{
                             System.out.println("Dropping Message");
                             System.out.println(message.toString());
+                            System.out.println(pos);
                         }
                       
 		} else
