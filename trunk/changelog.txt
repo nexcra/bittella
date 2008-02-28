@@ -1,0 +1,536 @@
+2007-12-04
+   
+This is a new refactored version of the simulator, which is officially called 3.0.
+Please read this changelog information, especially if you encounter
+any troubles.
+
+If something is unclear about it (or some info seems to be missing) please write to the mailinglist peerfactsim@kom.tu-darmstadt.de
+
+The refactored version of the simulator was developed in the branch
+Refactoring_Messages_Operations_Churn, it means that after an update you still can go back to the previous simulator version called: Root_Refactoring_Messages_Operations_Churn
+
+
+Part 1: Small Conceptional Changes
+======================================
+A) Usage of Java Generics (where appropriate)
+B) Splitting of event handling in listeners (mainly for requests and status) and callbacks for operations and messages (in order to emulate the request-reply behavior in asynchronous processing)
+C) added Churn
+D) refactored the package structure: 
+    D1) Simulator runner class is now located in p2psim package
+E) removed most of the singletons: now there is one main singleton - Simulator.class, which acts as facade and offers access to most required functions (like scheduling, virtual time etc.)
+F) Virtual time is now divided in units (secondes, milliseconds etc.) - you can access those via the Simulator's constants
+G) This time can now also be specified in the config files, e.g. now you say "10s" for 10 seconds delay which is the 
+same as calling "10*Simulator.SECOND_UNIT" in the programm code. 
+
+PART 2: Functional changes
+==========================================
+1) Dummy overlay was deleted, now the only example (or reference) overlay will be the dht.centralized, where you can see how to work with layers, operations and timeouts properly 
+
+2) We tried to refactor the structure of the JUnit tests as much as possible, mainly to remove duplicate codes. Now there is a quite comfortable Test hierarchy (starting with the SimulatorTest) offering comfortable functionality for your own tests
+
+Obstacles:
+1) the main issue should be that many classes changed their packages, where renamed or even merged together. This means that many imports will become wrong and your compiler may show a lot of errors due to wrong import declarations.
+There are several ways to handle this efficient.
+    a) For each class use the "Organize imports" function of Eclipse, accessible via the Ctrl-Shift-O shortcut, which will fix them automatically or ask you to select one for ambiqious imports
+    b) Simultaneous Search-and-Replace for the whole project. This function is not very comfortable in Eclipse so if you know a nice tool to do this - please share your knowledge with us :) 
+    In Eclipse you can do this via "Search"->"File", here you can insert the wrong line, e.g. "import de.tud.p2psim.OLDPACKAGE.FOO" as the search string, set file pattern to *.java, the scope to "Choose"->Your project name and press "Replace". In the appearing dialog you can put the line to replace with, e.g "import de.tud.p2psim.NEWPACKAGE.NEWNAME_OF_FOO" and then to select "Replace All" or to go throgh the files and decide what to do via "Replace", "Skip" etc.
+    The bad thing abouth this way is that you have to do this for each replacement line individually. A nice tool would be able to read from a file with the replacement mappings and perform them automatically. Yes, we could write a script or even a java program to do this, so if you have time to do this, please, share your code with us. 
+    
+Here we try to summarize all renamings and movements of classes and interfaces for your convinience (you can see them by your own if you go to the Team->Synchronize View of the Simulator project)
+   
+	* Basics about de.tud.kom.p2psim.api.common.OperationCallback:
+		Operation callback is strongly connected to a specific operation and is used to inform the caller of this operation 
+		about operation's finish status. In a real-world java programm you would write something like 
+		Foo result = someObject.doSomething(params); As this would not work in a discrete event-based simulator 
+		(you have to pass the control to the simulator in order to get messages sent through the network) 
+		you have to do something like: 
+		
+		someObject.doSomething(params, new OperationCallback(){ 
+			
+			public void calledOperationFailed(Operation op){
+ 					processResult((Foo) op.getResult());
+ 			}
+ 
+ 		   public void calledOperationSucceeded(Operation op){
+ 					processFailure();
+ 			}
+ 		} 	
+ 		So what happens here is actually is making the operation call asynchronous.
+ 		
+ 		
+	* Constructing operations without the need of an operation callback:
+ 		It might sometimes be the case that no operation callback is necessary whilst a callback is requiered 
+ 		when constructing  operations extending the de.tud.kom.p2psim.impl.common.AbstractOperation class.
+ 		In this case, it is recommended to use de.tud.kom.p2psim.impl.common.Operations.EMPTY_CALLBACK as an
+ 		argument when constructing a new operation instance. Example:
+ 		
+ 		public class WithoutCallbackOperation extends AbstractOperation<Foo> {
+			public ServerJoinOperation(Foo foo, OperationCallback callback) {
+				super(foo, callback);
+			}	
+ 		...	
+ 		}
+ 		
+ 		Operation example = new WithoutCallbackOperation(foo, Operations.EMPTY_CALLBACK);
+ 	
+	* Package de.tud.kom.p2psim.api.transport: 
+        Most important facts (for further details, see below which files exchange exactly)
+    	- MessageManager has been renamed to TransLayer
+    	- TransportAddress has been renamed to TransInfo
+    	- ServiceCategory has been renamed to TransProtocol
+    	- MessageReceiver has been renamed to TransMessageReceiver 
+ 
+        
+		* de.tud.kom.p2psim.api.transport.TransProtocol: 
+     	Currently, we are supporting one transport layer protocols: UDP. This protocols can be
+     	selected using the appropriate enum type. 
+     	
+	* Messages in PeerfactSim:
+        It is important to notice that the implementation of messaging has been changed by this release. 
+        The message interface can be found in de.tud.kom.p2psim.api.common.Message. This interface defines 
+        the root interface of all messages that are exchanged between the different components of PeerfactSim. 
+        It consists of two methods: getSize() and getPayload(). All submessages (interfaces) must inherit from 
+        this interface. Further, the following has been changed:
+        	- The interface de.tud.kom.p2psim.api.overlay.OverlayMessage and its base implementation does not 
+        	  exist anymore. Instead an abstract overlay message is provided in 
+        	  de.tud.kom.p2psim.impl.overlay.AbstractOverlayMessage
+        	- OverlayMessageCategories are deprecated and have been deleted. Instead,it is in the responsibility 
+        	  to create such categories depending on a specific usage scenario. 
+         	
+	* Churn:
+		Since this release, it is possible to activate churn in our simulation frame work. All important 
+		interfaces can be found in package de.tud.kom.p2psim.api.churn. Further, it is possible to specify
+		a particular "ChurnModel" using the xml-description file of our simulator: 
+	  
+	  	  <HostBuilder class=...>
+                  ...
+          </HostBuilder>
+		   
+		  ...
+		  
+		  <ChurnGenerator class="de.tud.kom.p2psim.impl.churn.DefaultChurnGenerator" start="10m" stop="30m">
+	            <ChurnModel class="de.tud.kom.p2psim.impl.churn.StaticChurnModel"/>
+	      </ChurnGenerator>  
+	      
+	    Please notice that the ChurnGenerator component has to be placed below the HostBuilder component as the
+	    host objects have to be created before the churn generator is allowed to access them. In addition to
+	    this, the start and stop time have to be specified (see class documentation). 
+	    
+	* Monitoring:
+		In order to evaluate and observe results of simulation runs, "analyzers" 
+		(de.tud.kom.p2psim.api.analyzer.Analyzer) have to be installed by a component which implements 
+		the de.tud.kom.p2psim.api.common.Monitor interface. A default implementation is provided 
+		in de.tud.kom.p2psim.impl.common. Each specific analyzer has the possibility
+		to implement different component analyzers such as the NetAnalyzer in order to receive component
+		specific events. Thus, for example, the sending/receiving/droping of messages at the
+		NetWrapper of each host can be traced and evaluated later on. Several analyzers per simulation
+		are allowed and can be specified in the xml-description file as follows:
+		
+		<Monitor class="de.tud.kom.p2psim.impl.monitoring.DefaultMonitor" start="20m" stop="30m">
+              <Analyzer class="de.tud.kom.p2psim.impl.monitoring.NetWorkloadAnalyzer"/>
+              <Analyzer class="..."/>
+              ...
+      	</Monitor> 
+      	
+      	In addition to this, the start and stop time of monitoring process have to be specified (see class documentation) 
+ 		
+	* Updated GPL license in all files
+	
+	* Removed general connect/disconnect methods (now they are layer specific)
+		** removed them from the Component interface
+		
+	* Unified component factories using generics
+		** there is one basic factory interface ComponentFactory<T> where T is the concrete type of components
+		** removed ApplicationFactory, OverlayFactory, NetworkFactory interfaces		** removed them from the Component interface
+				** removed them from the Component interface
+
+	* Main Simulator Class and other singletons:
+		* The Simulator is tun now via de.tud.kom.p2psim.SimulatorRunner
+		* Simulator-Class was moved to impl and is now accessible via getInstance() or other
+			static methods -> Facade Design Pattern (and Singleton too)
+		* DefaultSimulator is merged with the Simulator class
+		* Scheduler is not accessible from the outside any more! All methods can be found in Simulator (as static methods!)
+		
+	* Host class is accessible from all Layers and Components and contains TransportLayer and
+	ContentStorage additionally
+		
+	* VERY IMPORTANT: Use Simulator.MILLISECOND_UNIT and Simulator.SECOND_UNIT etc. for time calculations:
+	especially for timeouts, transmission latencies etc.
+	* Specification of time points and durations in the config files: Now the preferred way is to specify them with UNIT, e.g. 10ms instead of 10000.
+	The benefits are the increased readability and less errors.
+	
+	
+====================================================================
+====    Here you can see which files was changed, added or removed
+==      Note, that files moved from one package to another or files 
+==      which were renamed appear twice -> as removed AND new  
+========================================================================
+PeerfactSim/.classpath changed 
+PeerfactSim/.cvsignore changed 
+PeerfactSim/build.xml changed 
+PeerfactSim/changelog.txt is new
+PeerfactSim/eclipse-ant.xml is new
+PeerfactSim/javadoc.xml is removed
+PeerfactSim/log4j.properties changed 
+PeerfactSim/readme.txt is new
+PeerfactSim/rules.txt is new
+PeerfactSim/todo.txt is new
+PeerfactSim/.settings/org.eclipse.jdt.core.prefs changed 
+PeerfactSim/.settings/org.eclipse.jdt.ui.prefs changed 
+PeerfactSim/config/churn-test.xml is removed
+PeerfactSim/config/config-test.xml changed 
+PeerfactSim/config/config_test-actions.dat is new
+PeerfactSim/config/dummy-actions.dat is removed
+PeerfactSim/config/dummy.xml is removed
+PeerfactSim/config/gnp_napster-actions.dat is new
+PeerfactSim/config/gnp_napster.xml is new
+PeerfactSim/config/napster-actions.dat changed 
+PeerfactSim/config/napster.xml changed 
+PeerfactSim/config/network-only.xml is removed
+PeerfactSim/config/ping_pong-actions.dat is removed
+PeerfactSim/config/ping_pong.xml is removed
+PeerfactSim/config/gnp/gnp_model_data.xml is new
+PeerfactSim/docs/.cvsignore is new
+PeerfactSim/lib/ssj_probdist.pdf is removed
+PeerfactSim/src/de/tud/kom/p2psim/SimulatorRunner.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/ChurnGenerator.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/analyzer/Analyzer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/application/Application.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/application/ApplicationEvent.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/application/ApplicationEventHandler.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/application/ApplicationFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/application/ContentStorage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/application/Document.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/application/DocumentFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/application/Operation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/churn/ChurnGenerator.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/churn/ChurnModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/Component.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/ComponentEvent.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/ComponentEventListener.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/ComponentFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/ConnectivityEvent.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/ConnectivityListener.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/Host.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/HostProperties.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/Message.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/Monitor.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/Operation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/OperationCallback.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/SupportOperations.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/common/package.html is new
+PeerfactSim/src/de/tud/kom/p2psim/api/monitoring/Analyzer.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/monitoring/NetworkMonitor.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/monitoring/OverlayMonitor.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/monitoring/SimEngineMonitor.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/LatencyModel.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetID.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetLatencyModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetLayer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetMessageListener.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetMsgEvent.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetPosition.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetProtocol.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetworkEvent.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetworkEventHandler.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetworkFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetworkMessage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/NetworkWrapper.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/Position.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/Subnet.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/network/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/BootstrapManager.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/DHTNode.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/DHTObject.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/DistributionStrategy.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/KBR.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/KBRCallback.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/KBRListener.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayContact.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayEvent.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayEventHandler.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayID.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayIDGenerator.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayKey.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayMessage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayMessageCategory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayNode.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayNodeFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/OverlayRoutingTable.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/UnstructuredOverlay.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/overlay/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Builder.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Component.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Composable.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Configurable.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/ConfigurationException.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Configurator.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Host.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/HostBuilder.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/HostFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/HostProperties.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/Scenario.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/ScenarioAction.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/ScenarioFactory.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/scenario/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/Event.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/EventQueue.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/Scheduler.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/SimulationEvent.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/SimulationEventHandler.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/Simulator.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/simengine/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/api/storage/ContentStorage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/storage/Document.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/storage/DocumentFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/Message.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/MessageManager.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/MessageReceiver.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/ServiceCategory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransInfo.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransLayer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransMessageCallback.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransMessageListener.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransMsgEvent.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransProtocol.java is new
+PeerfactSim/src/de/tud/kom/p2psim/api/transport/TransportAddress.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/analyzer/MedianSessionLengthAnalyzer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/analyzer/MemoryUsageAnalyzer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/analyzer/NetWorkloadAnalyzer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/AbstractApplication.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/FileSharingClient.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/FileSharingFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/Torrent.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/operations/CloseOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/operations/DownloadOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/operations/NapsterOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/operations/StartOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/filesharing/operations/StoreOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/CloseOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/DocumentPointer.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/DownloadOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/NapsterClient.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/NapsterFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/NapsterOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/StartOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/StoreOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/application/napster/Torrent.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/churn/DefaultChurnGenerator.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/churn/ExponentialChurnModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/churn/StaticChurnModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/common/AbstractOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/common/DefaultHost.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/common/DefaultHostProperties.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/common/DefaultMonitor.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/monitoring/AnalyzerBuilder.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/monitoring/Observer.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/AbstractNetLayer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/AbstractNetMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/AbstractSubnet.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/base/BaseNetworkWrapper.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/base/ServiceCategoryImpl.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/base/package.html is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexLatencyModel.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexLinkManager.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexLinkStatus.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexNetID.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexNetworkFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexNetworkMessage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexNetworkWrapper.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/ComplexSubnet.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/complex/Complex_Description.pdf is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/GnpLatencyModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/GnpNetLayer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/GnpNetLayerFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/GnpSubnet.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/IPv4Message.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/IPv4NetID.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/Country.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/DatabaseInfo.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/Location.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/LookupService.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/Region.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/regionName.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/geoip/timeZone.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GeographicPosition.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/Geolocator.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GeolocatorGeoIP.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GnpHost.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GnpHostGroup.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GnpHostMap.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GnpPosition.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/GnpSpace.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/LinkProperty.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/gnp/topology/RttDistribution.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleEuclidianPoint.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleLatencyModel.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetID.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetLayer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetworkFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetworkMessage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleNetworkWrapper.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleStaticLatencyModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleSubnet.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/SimpleVariableLatencyModel.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/StaticLatencyModel.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/VariableLatencyModel.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/network/simple/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/AbstractOverlayMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/AbstractOverlayNode.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/BootstrapManager.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/DefaultOverlayID.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/TimestampedDHTObject.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/base/BaseOverlayMessage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/base/BaseOverlayNode.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/base/DefaultOverlayID.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/base/TimestampedDHTObject.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/CDFactory.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/ContentStorageImpl.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/DistributionStrategyImpl.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/DocumentImpl.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/messages/DownloadRequestMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/messages/DownloadResultMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/cd/operations/DownloadOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/AbstractReplyMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/AbstractRequestMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/Reply.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/Request.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/BaseOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/BootstrapManagerImpl.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/ClientNode.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/ClientServerFactory.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/LookupOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/LookupRequest.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/LookupResult.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/OverlayIDImpl.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/OverlayKeyImpl.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/ServerJoinOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/ServerLeaveOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/ServerNode.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/SimpleBootstrapManager.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/SimpleDHTObject.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/StoreOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/StoreRequest.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/StoreResult.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/messages/LookupRequestMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/messages/LookupResultMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/messages/StoreRequestMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/messages/StoreResultMsg.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/operations/LookupOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/operations/ServerJoinOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dht/centralized/operations/StoreOperation.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyBootstrapManager.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyConnectOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyMessageHandler.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyOverlayContact.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyOverlayNode.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyOverlayNodeFactory.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyPingOperation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/DummyRoutingTable.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/messages/AcknowledgeMsg.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/messages/ConnectMsg.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/messages/DummyOverlayMsg.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/messages/PingMsg.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/overlay/dummy/messages/PongMsg.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/CSVScenarioFactory.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/DOMScenarioFactory.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/DefaultConfigurator.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/DefaultHost.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/DefaultHostBuilder.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/DefaultHostProperties.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/DefaultScenario.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/ScenarioAction.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/scenario/ScenarioActionImpl.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/DefaultScheduler.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/DefaultSimulator.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/Scheduler.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/Simulator.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/queues/Calendar.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/simengine/queues/Heap.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/storage/DefaultContentStorage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/storage/StorageFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/AbstractMessageReceiver.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/AbstractTransMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/DefaultTransInfo.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/DefaultTransLayer.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/DefaultTransLayerFactory.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/TCPMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/UDPMessage.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/package.html changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/base/BaseMessage.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/base/BaseMessageReceiver.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/base/DefaultMessageManager.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/transport/base/DefaultTransportAddress.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/Helper.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/UpdateLicense.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/PeerDistributionFromBitmap/BitmapHeader.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/PeerDistributionFromBitmap/BitmapLoader.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/churn/ChurnRandomGen.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/churn/MixedLognormalChurnGenerator.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/churn/StaticChurnGenerator.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/churn/UniformChurnGenerator.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/geom/AbstractGeom.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/geom/Circle.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/geom/Ellipse.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/geom/EuclidianPoint.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/geom/Geom.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/geom/Rectangle.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/helpers/CollectionHelpers.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/helpers/Predicate.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/helpers/Predicates.java is new
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/logging/SimLogger.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/monitor/Monitor.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/monitor/OpType.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/monitor/Operation.java is removed
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/exponential/ExponentialDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/limitedNormalDistribution/LimitedNormalDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/lognormal/LognormalDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/mixedLognormal/MixedLogNormalDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/normal/NormalDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/poisson/PoissonDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/uniform/UniformDistribution.java changed 
+PeerfactSim/src/de/tud/kom/p2psim/impl/util/stat/distributions/weibull/WeibullDistribution.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/AllTests.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/ModuleTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/email/Email.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/EmailClient.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/EmailServer.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/EmailTest.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/solution/EmailClientKP.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/solution/EmailReplyKP.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/solution/EmailRequestKP.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/email/solution/EmailServerKP.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/impl/application/filesharing/NapsterTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/impl/application/napster/NapsterTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/complex/ComplexNetworkFactoryTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/simple/DefaultNetworkFactoryTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/simple/DefaultNetworkTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/simple/LatencyModelTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/simple/SimpleLatencyModelTest.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/simple/SimpleLatencyStaticDelayTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/network/simple/SimpleStaticLatencyTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/cd/ContentDistributionTest.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/dht/centralized/CentralizedTest.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/dht/centralized/SimpleDHTObject.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/dummy/DefaultDispatcherTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/dummy/DummyOverlayJoinFailTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/dummy/DummyOverlayJoinTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/overlay/dummy/DummyTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/scenario/ConfigurationFileTest.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/impl/simengine/DefaultSchedulerTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/simengine/SchedulerSingletonTest.java is removed
+PeerfactSim/test/de/tud/kom/p2psim/impl/simengine/SchedulerTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/impl/simengine/SimulatorTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/impl/transport/DefaultTransLayerTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/util/ComponentTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/util/ConfiguratorTest.java changed 
+PeerfactSim/test/de/tud/kom/p2psim/util/ModuleTest.java is new
+PeerfactSim/test/de/tud/kom/p2psim/util/SimulatorTest.java is removed
