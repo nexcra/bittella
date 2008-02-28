@@ -1,0 +1,4 @@
+2008-02-28 12:27:21,796 DEBUG [main]: Initialized logger
+2008-02-28 12:27:21,806 DEBUG [main]: Initialized logger
+2008-02-28 12:27:21,811 DEBUG [main]: Initialized logger
+2008-02-28 12:27:21,811 INFO  [main]: Read hosts from file ../PeerfactSim/config/gnp/7391_0.2.xml
