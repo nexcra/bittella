@@ -19,6 +19,7 @@
 	
     <path id="PeerfactSim.classpath"> 
         <pathelement location="bin"/>
+        <pathelement location="../BT/bin"/>
         <pathelement location="lib/commons-math-1.1.jar"/>
         <pathelement location="lib/dom4j-1.6.1.jar"/>
         <pathelement location="lib/junit-4.0.jar"/>
@@ -46,6 +47,16 @@
         </copy>
     </target>   
     
+    <target name="init_btuc3m">
+        <mkdir dir="../BTUC3M/bin"/>
+        <copy includeemptydirs="false" todir="../BTUC3M/bin">
+            <fileset dir="../BTUC3M/src" excludes="**/*.launch, **/*.java"/>
+        </copy>
+        <copy includeemptydirs="false" todir="../BTUC3M/bin">
+            <fileset dir="../BTUC3M/test" excludes="**/*.launch, **/*.java"/>
+        </copy>
+    </target> 
+    
     <target name="clean">
         <delete dir="bin"/>
     </target>
@@ -53,19 +64,32 @@
     <target name="clean_bt">
         <delete dir="../BT/bin"/>
     </target>
+
+    <target name="clean_btuc3m">
+        <delete dir="../BTUC3m/bin"/>
+    </target>
     
-    <target depends="clean,clean_bt" name="cleanall"/>
+    <target depends="clean,clean_bt,clean_btuc3m" name="cleanall"/>
     
-    <target depends="build-project,build-subprojects" name="build"/>
+    <target depends="build-project,build-subprojects,build-btuc3m" name="build"/>
     
     <target depends="init_bt" name="build-subprojects">
         <echo message="Building BitTorrent Implementation"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="../BT/bin" source="${source}" target="${target}">
             <src path="../BT/src"/>
-            <src path="../BT/test" />
+            <src path="../BT/test"/>
             <!--<exclude name="de/tud/kom/p2psim/util/churn/"/>-->
             <classpath refid="PeerfactSim.classpath"/>
         </javac>
+    </target>
+    <target depends="init_btuc3m" name="build-btuc3m">
+        <echo message="Building BT UC3M Implementation" />
+        <javac debug="true" debuglevel="${debuglevel}" destdir="../BTUC3M/bin" source="${source}" target="${target}">
+            <src path="../BTUC3M/src"/>
+            <src path="../BTUC3M/test" />
+            <!--<exclude name="de/tud/kom/p2psim/util/churn/"/>-->
+            <classpath refid="PeerfactSim.classpath"/>
+        </javac>       
     </target>
     
     <target depends="init" name="build-project">
@@ -73,8 +97,6 @@
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
             <src path="test" />
-            <src path="../BT/src" />
-            <src path="../BT/test" />
             <!--<exclude name="de/tud/kom/p2psim/util/churn/"/>-->
             <classpath refid="PeerfactSim.classpath"/>
         </javac>
@@ -118,7 +140,7 @@
     
     <target name="javadoc">
 	<javadoc packagenames="de.tud.kom.p2psim.*,uc3m.netcom.peerfactsim.*"
-		           sourcepath="src;test;../BT/src"
+		           sourcepath="src;test;../BT/src;../BTUC3M/src"
                            classpath="lib/log4j.jar;lib/dom4j-1.6.1.jar;lib/commons-math-1.1.jar;lib/junit-4.0.jar;lib/ssj.jar"
 		           excludepackagenames="de.tud.kom.p2psim.impl.util.stat*"
 		           defaultexcludes="yes"
@@ -133,14 +155,16 @@
             <group title="MAIN" packages="de.tud.kom.p2psim"/>
             <group title="API">
                 <package name="de.tud.kom.p2psim.api*"/>
-                <package name="uc3m.netcom.peerfactsim.api*"/>
             </group>
             <group title="IMPLEMENTATION">
                 <package name="de.tud.kom.p2psim.impl*"/>
-                <package name="uc3m.netcom.peerfactsim.impl*"/>
             </group>
             <group title="BitTorrent">
                 <package name="de.tud.kom.p2psim.overlay.bt*"/>
+            </group>
+            <group title="UC3M">
+                <package name="uc3m.netcom.peerfactsim.api*" />
+                <package name="uc3m.netcom.peerfactsim.impl*" />
                 <package name="uc3m.netcom.peerfactsim.overlay.bt*" />
             </group>
 <!--This is used for inlined links later
