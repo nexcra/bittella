@@ -336,5 +336,5 @@ public class BTAlgorithmChoking {
 		return theContacts.get(winNumber);
 	}
         
-	
-}
+            
+        }
