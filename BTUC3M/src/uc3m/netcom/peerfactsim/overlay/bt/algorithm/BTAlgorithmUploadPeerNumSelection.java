@@ -17,11 +17,8 @@ package uc3m.netcom.peerfactsim.overlay.bt.algorithm;
  */
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math.random.RandomGenerator;
 import org.apache.log4j.Logger;
@@ -30,9 +27,7 @@ import de.tud.kom.p2psim.impl.simengine.Simulator;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import de.tud.kom.p2psim.overlay.bt.BTConstants;
 import de.tud.kom.p2psim.overlay.bt.BTContact;
-import de.tud.kom.p2psim.overlay.bt.BTDocument;
 import de.tud.kom.p2psim.overlay.bt.BTInternStatistic;
-import de.tud.kom.p2psim.overlay.bt.manager.BTConnectionManager;
 import de.tud.kom.p2psim.overlay.bt.algorithm.BTAlgorithmChoking;
 
 public class BTAlgorithmUploadPeerNumSelection {
