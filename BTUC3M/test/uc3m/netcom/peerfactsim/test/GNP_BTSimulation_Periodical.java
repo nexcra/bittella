@@ -165,7 +165,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         BTPeerSearchNode peerSearchNode = new BTPeerSearchNode(dataBus, theOverlayID, SEARCH_NODE_PORT, DISTRIBUTION_NODE_PORT);
         host.setOverlayNode(peerSearchNode);
 
-        BTClientApplication clientApplication = new BTClientApplication(theDataBus, theDhtNode, theDistributionStrategy);this.factory.newClient(dataBus, peerSearchNode, peerDistributeNode);
+        BTClientApplication clientApplication = this.factory.newClient(dataBus, peerSearchNode, peerDistributeNode);
         host.setApplication(clientApplication);
 
         host.setContentStorage(new DefaultContentStorage());
@@ -222,12 +222,12 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         // 75 % DSL Download: 768 Kbit/s  Upload: 128 Kbit/s
         for (int i = 0; i < 375; i++) {
-            leecher.addLast(this.createModAppl(16000, 96000));
+            leecher.addLast(this.createAppl(16000, 96000));
         }
 
         // 15 % Modem Download: 128 Kbit/s  Upload: 16 Kbit/s
         for (int i = 0; i < 75; i++) {
-            leecher.addLast(this.createAppl(2000, 16000));
+            leecher.addLast(this.createModAppl(2000, 16000));
         }
 
         // 8 % Breitband Download: 1 Mbit/s  Upload: 1 Mbit/s
