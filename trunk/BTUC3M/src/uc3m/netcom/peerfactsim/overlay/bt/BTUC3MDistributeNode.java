@@ -13,17 +13,15 @@ import de.tud.kom.p2psim.api.common.ConnectivityEvent;
 import de.tud.kom.p2psim.api.common.Message;
 import de.tud.kom.p2psim.api.common.Operation;
 import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
 import de.tud.kom.p2psim.api.overlay.OverlayID;
 import de.tud.kom.p2psim.api.overlay.OverlayKey;
 import de.tud.kom.p2psim.api.storage.ContentStorage;
 import de.tud.kom.p2psim.api.transport.TransInfo;
 import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMessageListener;
 import de.tud.kom.p2psim.api.transport.TransMsgEvent;
-import de.tud.kom.p2psim.impl.overlay.AbstractOverlayNode;
 import de.tud.kom.p2psim.impl.simengine.Simulator;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import de.tud.kom.p2psim.overlay.bt.BTPeerDistributeNode;
 import de.tud.kom.p2psim.overlay.bt.BTContact;
 import de.tud.kom.p2psim.overlay.bt.BTInternStatistic;
 import de.tud.kom.p2psim.overlay.bt.BTDataStore;
@@ -50,7 +48,7 @@ import uc3m.netcom.peerfactsim.overlay.bt.operation.BTOperationUpload;
  * It has methods to start a download, upload and it receives most types of the messages from other peers.
  * @author Jan Stolzenburg
  */
-public class BTUC3MDistributeNode extends AbstractOverlayNode implements TransMessageListener, DistributionStrategy {
+public class BTUC3MDistributeNode extends BTPeerDistributeNode {
 	
 	
 	
@@ -110,7 +108,7 @@ public class BTUC3MDistributeNode extends AbstractOverlayNode implements TransMe
 	
 	
 	public BTUC3MDistributeNode(BTDataStore theDataBus, OverlayID theOverlayID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
-		super(theOverlayID, thePeerDistributionPort);
+		super(theDataBus,theOverlayID,thePeerDistributionPort,theStatistic,theRandomGenerator);
 		this.itsDataBus = theDataBus;
 		this.itsStatistic = theStatistic;
 		this.itsRandomGenerator = theRandomGenerator;

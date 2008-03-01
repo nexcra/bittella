@@ -105,7 +105,8 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends d
 			this.itsKeepAliveOperation.stop(true);
                         this.itsChokingNumOp.stop(true);
 			this.itsStatistic.stopUpload();
-			log.info("---Upload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
+                        System.out.println("---SpecialUpload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
+			log.info("---SpecialUpload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
 			return;
 		}
 		if(this.itsIsFirstTime) {
