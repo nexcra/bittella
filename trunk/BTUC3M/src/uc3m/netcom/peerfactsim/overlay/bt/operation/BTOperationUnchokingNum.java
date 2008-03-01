@@ -14,7 +14,6 @@ package uc3m.netcom.peerfactsim.overlay.bt.operation;
  * @author JMCamacho
  */
 import java.util.Collection;
-import java.util.LinkedList;
 
 import org.apache.commons.math.random.RandomGenerator;
 
@@ -29,15 +28,14 @@ import de.tud.kom.p2psim.api.overlay.OverlayID;
 import de.tud.kom.p2psim.overlay.bt.BTDocument;
 import de.tud.kom.p2psim.overlay.bt.BTInternStatistic;
 import de.tud.kom.p2psim.overlay.bt.manager.BTConnectionManager;
-import de.tud.kom.p2psim.overlay.bt.message.BTMessage;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageChoke;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUnchoke;
 import de.tud.kom.p2psim.overlay.bt.operation.BTOperation;
-import de.tud.kom.p2psim.overlay.bt.algorithm.BTAlgorithmChoking;
+
 import org.dom4j.rule.NullAction;
-import uc3m.netcom.peerfactsim.overlay.bt.algorithm.BTAlgorithmUploadPeerNumSelection;
 import org.apache.log4j.Logger;
 import de.tud.kom.p2psim.overlay.bt.BTConstants;
+
+import uc3m.netcom.peerfactsim.overlay.bt.algorithm.BTAlgorithmUploadPeerNumSelection;
+import uc3m.netcom.peerfactsim.overlay.bt.algorithm.BTAlgorithmChoking;
 /**
  * This class takes care about the choking algorithm.
  * It gets regularly called, calls the choking algorithm and
