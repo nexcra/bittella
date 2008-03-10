@@ -42,7 +42,7 @@ import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUnchoke;
 import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUninterested;
 import de.tud.kom.p2psim.overlay.bt.operation.BTOperationDownload;
 import uc3m.netcom.peerfactsim.overlay.bt.operation.BTOperationUpload;
-
+import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
 /**
  * This class is responsible for the communication with other peers.
  * It has methods to start a download, upload and it receives most types of the messages from other peers.
@@ -104,7 +104,7 @@ public class BTUC3MDistributeNode extends BTPeerDistributeNode {
 	private BTDataStore itsDataBus;
 	
 	static final Logger log = SimLogger.getLogger(BTUC3MDistributeNode.class);
-	
+	private UC3MLogBT logger = new UC3MLogBT();
 	
 	
 	public BTUC3MDistributeNode(BTDataStore theDataBus, OverlayID theOverlayID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
@@ -381,5 +381,19 @@ public class BTUC3MDistributeNode extends BTPeerDistributeNode {
 		throw new RuntimeException("Method 'connectivityChanged' in class 'BTPeerDistributeNode' not yet implemented!");
 		//
 	}
-	
+        
+        @Override
+	public void calledOperationFailed(Operation op) {
+            if(op instanceof BTOperationDownload){
+                logger.process(op.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
+            }
+	}
+
+        @Override
+	public void calledOperationSucceeded(Operation op) {
+            if(op instanceof BTOperationDownload){
+                logger.process(op.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(true)});
+            }
+	}
+        
 }
