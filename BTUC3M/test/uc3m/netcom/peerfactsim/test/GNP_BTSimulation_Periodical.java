@@ -47,6 +47,7 @@ import de.tud.kom.p2psim.overlay.bt.BTTrackerApplication;
 import de.tud.kom.p2psim.overlay.bt.BTTrackerNode;
 import de.tud.kom.p2psim.overlay.bt.operation.BTOperationPeerStarter;
 import uc3m.netcom.peerfactsim.overlay.bt.BTUC3MDistributeNode;
+import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
 
 public class GNP_BTSimulation_Periodical extends SimulatorTest implements SupportOperations {
 
@@ -61,7 +62,8 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
     private static final short DISTRIBUTION_NODE_PORT = 1;
     private static final short SEARCH_NODE_PORT = 2;
     private static final short TRACKER_NODE_PORT = 3;
-
+    public static UC3MLogBT logger = new UC3MLogBT();
+    
     @Override
     public void setUp() {
         super.setUp();
@@ -298,6 +300,12 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         Simulator.getInstance().setSeed(Integer.valueOf(args[0]));
         Simulator.getInstance().setStatusInterval(10000000);
         GNP_BTSimulation_Periodical.runSimulation(filename, fileSize, duration, seederDuration, leecherDuration, startWindow);
+        try{
+            GNP_BTSimulation_Periodical.logger.finish();
+        }catch(java.io.IOException e){
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public static void runSimulation(String filename, long fileSize, long duration, long seederDuration, long leecherDuration, long startWindow) {
