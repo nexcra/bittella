@@ -19,19 +19,18 @@ import de.tud.kom.p2psim.impl.simengine.Simulator;
 public class UC3MLogBT {
     
     private final static String props = "UC3MLogBT.properties";
-    private final static String out = "UC3MLogBT.dat";
+    private String out = "UC3MLogBT_";
     private PrintWriter output;
     private HashMap<String,String> methods;
     private HashMap<String,Class[]> paramTypes;
-    
+    private String lastOut = "";
     
     public UC3MLogBT(){
        
         try{
             
-        
             LineNumberReader reader = new LineNumberReader(new FileReader(new File(props)));
-            File file = new File(out);
+            File file = new File(out+System.currentTimeMillis()+".dat");
             file.createNewFile();
             this.output = new PrintWriter(new FileWriter(file));
             String pointer = "";
@@ -89,8 +88,11 @@ public class UC3MLogBT {
        String node = opd.getComponent().getHost().getOverlay(de.tud.kom.p2psim.api.overlay.DistributionStrategy.class).getOverlayID().toString();
        String time = String.valueOf(sim_t);
        String real_t  = this.simTime2RealTime(sim_t.longValue());
-
-       output.println(node+"\t"+time+"\t"+real_t);
+       String outline = node+" "+time+" "+real_t;
+       if(!outline.equals(lastOut)){
+           output.println(outline);
+           lastOut = outline;
+       }
        
    }
    
