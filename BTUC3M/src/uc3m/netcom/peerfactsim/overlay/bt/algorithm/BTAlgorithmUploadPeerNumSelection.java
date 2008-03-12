@@ -94,7 +94,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 //return new int[]{currentRU,currentOU};
                 return new int[]{15,1};
 	}       */
-                return new int[]{5,1};
+                return new int[]{10,1};
 	}
 
        
