@@ -179,6 +179,10 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
 		return this.itsDocument;
 	}
 	
+        public long getFinishedTime(){
+            return ((Simulator.getCurrentTime() - this.itsStartTime) / Simulator.SECOND_UNIT);
+        }
+        
 	@Override
 	protected void operationTimeoutOccured() {
 		this.operationFinished(false);
