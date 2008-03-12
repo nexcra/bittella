@@ -19,8 +19,8 @@ import de.tud.kom.p2psim.impl.simengine.Simulator;
 public class UC3MLogBT {
     
     private final static String props = "UC3MLogBT.properties";
-    private String out = "UC3MLogBT_";
-    private PrintWriter output;
+    private String out;
+    private HashMap<String,PrintWriter> output;
     private HashMap<String,String> methods;
     private HashMap<String,Class[]> paramTypes;
     private String lastOut = "";
@@ -30,28 +30,36 @@ public class UC3MLogBT {
         try{
             
             LineNumberReader reader = new LineNumberReader(new FileReader(new File(props)));
-            File file = new File(out+System.currentTimeMillis()+".dat");
-            file.createNewFile();
-            this.output = new PrintWriter(new FileWriter(file));
             String pointer = "";
             this.methods = new HashMap<String,String>();
             this.paramTypes = new HashMap<String,Class[]>();
-        
+            this.output = new HashMap<String,PrintWriter>();
+            
             while(pointer != null){
             
                 pointer = reader.readLine();
                 if(pointer == null || pointer.length()==0 || pointer.startsWith("#")) continue;
                 StringTokenizer tok = new StringTokenizer(pointer,",",false);
+                out = tok.nextToken();
                 String c = tok.nextToken();
+                
+                File file = new File(out);
+                if(!file.exists()){
+                       file.createNewFile();
+                       this.output.put(c,new PrintWriter(new FileWriter(file,false)));
+                }else{
+                       this.output.put(c,new PrintWriter(new FileWriter(file,true)));
+                }
+                
                 methods.put(c, tok.nextToken());
                 int l = tok.countTokens();
-                Class[] classes  = new Class[l];
-            
+                Class[] classes  = new Class[l+1];
+                classes[l] = PrintWriter.class;
                 for(int i = 0;i<l;i++){
                     classes[i]  = Class.forName(tok.nextToken());
                 
                 }
-                this.paramTypes.put(c, classes);
+                this.paramTypes.put(c,classes);
             }
         
         }catch(Exception e){
@@ -61,19 +69,25 @@ public class UC3MLogBT {
     }
     
     public void finish()throws IOException{
-        output.flush();
-        output.close();
+        java.util.Collection<PrintWriter> collec = output.values();
+        for(PrintWriter pw : collec){
+            pw.flush();
+            pw.close();
+        }
         
     }
     
-    public void process(String org1,Object[] params){
+    public void process(String org1,Object[] params1){
         
         try{
             String org = org1.substring(org1.indexOf(" ")+1);
             String method = methods.get(org);
             Class[] param = paramTypes.get(org);
             java.lang.reflect.Method m = this.getClass().getMethod(method,param);
-            m.invoke(this, params);
+            Object[] objs = new Object[params1.length+1];
+            System.arraycopy(params1, 0, objs, 0, params1.length);
+            objs[objs.length-1] = output.get(org);
+            m.invoke(this, objs);
             }catch(Exception e){
                 System.out.println(e.getMessage());
                 e.printStackTrace();
@@ -81,16 +95,16 @@ public class UC3MLogBT {
     }
       
     
-   public void processOperationFinished(de.tud.kom.p2psim.overlay.bt.operation.BTOperationDownload opd,java.lang.Long sim_t,java.lang.Boolean finished){
+   public void processOperationFinished(de.tud.kom.p2psim.overlay.bt.operation.BTOperationDownload opd,java.lang.Long sim_t,java.lang.Boolean finished,PrintWriter pw){
        
        if(!finished) return;
        
-       String node = opd.getComponent().getHost().getOverlay(de.tud.kom.p2psim.api.overlay.DistributionStrategy.class).getOverlayID().toString();
+       //String node = opd.getComponent().getHost().getOverlay(de.tud.kom.p2psim.api.overlay.DistributionStrategy.class).getOverlayID().toString();
        String time = String.valueOf(sim_t);
-       String real_t  = this.simTime2RealTime(sim_t.longValue());
-       String outline = node+" "+time+" "+real_t;
+       //String real_t  = this.simTime2RealTime(sim_t.longValue());
+       String outline = time;
        if(!outline.equals(lastOut)){
-           output.println(outline);
+           pw.print(outline+" ");
            lastOut = outline;
        }
        
@@ -120,7 +134,7 @@ public class UC3MLogBT {
        
    }
     
-   public void processMessage(NetMessage msg,Long eatl,String sense){
+   public void processMessage(NetMessage msg,Long eatl,String sense,PrintWriter pw){
         
             long eat = eatl.longValue();
             BTMessage ms = (BTMessage) msg.getPayload().getPayload();
@@ -198,12 +212,7 @@ public class UC3MLogBT {
             else
                 file_output = sense+"\t"+sender+"\t"+receiver+"\t"+type+"\t"+size+"\t"+eat+"\t"+eat_aux+"\t"+t+"\t"+t_aux;
             
-            output.println(file_output);
-            
-            
-            
-            
-        
+            pw.println(file_output);
         
     }
    
