@@ -386,14 +386,15 @@ public class BTUC3MDistributeNode extends BTPeerDistributeNode {
         @Override
 	public void calledOperationFailed(Operation op) {
             if(op instanceof BTOperationDownload){
-                logger.process(op.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
+                logger.process(this.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
             }
 	}
 
         @Override
-	public void calledOperationSucceeded(Operation op) {
-            if(op instanceof BTOperationDownload){
-                logger.process(op.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(true)});
+	public void calledOperationSucceeded(Operation opd) {
+            if(opd instanceof BTOperationDownload){
+                BTOperationDownload op = (BTOperationDownload) opd;
+                logger.process(this.getClass().toString(),new Object[]{op,new Long(op.getFinishedTime()),new Boolean(true)});
             }
 	}
         
