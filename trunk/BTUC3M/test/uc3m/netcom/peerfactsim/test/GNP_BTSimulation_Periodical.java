@@ -299,12 +299,28 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         long startWindow = Simulator.MINUTE_UNIT; //In this time window, all leecher get started.
         Simulator.getInstance().setSeed(Integer.valueOf(args[0]));
         Simulator.getInstance().setStatusInterval(10000000);
-        GNP_BTSimulation_Periodical.runSimulation(filename, fileSize, duration, seederDuration, leecherDuration, startWindow);
-        try{
-            GNP_BTSimulation_Periodical.logger.finish();
-        }catch(java.io.IOException e){
+        
+        for(int i=0;i<3;i++){
+          try{
+            GNP_BTSimulation_Periodical.runSimulation(filename, fileSize, duration, seederDuration, leecherDuration, startWindow);  
+            GNP_BTSimulation_Periodical.logger.flush();
+         }catch(Exception e){
             System.out.println(e.getMessage());
             e.printStackTrace();
+            try{
+                GNP_BTSimulation_Periodical.logger.finish();
+            }catch(java.io.IOException eio){
+                System.out.println(eio.getMessage());
+                eio.printStackTrace();
+            }
+         }       
+        }
+        
+        try{
+            GNP_BTSimulation_Periodical.logger.finish();
+        }catch(java.io.IOException em){
+            System.out.println(em.getMessage());
+            em.printStackTrace();
         }
     }
 
