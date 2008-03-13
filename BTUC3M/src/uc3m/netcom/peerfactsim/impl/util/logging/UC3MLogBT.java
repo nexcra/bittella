@@ -77,6 +77,13 @@ public class UC3MLogBT {
         
     }
     
+    public void flush(){
+        
+        java.util.Collection<PrintWriter> collec = output.values();
+        for(PrintWriter pw:collec){
+            pw.flush();
+        }
+    }
     public void process(String org1,Object[] params1){
         
         try{
