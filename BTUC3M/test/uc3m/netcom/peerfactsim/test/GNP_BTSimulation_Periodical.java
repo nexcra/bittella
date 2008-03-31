@@ -229,7 +229,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         // 15 % Modem Download: 128 Kbit/s  Upload: 16 Kbit/s
         for (int i = 0; i < 75; i++) {
-            leecher.addLast(this.createModAppl(2000, 16000));
+            leecher.addLast(this.createModAppl(125000, 125000));
         }
 
         // 8 % Breitband Download: 1 Mbit/s  Upload: 1 Mbit/s
