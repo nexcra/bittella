@@ -87,7 +87,7 @@ public class BTAlgorithmUploadPeerNumSelection {
 		}
 		if (theContacts.isEmpty())
 			//return new int[]{currentRU,currentOU};
-                        return new int[]{3,1};
+                        return new int[]{10,1};
                 /*
                 double currentDR = downloadRate(theContacts);
                 double currentUR = uploadRate(theContacts);
@@ -96,7 +96,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 //return new int[]{currentRU,currentOU};
                 return new int[]{15,1};
 	}       */
-                return new int[]{5,1};
+                return new int[]{10,1};
 	}
 
        
@@ -189,10 +189,7 @@ public class BTAlgorithmUploadPeerNumSelection {
             return c;
             //return (packets*blockSize)/(Simulator.getCurrentTime()-lastExecutionTime);
         }
-        
          
-        
- 
         
         private int calcRow(double currentUR){
             
