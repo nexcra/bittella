@@ -58,7 +58,6 @@ public class BTOperationUnchokingNum<OwnerType extends DistributionStrategy> ext
 	private BTDataStore itsDataBus;
         //Check this out
 	private final static long theirPeriod = BTConstants.CHOKING_REGULAR_CHOKING_RECALC_PERIOD;
-	
     
     
     /** Creates a new instance of BTOperationUnchokingNum */
@@ -84,6 +83,7 @@ public class BTOperationUnchokingNum<OwnerType extends DistributionStrategy> ext
 	if (this.isFinished())
 		return;
 	if (this.uploadFinished()) {
+                this.itsAlgorithm.printHits();
 		this.operationFinished(true);
 		return;
 	}
@@ -135,7 +135,7 @@ public class BTOperationUnchokingNum<OwnerType extends DistributionStrategy> ext
         @Override
         public String toString(){
             
-            return "JODER VAYA MIERDA";
+            return "Running Unchoking Num Op";
         }
     
     

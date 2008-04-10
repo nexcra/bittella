@@ -224,7 +224,19 @@ public class UC3MLogBT {
     }
    
    
-   
+   public void processHits(java.util.HashMap<int[],Integer> hits,PrintWriter pw){
+       
+       int maxCol = 18;
+       int maxRow = 6;
+       
+       for(int i=0;i<maxRow;i++){
+           for(int j=0;j<maxCol;j++){
+               Integer pos = hits.get(new int[]{i,j});
+               pw.print(pos+" ");
+           }
+           pw.println("");
+       }
+   }
     
     
             

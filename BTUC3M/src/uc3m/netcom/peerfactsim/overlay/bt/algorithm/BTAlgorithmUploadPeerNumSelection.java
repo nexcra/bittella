@@ -30,6 +30,10 @@ import de.tud.kom.p2psim.overlay.bt.BTContact;
 import de.tud.kom.p2psim.overlay.bt.BTInternStatistic;
 import de.tud.kom.p2psim.overlay.bt.algorithm.BTAlgorithmChoking;
 
+import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
+import uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical;
+
+
 public class BTAlgorithmUploadPeerNumSelection {
     
 	private BTInternStatistic itsStatistic;
@@ -58,7 +62,10 @@ public class BTAlgorithmUploadPeerNumSelection {
         private double uthreshold = itsMaxUR*0.1;
         private double dthreshold = itsMaxDR*0.1;
         static final Logger log = SimLogger.getLogger(BTAlgorithmChoking.class);
-               
+        private UC3MLogBT logger = GNP_BTSimulation_Periodical.logger;
+        private java.util.HashMap<int[],Integer> hits = new java.util.HashMap<int[],Integer>();
+        private int[] lastTransition = new int[]{-1,-1};
+        
         private static final byte[][] stateMachine = new byte[][]{
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
@@ -87,16 +94,15 @@ public class BTAlgorithmUploadPeerNumSelection {
 		}
 		if (theContacts.isEmpty())
 			//return new int[]{currentRU,currentOU};
-                        return new int[]{10,1};
-                /*
+                        return new int[]{4,1};
+                
                 double currentDR = downloadRate(theContacts);
                 double currentUR = uploadRate(theContacts);
-                int newState = stateMachine[calcRow(currentDR)][calcColumn(currentUR)];            
-                updateAlgorithm(currentDR, currentUR, newState);
-                //return new int[]{currentRU,currentOU};
-                return new int[]{15,1};
-	}       */
-                return new int[]{10,1};
+                int r = calcRow(currentDR);
+                int c = calcColumn(currentUR);
+                int newState = stateMachine[r][c];            
+                updateAlgorithm(currentDR, currentUR, newState,r,c);
+                return new int[]{currentRU,currentOU};
 	}
 
        
@@ -109,7 +115,7 @@ public class BTAlgorithmUploadPeerNumSelection {
 	}
 
         
-        private void updateAlgorithm(double currentDR, double currentUR,int newState){
+        private void updateAlgorithm(double currentDR, double currentUR,int newState,int row,int column){
                 
                /* System.out.println("El nuevo Estado es = "+ newState);
                 System.out.println("DRold = "+this.lastDownloadRate);
@@ -119,7 +125,22 @@ public class BTAlgorithmUploadPeerNumSelection {
             
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 this.currentState = newState;
-          
+                
+                if(currentDR >= lastDownloadRate){
+                    
+                    Integer hpp = hits.get(lastTransition);
+                    if(hpp == null){
+                        hits.put(lastTransition, new Integer(1));
+                    }else{
+                        int aux = hpp.intValue();
+                        aux++;
+                        hpp = new Integer(aux);
+                        hits.put(lastTransition, hpp);
+                        lastTransition = new int[]{row,column};
+                    }
+                    
+                }
+                    
                 switch(newState){
                     case BTAlgorithmUploadPeerNumSelection.INC_STATE:
                         this.currentRU++;
@@ -247,5 +268,9 @@ public class BTAlgorithmUploadPeerNumSelection {
 		return result;
 	}
 	
-	
+	public void printHits(){
+            
+            logger.process(this.getClass().toString(), new Object[]{hits});
+            
+        }
 }
