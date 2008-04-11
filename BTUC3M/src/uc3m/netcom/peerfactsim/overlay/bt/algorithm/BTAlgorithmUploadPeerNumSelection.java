@@ -63,7 +63,8 @@ public class BTAlgorithmUploadPeerNumSelection {
         private double dthreshold = itsMaxDR*0.1;
         static final Logger log = SimLogger.getLogger(BTAlgorithmChoking.class);
         private UC3MLogBT logger = GNP_BTSimulation_Periodical.logger;
-        private java.util.HashMap<int[],Integer> hits = new java.util.HashMap<int[],Integer>();
+        private static java.util.HashMap<String,Integer> hits = new java.util.HashMap<String,Integer>();
+        private static java.util.HashMap<String,Integer> transitions = new java.util.HashMap<String,Integer>();
         private int[] lastTransition = new int[]{-1,-1};
         
         private static final byte[][] stateMachine = new byte[][]{
@@ -126,21 +127,32 @@ public class BTAlgorithmUploadPeerNumSelection {
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 this.currentState = newState;
                 
-                if(currentDR >= lastDownloadRate){
+                if(currentDR > lastDownloadRate){
                     
-                    Integer hpp = hits.get(lastTransition);
+                    String lt = lastTransition[0]+"_"+lastTransition[1];
+                    Integer hpp = BTAlgorithmUploadPeerNumSelection.hits.get(lt);
                     if(hpp == null){
-                        hits.put(lastTransition, new Integer(1));
+                        BTAlgorithmUploadPeerNumSelection.hits.put(lt, new Integer(1));
                     }else{
                         int aux = hpp.intValue();
                         aux++;
                         hpp = new Integer(aux);
-                        hits.put(lastTransition, hpp);
-                        lastTransition = new int[]{row,column};
+                        BTAlgorithmUploadPeerNumSelection.hits.put(lt, hpp);
                     }
-                    
-                }
-                    
+                }   
+                
+                   lastTransition = new int[]{row,column};
+                   
+                   Integer tr = BTAlgorithmUploadPeerNumSelection.transitions.get(row+"_"+column);
+                   
+                   if(tr == null){
+                       BTAlgorithmUploadPeerNumSelection.transitions.put(row+"_"+column,new Integer(1));               
+                   }else{ 
+                    int aux = tr.intValue();
+                    aux++;
+                    BTAlgorithmUploadPeerNumSelection.transitions.put(row+"_"+column,aux);
+                   }
+     
                 switch(newState){
                     case BTAlgorithmUploadPeerNumSelection.INC_STATE:
                         this.currentRU++;
@@ -158,7 +170,8 @@ public class BTAlgorithmUploadPeerNumSelection {
                         }
                         break;
                     case BTAlgorithmUploadPeerNumSelection.EQ_STATE:
-                        
+                        lastDownloadRate = currentDR;
+                        lastUploadRate = currentUR;
                 }
         }
         
@@ -270,7 +283,7 @@ public class BTAlgorithmUploadPeerNumSelection {
 	
 	public void printHits(){
             
-            logger.process(this.getClass().toString(), new Object[]{hits});
+            logger.process(this.getClass().toString(), new Object[]{BTAlgorithmUploadPeerNumSelection.hits,BTAlgorithmUploadPeerNumSelection.transitions});
             
         }
 }
