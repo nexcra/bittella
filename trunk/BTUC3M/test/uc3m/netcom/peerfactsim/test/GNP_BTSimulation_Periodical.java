@@ -300,7 +300,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         Simulator.getInstance().setSeed(Integer.valueOf(args[0]));
         Simulator.getInstance().setStatusInterval(10000000);
         
-        for(int i=0;i<3;i++){
+        for(int i=0;i<1;i++){
           try{
             GNP_BTSimulation_Periodical.runSimulation(filename, fileSize, duration, seederDuration, leecherDuration, startWindow);  
             GNP_BTSimulation_Periodical.logger.flush();

@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import de.tud.kom.p2psim.api.network.NetMessage;
 import de.tud.kom.p2psim.overlay.bt.message.*;
 import de.tud.kom.p2psim.impl.simengine.Simulator;
+
 /**
  *
  * @author jmcamacho
@@ -224,18 +225,32 @@ public class UC3MLogBT {
     }
    
    
-   public void processHits(java.util.HashMap<int[],Integer> hits,PrintWriter pw){
+   public void processHits(java.util.HashMap<String,Integer> hits,java.util.HashMap<String,Integer> transitions,PrintWriter pw){
        
        int maxCol = 18;
        int maxRow = 6;
        
        for(int i=0;i<maxRow;i++){
            for(int j=0;j<maxCol;j++){
-               Integer pos = hits.get(new int[]{i,j});
-               pw.print(pos+" ");
+               Integer pos = hits.get(i+"_"+j);
+               if(pos == null) pw.print("0 ");
+               else pw.print(pos+" ");
            }
            pw.println("");
        }
+       
+       pw.println("");
+       
+       for(int i=0;i<maxRow;i++){
+           for(int j=0;j<maxCol;j++){
+               Integer pos = transitions.get(i+"_"+j);
+               if(pos == null) pw.print("0 ");
+               else pw.print(pos+" ");
+           }
+           pw.println("");
+       }
+       
+       pw.println("");
    }
     
     
