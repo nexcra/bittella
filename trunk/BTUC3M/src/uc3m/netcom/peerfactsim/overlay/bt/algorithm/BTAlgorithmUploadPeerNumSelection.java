@@ -127,7 +127,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 this.currentState = newState;
                 
-                if(currentDR > lastDownloadRate){
+                if(currentDR > (1.1*lastDownloadRate)){
                     
                     String lt = lastTransition[0]+"_"+lastTransition[1];
                     Integer hpp = BTAlgorithmUploadPeerNumSelection.hits.get(lt);
