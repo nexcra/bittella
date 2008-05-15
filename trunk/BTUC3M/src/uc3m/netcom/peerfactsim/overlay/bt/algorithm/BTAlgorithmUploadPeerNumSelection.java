@@ -67,16 +67,24 @@ public class BTAlgorithmUploadPeerNumSelection {
         private static java.util.HashMap<String,Integer> transitions = new java.util.HashMap<String,Integer>();
         private int[] lastTransition = new int[]{-1,-1};
         
-        private static final byte[][] stateMachine = new byte[][]{
+/*        private static final byte[][] stateMachine = new byte[][]{
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
-                {1,1,1,1,0,2,2,2,0,2,2,0,1,1,1,0,1,2},
-                {1,1,1,1,0,2,2,2,0,2,2,0,1,1,1,1,1,1},
-                {1,1,1,1,0,2,2,0,0,2,0,0,1,1,1,1,1,1},
-                {1,1,1,1,0,2,2,0,0,2,0,0,1,1,1,1,1,1}
+                {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,0,1,2},
+                {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,1,1,1},
+                {1,1,1,0,1,2,2,0,0,2,0,0,1,1,1,1,1,1},
+                {1,1,1,0,1,2,2,0,0,2,0,0,1,1,1,1,1,1}
         };
-     
-    
+  */   
+          private static final byte[][] stateMachine = new byte[][]{
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,0,1,2,1,1,1,2,2,0,1,1,1,2,2,0},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,0,1,2,1,1,1,2,2,0,1,1,1,1,1,1},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1}
+        };
+          
 	/**
 	 * Use this method to use the algorithm.
          * It will set up the amount of unchoked peers that will be unchoked when the
@@ -155,10 +163,12 @@ public class BTAlgorithmUploadPeerNumSelection {
      
                 switch(newState){
                     case BTAlgorithmUploadPeerNumSelection.INC_STATE:
-                        this.currentRU++;
-                        this.currentOU++;
-                        this.lastDownloadRate = currentDR;
-                        this.lastUploadRate = currentUR;                     
+                        if(currentRU <16){
+                            this.currentRU++;
+                            this.currentOU++;
+                            this.lastDownloadRate = currentDR;
+                            this.lastUploadRate = currentUR;                     
+                        }
                         break;
                         
                     case BTAlgorithmUploadPeerNumSelection.DEC_STATE:

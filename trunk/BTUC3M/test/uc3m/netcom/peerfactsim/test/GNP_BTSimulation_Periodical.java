@@ -220,26 +220,26 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         LinkedList<BTClientApplication> leecher = new LinkedList<BTClientApplication>();
 
-        int numberOfLeecher = 500;
+        int numberOfLeecher = 100;
 
         // 75 % DSL Download: 768 Kbit/s  Upload: 128 Kbit/s
-        for (int i = 0; i < 375; i++) {
-            leecher.addLast(this.createAppl(16000, 96000));
+        for (int i = 0; i < 75; i++) {
+            leecher.addLast(this.createModAppl(16000, 96000));
         }
 
         // 15 % Modem Download: 128 Kbit/s  Upload: 16 Kbit/s
-        for (int i = 0; i < 75; i++) {
+        for (int i = 0; i < 15; i++) {
             leecher.addLast(this.createModAppl(125000, 125000));
         }
 
         // 8 % Breitband Download: 1 Mbit/s  Upload: 1 Mbit/s
-        for (int i = 0; i < 40; i++) {
-            leecher.addLast(this.createAppl(1250000, 1250000));
+        for (int i = 0; i < 8; i++) {
+            leecher.addLast(this.createModAppl(1250000, 1250000));
         }
 
         // 2 % Breitband Download: 10 Mbit/s  Upload: 10 Mbit/s
-        for (int i = 0; i < 10; i++) {
-            leecher.addLast(this.createAppl(1250000, 1250000));
+        for (int i = 0; i < 2; i++) {
+            leecher.addLast(this.createModAppl(1250000, 1250000));
         }
 
 
@@ -304,6 +304,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
           try{
             GNP_BTSimulation_Periodical.runSimulation(filename, fileSize, duration, seederDuration, leecherDuration, startWindow);  
             GNP_BTSimulation_Periodical.logger.flush();
+            GNP_BTSimulation_Periodical.logger.finish();
          }catch(Exception e){
             System.out.println(e.getMessage());
             e.printStackTrace();
