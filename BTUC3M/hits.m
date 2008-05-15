@@ -2,7 +2,7 @@
 
 clear all;
 close all;
-aux = load('HitStats_110408_1845.dat');
+aux = load('HitStats_140508_1330.dat');
 
 hit = aux(1:6,:);
 pass = aux(7:12,:);
