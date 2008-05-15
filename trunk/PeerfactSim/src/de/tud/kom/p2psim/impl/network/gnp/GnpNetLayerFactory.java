@@ -42,6 +42,8 @@ public class GnpNetLayerFactory implements ComponentFactory {
 	private PingErLookup pingErLockup;
 	private CountryLookup countryLockup;
 
+        private int order = 0;
+        
 	public GnpNetLayerFactory() {
 		subnet = new GnpSubnet();
 		this.downBandwidth = DEFAULT_DOWN_BANDWIDTH;
@@ -63,7 +65,7 @@ public class GnpNetLayerFactory implements ComponentFactory {
 	public GnpNetLayer newNetLayer(String id) {
 		if (this.namedGroups.containsKey(id) && !this.namedGroups.get(id).isEmpty()) {
 			int size = namedGroups.get(id).size();
-			IPv4NetID netId = namedGroups.get(id).get(Simulator.getRandom().nextInt(size));
+			IPv4NetID netId = namedGroups.get(id).get(order++);//Simulator.getRandom().nextInt(size));
 			namedGroups.get(id).remove(netId);
 			return newNetLayer(netId);
 		} else {
