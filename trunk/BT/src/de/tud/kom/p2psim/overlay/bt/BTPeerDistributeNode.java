@@ -38,7 +38,8 @@ import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUnchoke;
 import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUninterested;
 import de.tud.kom.p2psim.overlay.bt.operation.BTOperationDownload;
 import de.tud.kom.p2psim.overlay.bt.operation.BTOperationUpload;
-
+import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
+import uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical;
 /**
  * This class is responsible for the communication with other peers.
  * It has methods to start a download, upload and it receives most types of the messages from other peers.
@@ -100,7 +101,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	private BTDataStore itsDataBus;
 	
 	static final Logger log = SimLogger.getLogger(BTPeerDistributeNode.class);
-	
+	private UC3MLogBT logger = GNP_BTSimulation_Periodical.logger;
 	
 	
 	public BTPeerDistributeNode(BTDataStore theDataBus, OverlayID theOverlayID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
@@ -198,7 +199,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		BTContact theOtherPeer = new BTContact(theBTMessage.getSender(), theMessageEvent.getSenderTransInfo());
 		
 		//A table lookup for the message type would be better than this case statement. But this is much to much overhead in Java, as we don't have first class functions.
-		//TODO: Aufräumen, so dass man nicht jedes mal das gleiche macht. Am besten nur nachschauen von wem die Nachricht ist, nachschlagen in welchem Torrent dieser Peer ist und fertig.
+		//TODO: Aufrï¿½umen, so dass man nicht jedes mal das gleiche macht. Am besten nur nachschauen von wem die Nachricht ist, nachschlagen in welchem Torrent dieser Peer ist und fertig.
 		switch (theBTMessage.getType()) {
 			case REQUEST: {
 				BTPeerMessageRequest theRequest = (BTPeerMessageRequest) theBTMessage;
@@ -377,5 +378,20 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		throw new RuntimeException("Method 'connectivityChanged' in class 'BTPeerDistributeNode' not yet implemented!");
 		//
 	}
-	
+
+                @Override
+	public void calledOperationFailed(Operation op) {
+            if(op instanceof BTOperationDownload){
+                logger.process(this.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
+            }
+	}
+
+        @Override
+	public void calledOperationSucceeded(Operation opd) {
+            if(opd instanceof BTOperationDownload){
+                BTOperationDownload op = (BTOperationDownload) opd;
+                logger.process(this.getClass().toString(),new Object[]{op,new Long(op.getFinishedTime()),new Boolean(true)});
+            }
+	}
+        
 }
