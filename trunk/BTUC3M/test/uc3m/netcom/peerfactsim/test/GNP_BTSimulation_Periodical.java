@@ -106,7 +106,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         DefaultHost host = new DefaultHost();
         DefaultHostProperties prop = new DefaultHostProperties();
-        prop.setGroupID("World");
+        prop.setGroupID("Spain");
         host.setProperties(prop);
 
         GnpNetLayer net = this.netFactory.createComponent(host);
@@ -145,7 +145,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         DefaultHost host = new DefaultHost();
         DefaultHostProperties prop = new DefaultHostProperties();
-        prop.setGroupID("World");
+        prop.setGroupID("Spain");
         host.setProperties(prop);
 
         GnpNetLayer net = this.netFactory.createComponent(host);
@@ -220,10 +220,10 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         LinkedList<BTClientApplication> leecher = new LinkedList<BTClientApplication>();
 
-        int numberOfLeecher = 100;
+        int numberOfLeecher = 80;
 
         // 75 % DSL Download: 768 Kbit/s  Upload: 128 Kbit/s
-        for (int i = 0; i < 75; i++) {
+        for (int i = 0; i < 55; i++) {
             leecher.addLast(this.createModAppl(16000, 96000));
         }
 

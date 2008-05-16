@@ -60,6 +60,13 @@ x_sn4_hbw3 = load('CDF_sn4_hbw_3_100.dat');
 x_sn4_hbw4 = load('CDF_sn4_hbw_4_100.dat');
 x_sn4_hbw5 = load('CDF_sn4_hbw_5_100.dat');
 
+x_sn5_hbw = load('CDF_sn5_hbw_1_100.dat');
+x_sn5_hbw2 = load('CDF_sn5_hbw_2_100.dat');
+x_sn5_hbw3 = load('CDF_sn5_hbw_3_100.dat');
+x_sn5_hbw4 = load('CDF_sn5_hbw_4_100.dat');
+x_sn5_hbw5 = load('CDF_sn5_hbw_5_100.dat');
+x_sn5_hbw6 = load('CDF_sn5_hbw_6_100.dat');
+
 figure(1);
 title('Normal Nodes');
 hold on;
@@ -119,6 +126,23 @@ set(h,'LineWidth',2);
 h = cdfplot(x_sn4_hbw4);
 set(h,'Color',[0 1 1]);
 set(h,'LineWidth',2);
-h = cdfplot(x_sn4_hbw4);
+h = cdfplot(x_sn4_hbw5);
 set(h,'Color',[0 1 1]);
+set(h,'LineWidth',2);
+
+h = cdfplot(x_sn5_hbw);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn5_hbw2);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+pause;
+h = cdfplot(x_sn5_hbw3);
+set(h,'Color',[1 1 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn5_hbw4);
+set(h,'Color',[1 1 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn5_hbw5);
+set(h,'Color',[1 1 0]);
 set(h,'LineWidth',2);
