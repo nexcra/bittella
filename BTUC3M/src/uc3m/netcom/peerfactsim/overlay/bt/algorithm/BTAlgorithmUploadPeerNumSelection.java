@@ -66,8 +66,9 @@ public class BTAlgorithmUploadPeerNumSelection {
         private static java.util.HashMap<String,Integer> hits = new java.util.HashMap<String,Integer>();
         private static java.util.HashMap<String,Integer> transitions = new java.util.HashMap<String,Integer>();
         private int[] lastTransition = new int[]{-1,-1};
-        
-/*        private static final byte[][] stateMachine = new byte[][]{
+   
+        //Original Matrix
+  /*      private static final byte[][] stateMachine = new byte[][]{
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,0,1,2},
@@ -75,14 +76,26 @@ public class BTAlgorithmUploadPeerNumSelection {
                 {1,1,1,0,1,2,2,0,0,2,0,0,1,1,1,1,1,1},
                 {1,1,1,0,1,2,2,0,0,2,0,0,1,1,1,1,1,1}
         };
-  */   
+   */
+        //Type 2  Matrix
+    /*      private static final byte[][] stateMachine = new byte[][]{
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,0,1,1,1,1,1,2,1,1,1,1,1,0,0,0},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,1,1,0,1,1,1,2,1,1,1,1,1,0,0,0},
+                {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+                {1,1,1,0,1,0,1,1,1,2,1,1,1,1,1,0,0,0}
+        };
+    */
+     
+        //Type 4 Matrix
           private static final byte[][] stateMachine = new byte[][]{
                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,0,1,2,1,1,1,2,2,0,1,1,1,2,2,0},
+                {1,1,1,0,2,2,1,1,1,2,1,1,1,1,1,0,0,0},
                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,0,1,2,1,1,1,2,2,0,1,1,1,1,1,1},
+                {1,1,1,0,1,0,1,1,1,2,1,1,1,1,1,0,0,0},
                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,0,1,2,1,1,1,1,0,0,1,1,1,1,1,1}
+                {1,1,1,0,1,0,1,1,1,2,1,1,1,1,1,0,0,0}
         };
           
 	/**
@@ -107,11 +120,16 @@ public class BTAlgorithmUploadPeerNumSelection {
                 
                 double currentDR = downloadRate(theContacts);
                 double currentUR = uploadRate(theContacts);
-                int r = calcRow(currentDR);
-                int c = calcColumn(currentUR);
-                int newState = stateMachine[r][c];            
-                updateAlgorithm(currentDR, currentUR, newState,r,c);
-                return new int[]{currentRU,currentOU};
+                
+                if(currentDR > 0.2*this.itsMaxDR){
+                    int r = calcRow(currentDR);
+                    int c = calcColumn(currentUR);
+                    int newState = stateMachine[r][c];            
+                    updateAlgorithm(currentDR, currentUR, newState,r,c);
+                    return new int[]{currentRU,BTConstants.CHOKING_NUMBER_OF_OPTIMISTIC_UNCHOKES};
+                }
+                
+                return new int[]{BTConstants.CHOKING_NUMBER_OF_REGULAR_UNCHOKES,BTConstants.CHOKING_NUMBER_OF_OPTIMISTIC_UNCHOKES};
 	}
 
        
