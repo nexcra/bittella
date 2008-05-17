@@ -29,16 +29,18 @@ close all;
 %one hundrer first nodes enlisted                 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x_nn_hbw = load('CDF_nn_hbw_1_100.dat');
-x_nn_hbw2 = load('CDF_nn_hbw_2_100.dat');
-x_nn_hbw3 = load('CDF_nn_hbw_3_100.dat');
-x_nn_hbw4 = load('CDF_nn_hbw_4_100.dat');
-x_nn_hbw5 = load('CDF_nn_hbw_5_100.dat');
-x_nn_hbw6 = load('CDF_nn_hbw_6_100.dat');
-x_nn_hbw7 = load('CDF_nn_hbw_7_100.dat');
-x_nn_hbw8 = load('CDF_nn_hbw_8_100.dat');
-x_nn_hbw9 = load('CDF_nn_hbw_9_100.dat');
-x_nn_hbw10 = load('CDF_nn_hbw_10_100.dat');
+x_nn_hbw = load('CDF_nn_hbw_1_80.dat');
+x_nn_hbw2 = load('CDF_nn_hbw_2_80.dat');
+x_nn_hbw3 = load('CDF_nn_hbw_3_80.dat');
+x_nn_hbw4 = load('CDF_nn_hbw_4_80.dat');
+x_nn_hbw5 = load('CDF_nn_hbw_5_80.dat');
+x_nn_hbw6 = load('CDF_nn_hbw_6_80.dat');
+x_nn_hbw7 = load('CDF_nn_hbw_7_80.dat');
+x_nn_hbw8 = load('CDF_nn_hbw_8_80.dat');
+x_nn_hbw9 = load('CDF_nn_hbw_9_80.dat');
+x_nn_hbw10 = load('CDF_nn_hbw_10_80.dat');
+
+x_sn1 = load('CDF_sn_hbw_1_80.dat');
 
 %x_sn_hbw = load('CDF_sn_hbw_1_100.dat');
 %x_sn_hbw2 = load('CDF_sn_hbw_2_100.dat');
@@ -67,7 +69,12 @@ x_sn5_hbw4 = load('CDF_sn5_hbw_4_100.dat');
 x_sn5_hbw5 = load('CDF_sn5_hbw_5_100.dat');
 x_sn5_hbw6 = load('CDF_sn5_hbw_6_100.dat');
 
-x_sn6_hbw1 = load('CDF_sn6_hbw_1_100.dat');
+x_sn6_hbw1 = load('CDF_sn6_hbw_1_80.dat');
+x_sn6_hbw2 = load('CDF_sn6_hbw_2_80.dat');
+x_sn6_hbw3 = load('CDF_sn6_hbw_3_80.dat');
+x_sn6_hbw4 = load('CDF_sn6_hbw_4_80.dat');
+x_sn6_hbw5 = load('CDF_sn6_hbw_5_80.dat');
+x_sn6_hbw6 = load('CDF_sn6_hbw_6_80.dat');
 
 figure(1);
 title('Normal Nodes');
@@ -139,20 +146,35 @@ cdfplot(x_nn_hbw10);
 %set(h,'Color',[1 0 0]);
 %set(h,'LineWidth',2);
 pause;
-h = cdfplot(x_sn5_hbw3);
-set(h,'Color',[1 1 0]);
-set(h,'LineWidth',2);
+%h = cdfplot(x_sn5_hbw3);
+%set(h,'Color',[0 0 0]);
+%set(h,'LineWidth',1);
 h = cdfplot(x_sn5_hbw4);
-set(h,'Color',[1 1 0]);
-set(h,'LineWidth',2);
+set(h,'Color',[0 0 0]);
+set(h,'LineWidth',1);
 h = cdfplot(x_sn5_hbw5);
-set(h,'Color',[1 1 0]);
-set(h,'LineWidth',2);
+set(h,'Color',[0 0 0]);
+set(h,'LineWidth',1);
 h = cdfplot(x_sn5_hbw6);
-set(h,'Color',[1 1 0]);
-set(h,'LineWidth',2);
+set(h,'Color',[0 0 0]);
+set(h,'LineWidth',1);
 
 pause;
 h = cdfplot(x_sn6_hbw1);
-set(h,'Color',[0 1 0]);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn6_hbw2);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn6_hbw3);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn6_hbw4);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn6_hbw5);
+set(h,'Color',[1 0 0]);
+set(h,'LineWidth',2);
+h = cdfplot(x_sn6_hbw6);
+set(h,'Color',[1 0 0]);
 set(h,'LineWidth',2);
