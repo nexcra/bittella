@@ -67,7 +67,7 @@ public class BTAlgorithmUploadPeerNumSelection {
         private static java.util.HashMap<String,Integer> transitions = new java.util.HashMap<String,Integer>();
         public java.util.HashMap<String,java.util.Vector> pulse = new java.util.HashMap<String,java.util.Vector>();
         private int[] lastTransition = new int[]{-1,-1};
-   
+        private boolean steadystate = false;
         //Original Matrix
   /*      private static final byte[][] stateMachine = new byte[][]{
                 {1,1,1,0,1,2,2,2,0,2,2,0,1,1,1,2,2,0},
@@ -96,7 +96,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
                 {1,1,1,0,0,0,1,1,1,2,2,2,1,1,1,0,0,0},
                 {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-                {1,1,1,0,0,0,1,1,1,0,0,0,1,1,1,0,0,0}
+                {1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0}
         };
           
 	/**
@@ -126,7 +126,9 @@ public class BTAlgorithmUploadPeerNumSelection {
                 long aaux = (Simulator.getCurrentTime()-this.lastExecutionTime)/Simulator.SECOND_UNIT;
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 
-                if(currentDR > 0.1*this.itsMaxDR){
+                if(currentDR > 0.1*this.itsMaxDR) steadystate = true;
+                
+                if(steadystate){
                     int r = calcRow(currentDR);
                     int c = calcColumn(currentUR);
                     int newState = stateMachine[r][c];            
@@ -134,10 +136,10 @@ public class BTAlgorithmUploadPeerNumSelection {
                     System.out.println("->->-> "+currentRU+" "+currentDR+" "+currentUR+" "+itsMaxDR+" "+aaux);//-this.lastExecutionTime)/Simulator.SECOND_UNIT));
                     return new int[]{currentRU,BTConstants.CHOKING_NUMBER_OF_OPTIMISTIC_UNCHOKES};
                 }
-
+                
+                //currentRU--;          
                 System.out.println("-+-+-+ "+currentRU+" "+currentDR+" "+currentUR+" "+itsMaxDR+" "+aaux);
-                if(this.itsMaxDR > 96000.0) return new int[]{7,1}; 
-                return new int[]{BTConstants.CHOKING_NUMBER_OF_REGULAR_UNCHOKES,BTConstants.CHOKING_NUMBER_OF_OPTIMISTIC_UNCHOKES};
+                return new int[]{currentRU,BTConstants.CHOKING_NUMBER_OF_OPTIMISTIC_UNCHOKES};
 	}
 
        
@@ -148,7 +150,8 @@ public class BTAlgorithmUploadPeerNumSelection {
                 this.itsMaxUR = maxUR;
                 this.itsMaxDR = maxDR;
                 this.pulse.put(this.toString(),new java.util.Vector());
-                if(this.itsMaxDR > 96000.0) this.currentRU = 7;
+                this.currentRU = 3;
+                //if(this.itsMaxDR > 96000.0) this.currentRU = 16;
 	}
 
         
@@ -163,7 +166,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 this.currentState = newState;
                 
-                if(currentDR > (1.05*lastDownloadRate)){
+                if(currentDR > (0.5*lastDownloadRate)){
                     
                     String lt = lastTransition[0]+"_"+lastTransition[1];
                     Integer hpp = BTAlgorithmUploadPeerNumSelection.hits.get(lt);
@@ -192,7 +195,8 @@ public class BTAlgorithmUploadPeerNumSelection {
                 switch(newState){
                     case BTAlgorithmUploadPeerNumSelection.INC_STATE:
                         if(currentRU <16){
-                            this.currentRU++;
+                            if(this.currentRU <= 5) this.currentRU+=2;
+                            else this.currentRU++;
                             this.currentOU++;
                             this.lastDownloadRate = currentDR;
                             this.lastUploadRate = currentUR;                     
@@ -201,7 +205,8 @@ public class BTAlgorithmUploadPeerNumSelection {
                         
                     case BTAlgorithmUploadPeerNumSelection.DEC_STATE:
                         if(currentRU > 3){
-                            this.currentRU--;
+                            if(this.currentRU >= 8) this.currentRU-=2;
+                            else this.currentRU--;
                             this.currentOU--;
                             this.lastDownloadRate = currentDR;
                             this.lastUploadRate = currentUR;
@@ -265,12 +270,12 @@ public class BTAlgorithmUploadPeerNumSelection {
         
         private int calcRow(double currentUR){
             
-            if(currentUR >= (1.05*this.lastUploadRate)){
+            if(currentUR >= (0.5*this.lastUploadRate)){
                 
                 if(currentUR == this.itsMaxUR) return 0;
                 else return 1;
                     
-            }else if(currentUR <= (1.05*this.lastUploadRate)){
+            }else if(currentUR <= (0.5*this.lastUploadRate)){
                 
                 if(this.lastUploadRate == this.itsMaxUR) return 2;
                 else return 3;
@@ -285,12 +290,12 @@ public class BTAlgorithmUploadPeerNumSelection {
         
         private int calcColumn(double currentDR){
             
-            if(currentDR >= 1.05*this.lastDownloadRate){
+            if(currentDR >= 0.5*this.lastDownloadRate){
                 
                 if(currentDR == this.itsMaxDR) return 0+this.currentState;
                 else return 3+this.currentState;
                     
-            }else if(currentDR <= 1.05*this.lastDownloadRate){
+            }else if(currentDR <= 0.5*this.lastDownloadRate){
                 
                 if(this.lastDownloadRate == this.itsMaxDR) return 6+currentState;
                 else return 9+currentState;
