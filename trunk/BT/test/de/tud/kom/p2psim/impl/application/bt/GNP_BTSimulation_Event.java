@@ -48,8 +48,8 @@ public class GNP_BTSimulation_Event extends SimulatorTest implements SupportOper
 	
 	private static int theirIdCounter = 0;
 	private Set<OverlayID> usedIds = new HashSet<OverlayID>();
-    private BTTrackerApplication server;
-    private BTTrackerNode serverNode;
+        private BTTrackerApplication server;
+        private BTTrackerNode serverNode;
 	private GnpNetLayerFactory netFactory;
 	private BTFactory factory;
 	private Collection<BTDataStore> itsDataBusses;
