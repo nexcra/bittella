@@ -83,7 +83,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
 
         this.netFactory.setLatencyModel(latencyModel);
         //this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerEvent());
-        this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerEvent());
+        this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerPeriodical());
         this.netFactory.setPbaPeriod(1.0);
 
         this.server = this.createServer();
@@ -242,7 +242,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
             leecher.addLast(this.createModAppl(1250000, 1250000));
         }
 
-        
+
         /*		int numberOfLeecher = 300;
         // 75 % DSL Download: 768 Kbit/s  Upload: 128 Kbit/s
         for (int i = 0; i < 225; i++)
