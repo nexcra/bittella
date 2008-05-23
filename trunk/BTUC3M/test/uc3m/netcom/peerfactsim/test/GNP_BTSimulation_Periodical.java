@@ -79,7 +79,7 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         GnpLatencyModel latencyModel = new GnpLatencyModel();
         latencyModel.setUsePingErPacketLoss(true);
         latencyModel.setUsePingErJitter(true);
-        latencyModel.setUsePingErRttData(false);
+        latencyModel.setUsePingErRttData(true);
 
         this.netFactory.setLatencyModel(latencyModel);
         //this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerEvent());
