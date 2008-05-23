@@ -126,7 +126,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 long aaux = (Simulator.getCurrentTime()-this.lastExecutionTime)/Simulator.SECOND_UNIT;
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 
-                if(currentDR > 0.1*this.itsMaxDR) steadystate = true;
+                if(currentDR > 0.5*this.itsMaxDR) steadystate = true;
                 
                 if(steadystate){
                     int r = calcRow(currentDR);
@@ -150,8 +150,8 @@ public class BTAlgorithmUploadPeerNumSelection {
                 this.itsMaxUR = maxUR;
                 this.itsMaxDR = maxDR;
                 this.pulse.put(this.toString(),new java.util.Vector());
-                this.currentRU = 3;
-                //if(this.itsMaxDR > 96000.0) this.currentRU = 16;
+                //this.currentRU = 3;
+                if(this.itsMaxDR > 96000.0) this.currentRU = 7;
 	}
 
         
@@ -166,7 +166,7 @@ public class BTAlgorithmUploadPeerNumSelection {
                 this.lastExecutionTime = Simulator.getCurrentTime();
                 this.currentState = newState;
                 
-                if(currentDR > (0.5*lastDownloadRate)){
+                if(currentDR > (1.3*lastDownloadRate)){
                     
                     String lt = lastTransition[0]+"_"+lastTransition[1];
                     Integer hpp = BTAlgorithmUploadPeerNumSelection.hits.get(lt);
@@ -270,12 +270,12 @@ public class BTAlgorithmUploadPeerNumSelection {
         
         private int calcRow(double currentUR){
             
-            if(currentUR >= (0.5*this.lastUploadRate)){
+            if(currentUR >= (1.3*this.lastUploadRate)){
                 
                 if(currentUR == this.itsMaxUR) return 0;
                 else return 1;
                     
-            }else if(currentUR <= (0.5*this.lastUploadRate)){
+            }else if(currentUR <= (0.7*this.lastUploadRate)){
                 
                 if(this.lastUploadRate == this.itsMaxUR) return 2;
                 else return 3;
@@ -290,12 +290,12 @@ public class BTAlgorithmUploadPeerNumSelection {
         
         private int calcColumn(double currentDR){
             
-            if(currentDR >= 0.5*this.lastDownloadRate){
+            if(currentDR >= 1.3*this.lastDownloadRate){
                 
                 if(currentDR == this.itsMaxDR) return 0+this.currentState;
                 else return 3+this.currentState;
                     
-            }else if(currentDR <= 0.5*this.lastDownloadRate){
+            }else if(currentDR <= 0.7*this.lastDownloadRate){
                 
                 if(this.lastDownloadRate == this.itsMaxDR) return 6+currentState;
                 else return 9+currentState;
