@@ -243,11 +243,11 @@ public class BTAlgorithmUploadPeerNumSelection {
             //System.out.println("Current Time = "+ Simulator.getCurrentTime());
             //System.out.println("LastExecutionTime = "+ this.lastExecutionTime);
             double a = packets*blockSize;
-            double b = (Simulator.getCurrentTime()-this.lastExecutionTime)/Simulator.SECOND_UNIT;
             double c = a/b;
             //System.out.println("a = "+a);
             //System.out.println("b = "+b);
             //System.out.println("c = "+c);
+            System.out.println("DOWNLOADRATE "+c+" "+Simulator.getCurrentTime());
             return c;
             //return (packets*blockSize)/(Simulator.getCurrentTime()-this.lastExecutionTime);
         }

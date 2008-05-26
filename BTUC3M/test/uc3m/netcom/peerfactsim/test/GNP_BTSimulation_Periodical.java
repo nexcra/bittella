@@ -82,8 +82,8 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         latencyModel.setUsePingErRttData(true);
 
         this.netFactory.setLatencyModel(latencyModel);
-        //this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerEvent());
-        this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerPeriodical());
+        this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerEvent());
+        //this.netFactory.setBandwidthManager(new GnpNetBandwidthManagerPeriodical());
         this.netFactory.setPbaPeriod(1.0);
 
         this.server = this.createServer();
@@ -216,12 +216,13 @@ public class GNP_BTSimulation_Periodical extends SimulatorTest implements Suppor
         BTDocument document = new BTDocument(overlayKey, fileSize);
 
         // Seeder hat Breitband Download: 1 Mbit/s  Upload: 1 Mbit/s
-        BTClientApplication seeder = this.createAppl(125000, 125000);
+        BTClientApplication seeder = this.createModAppl(125000, 125000);
 
         LinkedList<BTClientApplication> leecher = new LinkedList<BTClientApplication>();
 
         int numberOfLeecher = 80;
 
+        
         // 75 % DSL Download: 768 Kbit/s  Upload: 128 Kbit/s
         for (int i = 0; i < 55; i++) {
             leecher.addLast(this.createModAppl(16000, 96000));
