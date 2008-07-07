@@ -3,8 +3,8 @@ package de.tud.kom.p2psim.impl.application.bt;
 import java.util.List;
 import java.util.Map;
 
-import de.tud.kom.p2psim.overlay.bt.BTContact;
-import de.tud.kom.p2psim.overlay.bt.BTInternStatistic;
+import uc3m.netcom.overlay.bt.BTContact;
+import uc3m.netcom.overlay.bt.BTInternStatistic;
 
 public class BTCompressedStatistic {
 	
