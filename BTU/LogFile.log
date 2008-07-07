@@ -1,0 +1,18 @@
+2008-06-25 16:38:38,493 INFO  [main]: +++Download finished at time 43231 after '0' days, '0' hours, '0' minutes, '0' seconds (0) at '0'. There are still 0 downloads active.
+2008-06-25 16:38:38,561 INFO  [main]: Simulated Time: 5 Minutes; Real time: Wed Jun 25 16:38:38 CEST 2008;
+2008-06-25 16:38:38,656 ERROR [main]: Simulator run stopped because of error
+java.lang.IllegalArgumentException: Message-Size ist too big for a UDP-Datagramm (max 65507 byte)
+	at de.tud.kom.p2psim.impl.network.gnp.GnpLatencyModel.getUDPerrorProbability(GnpLatencyModel.java:99)
+	at de.tud.kom.p2psim.impl.network.gnp.GnpSubnet.send(GnpSubnet.java:105)
+	at de.tud.kom.p2psim.impl.network.gnp.GnpNetLayer.send(GnpNetLayer.java:142)
+	at de.tud.kom.p2psim.impl.transport.DefaultTransLayer.sendTransportMsg(DefaultTransLayer.java:479)
+	at de.tud.kom.p2psim.impl.transport.DefaultTransLayer.sendReply(DefaultTransLayer.java:485)
+	at uc3m.netcom.peerfactsim.overlay.bt.operation.BTOperationUpload.execute(BTOperationUpload.java:201)
+	at de.tud.kom.p2psim.impl.common.AbstractOperation.eventOccurred(AbstractOperation.java:434)
+	at de.tud.kom.p2psim.impl.simengine.Scheduler.processNextEvent(Scheduler.java:419)
+	at de.tud.kom.p2psim.impl.simengine.Scheduler.start(Scheduler.java:377)
+	at de.tud.kom.p2psim.impl.simengine.Simulator.start(Simulator.java:433)
+	at de.tud.kom.p2psim.impl.simengine.SimulatorTest.runSimulation(SimulatorTest.java:369)
+	at uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical.makeFullTorrent(GNP_BTSimulation_Periodical.java:285)
+	at uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical.runSimulation(GNP_BTSimulation_Periodical.java:341)
+	at uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical.main(GNP_BTSimulation_Periodical.java:306)
