@@ -4,15 +4,16 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.Message;
+//import de.tud.kom.p2psim.api.common.Message;
 import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DHTNode;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransInfo;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMessageCallback;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+
+import uc3m.netcom.overlay.bt.message.BTMessage;
+import uc3m.netcom.transport.TransInfo;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMessageCallback;
+import uc3m.netcom.overlay.bt.BTPeerSearchNode;
+import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
@@ -26,7 +27,7 @@ import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
  * @param <OwnerType> the class of the component that owns this operation
  * @author Jan Stolzenburg
  */
-public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperation<OwnerType, Collection<BTContact>> implements TransMessageCallback {
+public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends BTOperation<OwnerType, Collection<BTContact>> implements TransMessageCallback {
 	
 	
 	
@@ -36,7 +37,7 @@ public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperati
 	
 	private TransLayer itsTransLayer;
 	
-	private OverlayID itsOverlayID;
+	private BTID itsOverlayID;
 	
 	private short itsTrackerPort;
 	
@@ -56,7 +57,7 @@ public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperati
 	
 	
 	
-	public BTOperationValueLookup(BTDataStore theDataBus, short theTrackerPort, short theP2PPort, BTTorrent theTorrent, OverlayID theOverlayID, OwnerType theOwningComponent, OperationCallback<Collection<BTContact>> theOperationCallback) {
+	public BTOperationValueLookup(BTDataStore theDataBus, short theTrackerPort, short theP2PPort, BTTorrent theTorrent, BTID theOverlayID, OwnerType theOwningComponent, OperationCallback<Collection<BTContact>> theOperationCallback) {
 		super(theOwningComponent, theOperationCallback);
 		this.itsDataBus = theDataBus;
 		this.itsTrackerPort = theTrackerPort;
@@ -67,10 +68,11 @@ public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperati
 	}
 	
 	@Override
-	protected void execute() {
+	public void execute() {
 		this.scheduleOperationTimeout(theirOperationTimeout);
 		this.tryIt();
 	}
+        
 	
 	/**
 	 * If the first connection attemp fails, we will retry it.
@@ -79,7 +81,7 @@ public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperati
 	 */
 	private void tryIt() {
 		this.attempts += 1;
-		BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.STARTED, -1, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), this.itsOverlayID, this.itsTorrent.getTrackerID());
+		BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.started, -1, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), this.itsOverlayID, this.itsTorrent.getTrackerID());
 		this.itsTransLayer.sendAndWait(request, this.itsTorrent.getTrackerAddress(), this.itsTrackerPort, BTPeerToTrackerRequest.getStaticTransportProtocol(), this, theirMessageTimeout);
 	}
 	
@@ -114,7 +116,7 @@ public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperati
 	 * @param theSenderInfo the tracker address
 	 * @param theCommunicationID the communication id usefull for direct replies.
 	 */
-	public void receive(Message theMessage, TransInfo theSenderInfo, int theCommunicationID) {
+	public void receive(BTMessage theMessage, TransInfo theSenderInfo, int theCommunicationID) {
 		if (!(theMessage instanceof BTTrackerToPeerReply)) {
 			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
 			return;
@@ -127,7 +129,7 @@ public class BTOperationValueLookup<OwnerType extends DHTNode> extends BTOperati
 		this.operationFinished(true);
 	}
 	
-	public OverlayKey getDocumentKey() {
+	public String getDocumentKey() {
 		return this.itsTorrent.getKey();
 	}
 	

@@ -1,6 +1,6 @@
 package uc3m.netcom.overlay.bt;
 
-import de.tud.kom.p2psim.api.transport.TransProtocol;
+import uc3m.netcom.transport.TransProtocol;
 import de.tud.kom.p2psim.impl.simengine.Simulator;
 
 /**

@@ -12,7 +12,7 @@ import de.tud.kom.p2psim.api.overlay.OverlayKey;
 import de.tud.kom.p2psim.api.transport.TransLayer;
 import de.tud.kom.p2psim.impl.overlay.AbstractOverlayNode;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
-import de.tud.kom.p2psim.overlay.bt.operation.BTOperationValueLookup;
+import uc3m.netcom.overlay.bt.operation.BTOperationValueLookup;
 
 /**
  * This class is responsible for the communication with the tracker.
@@ -57,7 +57,8 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 			this.itsDataBus.addTorrent(theOverlayKey);
 		}
 		BTOperationValueLookup<BTPeerSearchNode> operation = new BTOperationValueLookup<BTPeerSearchNode>(this.itsDataBus, this.getPort(), this.itsP2PPort, (BTTorrent) this.itsDataBus.getPerTorrentData(theOverlayKey, "Torrent"), this.getOverlayID(), this, theCallback);
-		operation.scheduleImmediately();
+		//operation.scheduleImmediately();
+                operation.execute();
 		return operation.getOperationID();
 	}
 	

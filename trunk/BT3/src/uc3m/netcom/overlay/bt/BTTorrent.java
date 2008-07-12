@@ -2,10 +2,7 @@ package uc3m.netcom.overlay.bt;
 
 
 
-import de.tud.kom.p2psim.api.overlay.DHTObject;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransInfo;
+import uc3m.netcom.transport.TransInfo;
 
 
 /**
@@ -16,28 +13,28 @@ import de.tud.kom.p2psim.api.transport.TransInfo;
  * And the size of the document.
  * @author Jan Stolzenburg
  */
-public class BTTorrent implements DHTObject {
+public class BTTorrent {
 	
 	
 	
-	private OverlayKey itsDocumentKey;
+	private String itsDocumentKey;
 	
 	private long itsSize;
 	
-	private OverlayID itsTrackerID;
+	private BTID itsTrackerID;
 	
 	private TransInfo itsTrackerAddress;
 	
 	
 	
-	public BTTorrent(OverlayKey theDocumentKey, long theSize, OverlayID theTrackerID, TransInfo theTrackerAddress) {
+	public BTTorrent(String theDocumentKey, long theSize, BTID theTrackerID, TransInfo theTrackerAddress) {
 		this.itsDocumentKey = theDocumentKey;
 		this.itsSize = theSize;
 		this.itsTrackerID = theTrackerID;
 		this.itsTrackerAddress = theTrackerAddress;
 	}
 	
-	public OverlayKey getKey() {
+	public String getKey() {
 		return this.itsDocumentKey;
 	}
 	
@@ -49,7 +46,7 @@ public class BTTorrent implements DHTObject {
 		return this.itsTrackerAddress;
 	}
 	
-	public OverlayID getTrackerID() {
+	public BTID getTrackerID() {
 		return this.itsTrackerID;
 	}
 	
