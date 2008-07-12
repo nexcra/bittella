@@ -1,9 +1,12 @@
 package uc3m.netcom.overlay.bt.message;
 
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransProtocol;
+//import de.tud.kom.p2psim.api.overlay.OverlayID;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+//import de.tud.kom.p2psim.api.transport.TransProtocol;
 import uc3m.netcom.overlay.bt.BTConstants;
+import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.transport.TransProtocol;
+
 
 public class BTPeerMessageCancel extends BTMessage {
 	
@@ -20,13 +23,13 @@ public class BTPeerMessageCancel extends BTMessage {
 	/**
 	 * The overlaykey of the document.
 	 */
-	private OverlayKey itsOverlayKey;
+	private String itsOverlayKey;
 	
 	private static Type theirType = Type.CANCEL;
 	
 	private static TransProtocol theirTransportProtocol = BTConstants.MESSAGE_SERVICE_CATEGORY_CANCEL;
 	
-	public BTPeerMessageCancel(int thePieceNumber, int theBlockNumber, OverlayKey theOverlayKey, OverlayID theSender, OverlayID theReceiver) {
+	public BTPeerMessageCancel(int thePieceNumber, int theBlockNumber, String theOverlayKey, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, true, 4 + 1 + 4 + 4, theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsPieceNumber = thePieceNumber;
@@ -42,7 +45,7 @@ public class BTPeerMessageCancel extends BTMessage {
 		return this.itsBlockNumber;
 	}
 	
-	public OverlayKey getOverlayKey() {
+	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}
 	

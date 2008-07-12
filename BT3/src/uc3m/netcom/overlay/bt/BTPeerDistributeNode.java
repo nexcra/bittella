@@ -17,29 +17,33 @@ import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
 import de.tud.kom.p2psim.api.overlay.OverlayID;
 import de.tud.kom.p2psim.api.overlay.OverlayKey;
 import de.tud.kom.p2psim.api.storage.ContentStorage;
-import de.tud.kom.p2psim.api.transport.TransInfo;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMessageListener;
-import de.tud.kom.p2psim.api.transport.TransMsgEvent;
+//import de.tud.kom.p2psim.api.transport.TransInfo;
+//import de.tud.kom.p2psim.api.transport.TransLayer;
+//import de.tud.kom.p2psim.api.transport.TransMessageListener;
+//import de.tud.kom.p2psim.api.transport.TransMsgEvent;
 import de.tud.kom.p2psim.impl.overlay.AbstractOverlayNode;
 import de.tud.kom.p2psim.impl.simengine.Simulator;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
-import de.tud.kom.p2psim.overlay.bt.manager.BTConnectionManager;
-import de.tud.kom.p2psim.overlay.bt.message.BTMessage;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageBitField;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageCancel;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageChoke;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageHandshake;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageHave;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageInterested;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageKeepAlive;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageRequest;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUnchoke;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUninterested;
-import de.tud.kom.p2psim.overlay.bt.operation.BTOperationDownload;
-import de.tud.kom.p2psim.overlay.bt.operation.BTOperationUpload;
-import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
-import uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical;
+import uc3m.netcom.transport.TransInfo;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMessageListener;
+import uc3m.netcom.transport.TransMsgEvent;
+import uc3m.netcom.overlay.bt.manager.BTConnectionManager;
+import uc3m.netcom.overlay.bt.message.BTMessage;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageBitField;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageCancel;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageChoke;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageHandshake;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageHave;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageInterested;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageKeepAlive;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageRequest;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageUnchoke;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageUninterested;
+import uc3m.netcom.overlay.bt.operation.BTOperationDownload;
+import uc3m.netcom.overlay.bt.operation.BTOperationUpload;
+//import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
+//import uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical;
 /**
  * This class is responsible for the communication with other peers.
  * It has methods to start a download, upload and it receives most types of the messages from other peers.
@@ -67,13 +71,13 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	/**
 	 * This class is our interface to the network. We use it for sending and receiving messages.
 	 */
-	private Map<OverlayKey, BTConnectionManager> itsConnectionManagers;
+	private Map<String, BTConnectionManager> itsConnectionManagers;
 	
 	/**
 	 * Here we store the message handler for every torrent.
 	 * The message handler handles most types of messages that we receive from other peers.
 	 */
-	private Map<OverlayKey, BTMessageHandler> itsCurrentlyUploadedDocuments; //TODO: Beim beenden wieder hieraus entfernen.
+	private Map<String, BTMessageHandler> itsCurrentlyUploadedDocuments; //TODO: Beim beenden wieder hieraus entfernen.
 	
 	/**
 	 * The upload operation for every torrent.
@@ -101,16 +105,16 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	private BTDataStore itsDataBus;
 	
 	static final Logger log = SimLogger.getLogger(BTPeerDistributeNode.class);
-	private UC3MLogBT logger = GNP_BTSimulation_Periodical.logger;
+	//private UC3MLogBT logger = GNP_BTSimulation_Periodical.logger;
 	
 	
-	public BTPeerDistributeNode(BTDataStore theDataBus, OverlayID theOverlayID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
+	public BTPeerDistributeNode(BTDataStore theDataBus, BTID theOverlayID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
 		super(theOverlayID, thePeerDistributionPort);
 		this.itsDataBus = theDataBus;
 		this.itsStatistic = theStatistic;
 		this.itsRandomGenerator = theRandomGenerator;
-		this.itsConnectionManagers = new HashMap<OverlayKey, BTConnectionManager>();
-		this.itsCurrentlyUploadedDocuments = new HashMap<OverlayKey, BTMessageHandler>();
+		this.itsConnectionManagers = new HashMap<String, BTConnectionManager>();
+		this.itsCurrentlyUploadedDocuments = new HashMap<String, BTMessageHandler>();
 		this.itsDownloadOperations = new LinkedList<BTOperationDownload<BTPeerDistributeNode>>();
 		this.itsUploadOperations = new  LinkedList<BTOperationUpload<BTPeerDistributeNode>>();
 	}
@@ -121,7 +125,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	 * @param theOtherPeers a list of peers start also participate in this torrent. We normaly get this list from the tracker.
 	 * @return the operation id of the started download operation.
 	 */
-	public int downloadDocument(OverlayKey theOverlayKey, List<TransInfo> theOtherPeers, OperationCallback theCallback) {
+	public BTOperationDownload downloadDocument(String theOverlayKey, List<TransInfo> theOtherPeers, OperationCallback theCallback) {
 		log.debug("Time: " + Simulator.getCurrentTime() + "; Starting download at '" + this.itsOwnContact + "'.");
 		BTDocument document;
 		BTConnectionManager connectionManager;
@@ -141,8 +145,8 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		}
 		BTOperationDownload<BTPeerDistributeNode> downloadOperation = new BTOperationDownload<BTPeerDistributeNode>(this.itsDataBus, document, this.itsOwnContact, this, this, connectionManager, this.itsStatistic, this.itsRandomGenerator);
 		this.itsDownloadOperations.add(downloadOperation);
-		downloadOperation.scheduleImmediately();
-		return downloadOperation.getOperationID();
+		//downloadOperation.scheduleImmediately();
+		return downloadOperation;//.getOperationID();
 	}
 	
 	/**
@@ -150,7 +154,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	 * @param theOverlayKey the key/hash of the document that we want to upload.
 	 * @return the operation id of the started upload operation.
 	 */
-	public int uploadDocument(OverlayKey theOverlayKey, OperationCallback theCallback) {
+	public BTOperationUpload uploadDocument(String theOverlayKey, OperationCallback theCallback) {
 		log.debug("Starting upload at '" + this.itsOwnContact + "'.");
 		BTDocument document;
 		BTConnectionManager connectionManager;
@@ -173,7 +177,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		if (! this.itsCurrentlyUploadedDocuments.containsKey(theOverlayKey)) {
 			this.itsCurrentlyUploadedDocuments.put(theOverlayKey, new BTMessageHandler(this.itsDataBus, document, this.itsOwnContact, uploadOperation, this.getTransLayer(), connectionManager));
 		}
-		return uploadOperation.getOperationID();
+		return uploadOperation;//.getOperationID();
 	}
 	
 	public void setContentStorage(ContentStorage theContentStorage) {

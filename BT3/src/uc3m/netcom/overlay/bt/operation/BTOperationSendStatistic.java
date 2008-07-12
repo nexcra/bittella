@@ -5,19 +5,24 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.Message;
+//import de.tud.kom.p2psim.api.common.Message;
 import de.tud.kom.p2psim.api.common.OperationCallback;
 import de.tud.kom.p2psim.api.overlay.DHTNode;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.transport.TransInfo;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMessageCallback;
-import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.api.overlay.OverlayID;
+//import de.tud.kom.p2psim.api.transport.TransInfo;
+//import de.tud.kom.p2psim.api.transport.TransLayer;
+//import de.tud.kom.p2psim.api.transport.TransMessageCallback;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.transport.TransInfo;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMessageCallback;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTTorrent;
+import uc3m.netcom.overlay.bt.message.BTMessage;
 import uc3m.netcom.overlay.bt.message.BTPeerToTrackerRequest;
 import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
 
@@ -30,7 +35,7 @@ import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
  * @author Jan Stolzenburg
  *
  */
-public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOperation<OwnerType, Void> implements TransMessageCallback {
+public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOperation<OwnerType, Void> implements TransMessageCallback, Runnable {
 	
 	
 	
@@ -38,7 +43,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 	
 	private TransLayer itsTransLayer;
 	
-	private OverlayID itsOverlayID;
+	private BTID itsOverlayID;
 	
 	private int itsCommunicationID;
 	
@@ -60,45 +65,59 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 	
 	
 	
-	public BTOperationSendStatistic(BTDataStore theDataBus, short theP2PPort, BTTorrent theTorrent, OverlayID theOverlayID, OwnerType theOwningComponent, OperationCallback<Void> theOperationCallback) {
+	public BTOperationSendStatistic(BTDataStore theDataBus, short theP2PPort, BTTorrent theTorrent, BTID theOverlayID, OwnerType theOwningComponent, OperationCallback<Void> theOperationCallback) {
 		super(theOwningComponent, theOperationCallback);
 		this.itsDataBus = theDataBus;
 		this.itsP2PPort = theP2PPort;
 		this.itsTorrent = theTorrent;
 		this.itsTransLayer = this.getComponent().getHost().getTransLayer();
 		this.itsOverlayID = theOverlayID;
-		this.itsLastRequest = Simulator.getCurrentTime();
+		this.itsLastRequest = System.currentTimeMillis();
 	}
 	
-	@Override
-	protected void execute() {
+        @Override
+        protected void execute(){
+            this.run();
+        }
+        
+	
+	public void run() {
+            
+            while(!this.isFinished()){
 		if (this.isFinished()) {
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.STOPPED, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), null, this.itsOverlayID, this.itsTorrent.getTrackerID());
+                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsTorrent.getTrackerAddress().getPort()+"/";
+			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
 			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
 			return;
 		}
 		if (this.uploadFinished()) {
-			this.operationFinished(true);
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.STOPPED, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), null, this.itsOverlayID, this.itsTorrent.getTrackerID());
+			
+                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsP2PPort+"/";
+			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
 			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
-			return;
+			this.operationFinished(true);
+                        return;
 		}
 		
 		if (this.requestMorePeers()) {
 //			log.debug("Too less contacts: '" + ((Map<OverlayKey, Map<String, Object>>)this.itsDataBus.get("Torrents")).get(this.itsTorrent.getKey()).get("NumberOfConnections") + "'; requesting more! At: " + this.itsOverlayID);
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.EMPTY, -1, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), null, this.itsOverlayID, this.itsTorrent.getTrackerID());
+                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsP2PPort+"/";
+			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
 			this.itsCommunicationID = this.itsTransLayer.sendAndWait(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol(), this, theirMessageTimeout);
 		}
-		else if ((this.itsLastRequest + (theirRequestPeriod * 0.95)) <= Simulator.getCurrentTime()) { //Is it (nearly) time for the next message to the tracker?
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.EMPTY, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), null, this.itsOverlayID, this.itsTorrent.getTrackerID());
+		else if ((this.itsLastRequest + (theirRequestPeriod * 0.95)) <= System.currentTimeMillis()) { //Is it (nearly) time for the next message to the tracker?
+                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsP2PPort+"/";
+			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
 			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
 		}
-		
-		this.scheduleWithDelay(theirCallPeriod);
-		
+
 		if (this.itsOverlayID.toString().equals("0")) { //TODO: Tells the user, what time it is in the simulation.
-			log.info("Simulated Time: " + (Simulator.getCurrentTime() / Simulator.MINUTE_UNIT) + " Minutes; Real time: " + (new Date()).toString() + ";");
+			log.info("Simulated Time: " + (System.currentTimeMillis() / (1000*60)) + " Minutes; Real time: " + (new Date()).toString() + ";");
 		}
+                
+		Thread.sleep(this.theirCallPeriod);
+		
+            }
 	}
 	
 	private boolean uploadFinished() {
@@ -134,7 +153,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		//Nothing to do.
 	}
 	
-	public void receive(Message theMessage, TransInfo theSenderInfo, int theCommunicationID) {
+	public void receive(BTMessage theMessage, TransInfo theSenderInfo, int theCommunicationID) {
 		assert (this.itsCommunicationID == theCommunicationID);
 		assert (this.itsTorrent.getTrackerAddress().equals(theSenderInfo));
 		if (!(theMessage instanceof BTTrackerToPeerReply)) {

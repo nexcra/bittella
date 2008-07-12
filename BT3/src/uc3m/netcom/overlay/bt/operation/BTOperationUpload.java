@@ -29,7 +29,7 @@ import uc3m.netcom.overlay.bt.message.BTPeerMessagePiece;
  * @param <OwnerType> the class of the component that owns this operation
  * @author Jan Stolzenburg
  */
-public class BTOperationUpload<OwnerType extends DistributionStrategy> extends BTOperation<OwnerType, Void> {
+public class BTOperationUpload<OwnerType extends DistributionStrategy> extends BTOperation<OwnerType, Void> implements Runnable {
 	
 	
 	
@@ -96,6 +96,10 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 	 */
 	@Override
 	protected void execute() {
+            this.run();
+        }
+        
+        public void run(){
 		if (this.isFinished()) {
 			this.itsChokingOperation.stop(true);
 			this.itsKeepAliveOperation.stop(true);

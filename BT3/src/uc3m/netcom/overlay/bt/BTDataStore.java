@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
 
 /**
  * This class can be used for storing all kinds of data.
@@ -31,22 +30,22 @@ public class BTDataStore {
 	/**
 	 * Stores data that belong to a certain torrent.
 	 */
-	private Map<OverlayKey, Map<String, Object>> itsPerTorrentData;
+	private Map<String, Map<String, Object>> itsPerTorrentData;
 	
 	/**
 	 * Stores the classes of the objects saved in <code>itsPerTorrentData</code>.
 	 */
-	private Map<OverlayKey, Map<String, Class>> itsPerTorrentDataClasses;
+	private Map<String, Map<String, Class>> itsPerTorrentDataClasses;
 	
 	/**
 	 * Contains a list of all the peers that we know for the given torrent.
 	 */
-	private Map<OverlayKey, Set<BTContact>> itsPeersPerTorrent;
+	private Map<String, Set<BTContact>> itsPeersPerTorrent;
 	
 	/**
 	 * Lists for every peer, which torrent it is associated with.
 	 */
-	private Map<BTContact, OverlayKey> itsTorrentOfAPeer;
+	private Map<BTContact, String> itsTorrentOfAPeer;
 	
 	/**
 	 * Stores data that belong to a certain torrent.
@@ -61,10 +60,10 @@ public class BTDataStore {
 	public BTDataStore() {
 		this.itsGeneralData = new HashMap<String, Object>();
 		this.itsGeneralDataClasses = new HashMap<String, Class>();
-		this.itsPerTorrentData = new HashMap<OverlayKey, Map<String, Object>>();
-		this.itsPerTorrentDataClasses = new HashMap<OverlayKey, Map<String, Class>>();
-		this.itsPeersPerTorrent = new HashMap<OverlayKey, Set<BTContact>>();
-		this.itsTorrentOfAPeer = new HashMap<BTContact, OverlayKey>();
+		this.itsPerTorrentData = new HashMap<String, Map<String, Object>>();
+		this.itsPerTorrentDataClasses = new HashMap<String, Map<String, Class>>();
+		this.itsPeersPerTorrent = new HashMap<String, Set<BTContact>>();
+		this.itsTorrentOfAPeer = new HashMap<BTContact, String>();
 		this.itsPerPeerData = new HashMap<BTContact, Map<String, Object>>();
 		this.itsPerPeerDataClasses = new HashMap<BTContact, Map<String, Class>>();
 	}
@@ -93,7 +92,7 @@ public class BTDataStore {
 		return this.itsGeneralDataClasses.get(theKey);
 	}
 	
-	public void addTorrent(OverlayKey theTorrentKey) {
+	public void addTorrent(String theTorrentKey) {
 		if (this.itsPerTorrentData.containsKey(theTorrentKey))
 			throw new RuntimeException("Tried to add an already stored torrent.");
 		this.itsPerTorrentData.put(theTorrentKey, new HashMap<String, Object>());
@@ -101,45 +100,45 @@ public class BTDataStore {
 		this.itsPeersPerTorrent.put(theTorrentKey, new HashSet<BTContact>());
 	}
 	
-	public void removeTorrent(OverlayKey theTorrentKey) {
+	public void removeTorrent(String theTorrentKey) {
 		this.itsPerTorrentData.remove(theTorrentKey);
 		this.itsPerTorrentDataClasses.remove(theTorrentKey);
 		this.itsPeersPerTorrent.remove(theTorrentKey);
 	}
 	
-	public boolean isTorrentKnown(OverlayKey theTorrentKey) {
+	public boolean isTorrentKnown(String theTorrentKey) {
 		return this.itsPerTorrentData.containsKey(theTorrentKey);
 	}
 	
-	public List<OverlayKey> getListOfTorrents() {
-		return new LinkedList<OverlayKey>(this.itsPerTorrentData.keySet());
+	public List<String> getListOfTorrents() {
+		return new LinkedList<String>(this.itsPerTorrentData.keySet());
 	}
 	
-	public void storePerTorrentData(OverlayKey theTorrentKey, String theKey, Object theData, Class theDataClass) {
+	public void storePerTorrentData(String theTorrentKey, String theKey, Object theData, Class theDataClass) {
 		if (! theDataClass.isInstance(theData))
 			throw new RuntimeException("Tried to store a false type information!");
 		this.itsPerTorrentData.get(theTorrentKey).put(theKey, theData);
 		this.itsPerTorrentDataClasses.get(theTorrentKey).put(theKey, theDataClass);
 	}
 	
-	public void removePerTorrentData(OverlayKey theTorrentKey, String theKey) {
+	public void removePerTorrentData(String theTorrentKey, String theKey) {
 		this.itsPerTorrentData.get(theTorrentKey).remove(theKey);
 		this.itsPerTorrentDataClasses.get(theTorrentKey).remove(theKey);
 	}
 	
-	public boolean isPerTorrentDataStored(OverlayKey theTorrentKey, String theKey) {
+	public boolean isPerTorrentDataStored(String theTorrentKey, String theKey) {
 		return this.itsPerTorrentData.get(theTorrentKey).containsKey(theKey);
 	}
 	
-	public Object getPerTorrentData(OverlayKey theTorrentKey, String theKey) {
+	public Object getPerTorrentData(String theTorrentKey, String theKey) {
 		return this.itsPerTorrentData.get(theTorrentKey).get(theKey);
 	}
 	
-	public Class getPerTorrentDataClass(OverlayKey theTorrentKey, String theKey) {
+	public Class getPerTorrentDataClass(String theTorrentKey, String theKey) {
 		return this.itsPerTorrentDataClasses.get(theTorrentKey).get(theKey);
 	}
 	
-	public void storePeer(OverlayKey theTorrentKey, BTContact thePeer) {
+	public void storePeer(String theTorrentKey, BTContact thePeer) {
 		if (this.itsTorrentOfAPeer.containsKey(thePeer)) {
 			if (this.itsTorrentOfAPeer.get(thePeer).equals(theTorrentKey))
 				return;
@@ -152,7 +151,7 @@ public class BTDataStore {
 		this.itsPerPeerDataClasses.put(thePeer, new HashMap<String, Class>());
 	}
 	
-	public void removePeer(OverlayKey theTorrentKey, BTContact thePeer) {
+	public void removePeer(String theTorrentKey, BTContact thePeer) {
 		if (! this.itsTorrentOfAPeer.get(thePeer).equals(theTorrentKey))
 			throw new RuntimeException("Tried to remove a peer for a false torrent.");
 		this.itsPeersPerTorrent.get(theTorrentKey).remove(thePeer);
@@ -165,11 +164,11 @@ public class BTDataStore {
 		return this.itsTorrentOfAPeer.containsKey(thePeer);
 	}
 	
-	public OverlayKey getTorrentOfPeer(BTContact thePeer) {
+	public String getTorrentOfPeer(BTContact thePeer) {
 		return this.itsTorrentOfAPeer.get(thePeer);
 	}
 	
-	public List<BTContact> getListOfPeersForTorrent(OverlayKey theTorrentKey) {
+	public List<BTContact> getListOfPeersForTorrent(String theTorrentKey) {
 		return new LinkedList<BTContact>(this.itsPeersPerTorrent.get(theTorrentKey));
 	}
 	

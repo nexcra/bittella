@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.storage.Document;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+//import de.tud.kom.p2psim.api.storage.Document;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
 /**
@@ -19,12 +19,26 @@ import de.tud.kom.p2psim.impl.util.logging.SimLogger;
  * piece exponent and block exponent. These two are used for dividing the document in smaller parts.
  * @author Jan Stolzenburg
  */
-public class BTDocument implements Document {
+public class BTDocument{// implements Document {
 	/*
 	 * TODO: Die festen Grenzen errechnen und angeben, die sich aus der Implementierung ergeben:
 	 * Anzahl Pieces, gr��e Pieces, Anzahl Bl�cke, gr��e Bl�cke, Faktoren aus mehreren der Zahlen...
 	 */
-	
+	public enum State {
+		/**
+		 * The document is empty if only its OverlayKey is known.
+		 */
+		EMPTY,
+		/**
+		 * The document state becomes partial if some chunks have been
+		 * downloaded
+		 */
+		PARTIAL,
+		/**
+		 * The document is complete if all chunks are available
+		 */
+		COMPLETE
+	}	
 	
 	/**
 	 * With this interface, other classes can be notified, if the download finishes.
@@ -62,7 +76,7 @@ public class BTDocument implements Document {
 	
 	private State itsState;
 	
-	private OverlayKey itsKey;
+	private String itsKey;
 	
 	/**
 	 * Gr��e der Datei in Byte.
@@ -116,19 +130,19 @@ public class BTDocument implements Document {
 	
 	//Instantiation and initialization
 	
-	public BTDocument(OverlayKey theKey, long theSize) {
+	public BTDocument(String theKey, long theSize) {
 		if (theSize < 0)
 			throw new RuntimeException("Size of a document must not be negative.");
 		this.initialize(theKey, theSize, 0, theirDefaultPieceExponent, theirDefaultBlockExponent);
 	}
 	
-	public BTDocument(OverlayKey theKey, long theSize, byte thePieceExponent, byte theBlockExponent) {
+	public BTDocument(String theKey, long theSize, byte thePieceExponent, byte theBlockExponent) {
 		if (theSize < 0)
 			throw new RuntimeException("Size of a document must not be negative.");
 		this.initialize(theKey, theSize, 0, thePieceExponent, theBlockExponent);
 	}
 	
-	private void initialize(OverlayKey theKey, long theSize, int thePopularity, byte thePieceExponent, byte theBlockExponent) {
+	private void initialize(String theKey, long theSize, int thePopularity, byte thePieceExponent, byte theBlockExponent) {
 		this.itsState = State.EMPTY;
 		this.itsKey = theKey;
 		this.itsSize = theSize;
@@ -532,7 +546,7 @@ public class BTDocument implements Document {
 	
 	//Inhertited methods:
 	
-	public OverlayKey getKey() {
+	public String getKey() {
 		return this.itsKey;
 	}
 	
@@ -548,7 +562,7 @@ public class BTDocument implements Document {
 		return this.itsState;
 	}
 	
-	public void setKey(OverlayKey newKey) {
+	public void setKey(String newKey) {
 		this.itsKey = newKey;
 	}
 	
@@ -586,12 +600,12 @@ public class BTDocument implements Document {
 	 * Equality is checked on the documents contents, not the download state!
 	 */
 	public boolean equals(Object theOther) {
-		if (! (theOther instanceof Document))
+		if (! (theOther instanceof BTDocument))
 			return false;
-		Document theOtherDocument = (Document) theOther;
+		BTDocument theOtherDocument = (BTDocument) theOther;
 		if (this.getSize() != theOtherDocument.getSize())
 			return false;
-		if (this.getKey() != theOtherDocument.getKey())
+		if (this.getKey().equals(theOtherDocument.getKey()))
 			return false;
 		return true;
 	}

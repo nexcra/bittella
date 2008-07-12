@@ -2,10 +2,12 @@ package uc3m.netcom.overlay.bt.message;
 
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransProtocol;
+//import de.tud.kom.p2psim.api.overlay.OverlayID;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+//import de.tud.kom.p2psim.api.transport.TransProtocol;
 import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.transport.TransProtocol;
 import uc3m.netcom.overlay.bt.BTConstants;
 
 public class BTPeerMessagePiece extends BTMessage {
@@ -23,7 +25,7 @@ public class BTPeerMessagePiece extends BTMessage {
 	/**
 	 * The overlaykey of the document.
 	 */
-	private OverlayKey itsOverlayKey;
+	private String itsOverlayKey;
 	
 	private static Type theirType = Type.PIECE;
 	
@@ -33,7 +35,7 @@ public class BTPeerMessagePiece extends BTMessage {
 	
 	
 	
-	public BTPeerMessagePiece(int thePieceNumber, int theBlockNumber, int theSize, OverlayKey theOverlayKey, boolean theData, OverlayID theSender, OverlayID theReceiver) {
+	public BTPeerMessagePiece(int thePieceNumber, int theBlockNumber, int theSize, String theOverlayKey, boolean theData, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, theData, 4 + 1 + 4 + 4 + theSize, theSender, theReceiver);
 		this.itsPieceNumber = thePieceNumber;
 		this.itsBlockNumber = theBlockNumber;
@@ -48,7 +50,7 @@ public class BTPeerMessagePiece extends BTMessage {
 		return this.itsBlockNumber;
 	}
 	
-	public OverlayKey getOverlayKey() {
+	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}
 	

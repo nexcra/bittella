@@ -1,20 +1,18 @@
 package uc3m.netcom.overlay.bt;
 
-import de.tud.kom.p2psim.api.overlay.OverlayContact;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.transport.TransInfo;
+import uc3m.netcom.transport.TransInfo;
 
 /**
  * The basic knowledge of one peer about another peer: Its address and overlay id.
  * @author Jan Stolzenburg
  */
-public class BTContact implements OverlayContact<OverlayID> {
+public class BTContact {
 	
-	private OverlayID itsOverlayID;
+	private BTID itsOverlayID;
 	
 	private TransInfo itsTransInfo;
 	
-	public BTContact(OverlayID theOverlayID, TransInfo theTransInfo) {
+	public BTContact(BTID theOverlayID, TransInfo theTransInfo) {
 		if (theOverlayID == null)
 			throw new RuntimeException("'theOverlayID' must not be 'null'!");
 		if (theTransInfo == null)
@@ -23,7 +21,7 @@ public class BTContact implements OverlayContact<OverlayID> {
 		this.itsTransInfo = theTransInfo;
 	}
 	
-	public OverlayID getOverlayID() {
+	public BTID getOverlayID() {
 		return this.itsOverlayID;
 	}
 	

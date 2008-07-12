@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.apache.commons.math.random.RandomGenerator;
 
-import de.tud.kom.p2psim.api.transport.TransProtocol;
+import uc3m.netcom.transport.TransProtocol;
 
 /**
  * This class defines some small helper methods.
