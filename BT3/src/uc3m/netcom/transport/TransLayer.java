@@ -302,7 +302,9 @@ import uc3m.netcom.overlay.bt.message.BTPeerToTrackerRequest;
 import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
 import java.net.*;
 import java.io.LineNumberReader;
-import java.io.*;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * The TransLayer acts as an <code>NetMessageListener</code> and listens for
@@ -322,8 +324,38 @@ import java.io.*;
 public class TransLayer {//extends Component {
 
         
-        private ServerSocket pwire;
+ private HashMap<TransInfo,TransCon> connections;       
+ private TransInfo localAddress;
+ private int lastComm;
+ private TransMessageListener tml;
+ 
+        public TransLayer(String netID,short port,TransMessageListener tml){
+            
+            TransReceiver tr = new TransReceiver(this);
+            Thread t = new Thread(tr);
+            t.start();
+            connections = new HashMap<int,TransCon>();
+            localAddress = new TransInfo(netID,port);
+            this.tml = tml;
+            
+        }
+   
+        public void addConnection(TransInfo info,  TransCon connection){
+                connections.put(info.hashCode(), connection);
+        }
         
+        public TransCon createConnection(TransInfo info,TransMessageListener listener){
+            
+            Socket s = new Socket(info.getNetId(),info.getPort());
+            TransCon tc = new TransCon(info,listener,s,true);
+        }
+        
+        public TransCon createConnection(TransInfo info,TransMessageCallback listener){
+            
+            Socket s = new Socket(info.getNetId(),info.getPort());
+            TransCon tc = new TransCon(info,listener,s,false);
+        }
+                
         
         public void contactTracker(BTPeerToTrackerRequest btr,TransMessageCallback tmc,int timeout){
             
@@ -360,7 +392,7 @@ public class TransLayer {//extends Component {
 	 * @param port
 	 *            the port on which to listen for incoming messages
 	 */
-	public void addTransMsgListener(TransMessageListener receiver, short port);
+	//public void addTransMsgListener(TransMessageListener receiver, short port);
 
 	/**
 	 * Removes a TransMessageListener listening for incoming messages on a
@@ -371,7 +403,7 @@ public class TransLayer {//extends Component {
 	 * @param port
 	 *            the listening port
 	 */
-	public void removeTransMsgListener(TransMessageListener receiver, short port);
+	//public void removeTransMsgListener(TransMessageListener receiver, short port);
 
 	/**
 	 * Sends a message to a remote host by using the given
@@ -390,7 +422,17 @@ public class TransLayer {//extends Component {
 	 * @param protocol
 	 *            the used transport protocol
 	 */
-	public int send(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol);
+	public int send(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol){
+  
+            TransCon tc = connections.get(receiverInfo);
+            if(tc == null){
+                tc = this.createConnection(receiverInfo, tml);
+                tc.start();
+            }
+            tc.send(msg.getBytes());
+            this.lastComm = receiverInfo.hashCode();
+            
+        }
 
 	/**
 	 * This method is used to implement a request-reply scenario. It sends the
@@ -425,7 +467,16 @@ public class TransLayer {//extends Component {
 	 *            of the simulation framework
 	 * @return the unique communication identifier
 	 */
-	public int sendAndWait(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol, TransMessageCallback senderCallback, long timeout);
+	public int sendAndWait(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol, TransMessageCallback senderCallback, long timeout){
+            
+            TransCon tc = connections.get(receiverInfo);
+            if(tc == null){
+                tc = this.createConnection(receiverInfo, senderCallback);
+                tc.start();
+            }
+            tc.send(msg.getBytes(),timeout);
+            this.lastComm = receiverInfo.hashCode();
+        }
 
 	/**
 	 * Sends a reply to a specific message which has been received within a
@@ -442,7 +493,17 @@ public class TransLayer {//extends Component {
 	 * @param protocol
 	 *            the used transport protocol
 	 */
-	public int sendReply(BTMessage msg, TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol);
+	public int sendReply(BTMessage msg, TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol){
+
+            TransCon tc = connections.get(receivingEvent.getSenderTransInfo());
+            if(tc == null){
+                tc = this.createConnection(receivingEvent.getSenderTransInfo(), tml);
+                tc.start();
+            }
+            tc.send(msg.getBytes());
+            this.lastComm = receivingEvent.getSenderTransInfo().hashCode();
+            
+        }
 
 	/**
 	 * Returns the local transport information which comprises the network
@@ -454,10 +515,17 @@ public class TransLayer {//extends Component {
 	 * @return the TransInfo which comprises the network identifier of the
 	 *         connected <code>NetLayer</code> and the given port
 	 */
-	public TransInfo getLocalTransInfo(short port);
+	public TransInfo getLocalTransInfo(short port){
+            return localAddress;
+        }	
 	
-	
-	public int getLastCommunicationId();
-	public void cancelTransmission(int commId);
+	public int getLastCommunicationId(){
+            return this.lastComm;
+        }
+        
+	public void cancelTransmission(int commId){
+            TransCon tc = connections.remove(commId);
+            tc.stop();
+        }
 
 }
