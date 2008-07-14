@@ -5,6 +5,7 @@ package uc3m.netcom.overlay.bt;
 import uc3m.netcom.common.Operation;
 import uc3m.netcom.common.OperationCallback;
 import uc3m.netcom.common.Application;
+import uc3m.netcom.overlay.bt.operation.BTOperation;
 //import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
 /**
@@ -58,5 +59,19 @@ public class BTTrackerApplication implements Application {
 		throw new RuntimeException("Method 'createOperation' in class 'BTTrackerApplication' not yet implemented!");
 		//return null;
 	}
-	
+                @Override
+	public void calledOperationFailed(Operation op) {
+            if(op instanceof BTOperation){
+                //logger.process(this.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
+            }
+	}
+
+        @Override
+	public void calledOperationSucceeded(Operation opd) {
+            if(opd instanceof BTOperation){
+                BTOperation op = (BTOperation) opd;
+                //logger.process(this.getClass().toString(),new Object[]{op,new Long(op.getFinishedTime()),new Boolean(true)});
+            }
+	}
+        
 }
