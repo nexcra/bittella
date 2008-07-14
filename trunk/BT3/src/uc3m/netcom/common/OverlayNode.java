@@ -294,32 +294,40 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
+import uc3m.netcom.overlay.bt.BTID;
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
+ * The <code>OverlayNode</code> interface is the root interface of all
+ * specific OverlayNodes. In generall, an OverlayNode represents an instance of
+ * a participant in the overlay. Note that one or more OverlayNodes may be
+ * hosted by a single <NetID>. Participating OverlayNodes are assigned uniform
+ * random <code>OverlayID</code>s from a large identifier space.
+ * Application-specific objects (documents etc.) are assigned unique identifiers
+ * called <code>OverlayKey</code>s, selected from the same identifier space.
+ * OverlayNodes can perform several actions like joining, leaving or execute
+ * particular operations depending whether the overlay is structured,
+ * unstructured or hybrid.
  * 
  * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
  * @version 1.0, 11/25/2007
  */
-public class BTID{
+public interface OverlayNode extends SupportOperations {
 
 	/**
-	 * Returns the unique value of an OverlayID
+	 * Returns the OverlayID of the OverlayNode
 	 * 
-	 * @return the unique value of an OverlayID
+	 * @return OverlayID the unique random identifier
 	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+	public BTID getOverlayID();
+
+	/**
+	 * Each OverlayNode is listening for incoming messages on a specific port.
+	 * Invoking this method returns the aforementioned port.
+	 * 
+	 * @return the port on which to listen for incoming messages.
+	 */
+	public short getPort();
 
 }

@@ -2,9 +2,9 @@ package uc3m.netcom.overlay.bt.operation;
 
 import java.util.LinkedList;
 
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.common.SupportOperations;
-import de.tud.kom.p2psim.impl.simengine.Simulator;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.SupportOperations;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
 import uc3m.netcom.overlay.bt.BTClientApplication;
 import uc3m.netcom.overlay.bt.BTTorrent;
 
@@ -46,7 +46,7 @@ public class BTOperationPeerStarter<OwnerType extends SupportOperations> extends
 	
 	@Override
 	protected void execute() {
-		long time = Simulator.getCurrentTime();
+		long time = System.currentTimeMillis();
 		if (this.itsStartTime == Integer.MAX_VALUE) { //That means: If this is the first run, store the simulator start time and use it later as time setoff.
 			this.itsStartTime = time;
 			this.scheduleImmediately();
@@ -69,7 +69,7 @@ public class BTOperationPeerStarter<OwnerType extends SupportOperations> extends
 	@Override
 	protected void operationTimeoutOccured() {
 		this.operationFinished(false);
-		log.warn("Starting peers timed out.");
+//		log.warn("Starting peers timed out.");
 	}
 	
 }

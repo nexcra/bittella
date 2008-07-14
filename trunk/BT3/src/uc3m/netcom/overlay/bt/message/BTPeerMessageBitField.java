@@ -2,9 +2,9 @@ package uc3m.netcom.overlay.bt.message;
 
 import java.util.BitSet;
 
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransProtocol;
+import uc3m.netcom.overlay.bt.BTID;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+import uc3m.netcom.transport.TransProtocol;
 import uc3m.netcom.overlay.bt.BTConstants;
 
 public class BTPeerMessageBitField extends BTMessage {
@@ -15,13 +15,13 @@ public class BTPeerMessageBitField extends BTMessage {
 	 * The overlaykey of the document.
 	 * Just for debugging. BitTorrent doesn't send this information.
 	 */
-	private OverlayKey itsOverlayKey;
+	private String itsOverlayKey;
 	
 	private static Type theirType = Type.BITFIELD;
 	
 	private static TransProtocol theirTransportProtocol = BTConstants.MESSAGE_SERVICE_CATEGORY_BITFIELD;
 	
-	public BTPeerMessageBitField(BitSet theBitset, OverlayKey theOverlayKey, OverlayID theSender, OverlayID theReceiver) {
+	public BTPeerMessageBitField(BitSet theBitset, String theOverlayKey, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, true, 4 + 1 + (theBitset.size() / 8), theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsOverlayKey = theOverlayKey;
@@ -32,7 +32,7 @@ public class BTPeerMessageBitField extends BTMessage {
 		return this.itsBitset;
 	}
 	
-	public OverlayKey getOverlayKey() {
+	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}
 	

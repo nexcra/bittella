@@ -1,11 +1,11 @@
 package uc3m.netcom.overlay.bt.operation;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.common.SupportOperations;
-import de.tud.kom.p2psim.impl.common.AbstractOperation;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.SupportOperations;
+import uc3m.netcom.common.AbstractOperation;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
 /**
  * The abstract super class of all BitTorrent Operations.
@@ -15,11 +15,11 @@ import de.tud.kom.p2psim.impl.util.logging.SimLogger;
  */
 public abstract class BTOperation<OwnerType extends SupportOperations, ResultType extends Object> extends AbstractOperation<OwnerType, ResultType> {
 	
-	static final Logger log = SimLogger.getLogger(BTOperation.class);
+	//static final Logger log = SimLogger.getLogger(BTOperation.class);
 	
 	public BTOperation(OwnerType theOwningComponent, OperationCallback<ResultType> theCallback) {
 		super(theOwningComponent, theCallback);
-		log.debug("Operation started: " + this.getClass().getSimpleName());
+		//log.debug("Operation started: " + this.getClass().getSimpleName());
 	}
 	
 	/**
@@ -29,7 +29,7 @@ public abstract class BTOperation<OwnerType extends SupportOperations, ResultTyp
 	 */
 	public void stop(boolean success) {
 		this.operationFinished(success);
-		log.debug("Operation stopped. Success? " + success);
+		//log.debug("Operation stopped. Success? " + success);
 	}
 	
 }

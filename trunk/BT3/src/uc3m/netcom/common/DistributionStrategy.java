@@ -294,32 +294,51 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
+import java.util.List;
+
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.overlay.bt.operation.BTOperationDownload;
+import uc3m.netcom.transport.TransInfo;
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
+ * Instance of a Content Distribution Strategy.
  * 
  * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
+ * @author Konstantin Pussep <pussep@kom.tu-darmstadt.de>
  * @version 1.0, 11/25/2007
  */
-public class BTID{
+public interface DistributionStrategy extends SupportOperations{
+	/**
+	 * Calling this method will make the strategy to download the document
+	 * identified by the given key from the given peers. Depending on the
+	 * strategy implementation one, some or all of the provided peers will be
+	 * involved.
+	 * 
+	 * @param key -
+	 *            identifies the requested document
+	 * @param peers -
+	 *            addresses of hosts which should have copies of the requested
+	 *            document
+	 * @param callback - callback for this operation
+	 * @return operation id
+	 */
+	public BTOperationDownload downloadDocument(String key, List<TransInfo> peers, OperationCallback callback);
 
 	/**
-	 * Returns the unique value of an OverlayID
-	 * 
-	 * @return the unique value of an OverlayID
+	 * The address at which this strategy waits for incoming download requests.
+	 * @return trans info address of this component.
 	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+	public TransInfo getTransInfo();
+	public BTID getOverlayID();
 
+	/**
+	 * Each OverlayNode is listening for incoming messages on a specific port.
+	 * Invoking this method returns the aforementioned port.
+	 * 
+	 * @return the port on which to listen for incoming messages.
+	 */
+	public short getPort();
 }

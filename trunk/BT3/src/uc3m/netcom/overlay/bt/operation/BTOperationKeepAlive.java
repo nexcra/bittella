@@ -1,16 +1,17 @@
 package uc3m.netcom.overlay.bt.operation;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.DistributionStrategy;
+import uc3m.netcom.transport.TransLayer;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTDocument;
+import uc3m.netcom.overlay.bt.BTPeerDistributeNode;
 import uc3m.netcom.overlay.bt.manager.BTConnectionManager;
 import uc3m.netcom.overlay.bt.message.BTPeerMessageKeepAlive;
 
@@ -38,7 +39,7 @@ public class BTOperationKeepAlive<OwnerType extends DistributionStrategy> extend
 	
 	private long itsConnectionTimeout = BTConstants.PEER_CONNECTION_TIMEOUT;
 	
-	static final Logger log = SimLogger.getLogger(BTOperationKeepAlive.class);
+//	static final Logger log = SimLogger.getLogger(BTOperationKeepAlive.class);
 	
 	
 	
@@ -46,7 +47,7 @@ public class BTOperationKeepAlive<OwnerType extends DistributionStrategy> extend
 		super(theOwningComponent, theOperationCallback);
 		this.itsDataBus = theDataBus;
 		this.itsDocument = theDocument;
-		this.itsTransLayer = this.getComponent().getHost().getTransLayer();
+		this.itsTransLayer = ((BTPeerDistributeNode)theOwningComponent).getTransLayer();
 		this.itsOwnContact = theOwnContact;
 		this.itsConnectionManager = theConnectionManager;
 	}
@@ -79,7 +80,7 @@ public class BTOperationKeepAlive<OwnerType extends DistributionStrategy> extend
 			for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
 				if (this.itsConnectionManager.getConnection(anOtherPeer).isInterestingForMe())
 						continue; //It would be stupid, to close a connection that is interesting for me.
-				if ((this.itsConnectionManager.getConnection(anOtherPeer).getTimeOfLastKeepAlive() + this.itsConnectionTimeout) < Simulator.getCurrentTime()) {
+				if ((this.itsConnectionManager.getConnection(anOtherPeer).getTimeOfLastKeepAlive() + this.itsConnectionTimeout) < System.currentTimeMillis()) {
 					this.itsConnectionManager.getConnection(anOtherPeer).closeConnection();
 				}
 			}

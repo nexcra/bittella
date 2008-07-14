@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 //import de.tud.kom.p2psim.api.overlay.OverlayKey;
 //import de.tud.kom.p2psim.api.storage.Document;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
 /**
  * This class represents the file, that the peers try to download.
@@ -125,7 +125,7 @@ public class BTDocument{// implements Document {
 	
 	private static final byte theirDefaultPieceExponent = BTConstants.DOCUMENT_DEFAULT_PIECE_EXPONENT;
 	
-	static final Logger log = SimLogger.getLogger(BTDocument.class);
+	//static final Logger log = SimLogger.getLogger(BTDocument.class);
 	
 	
 	//Instantiation and initialization

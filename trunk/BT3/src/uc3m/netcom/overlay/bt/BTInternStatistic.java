@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 
-import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
 
 /**
  * This class stores the statistic data in the clients.
@@ -42,7 +42,7 @@ public class BTInternStatistic {
 	 * Store the time of the download start.
 	 */
 	public void startDownload() {
-		this.itsDownloadStart = Simulator.getCurrentTime();
+		this.itsDownloadStart = System.currentTimeMillis();
 	}
 	
 	/**
@@ -50,21 +50,21 @@ public class BTInternStatistic {
 	 * In most cases, the client has finished the download, when it stops.
 	 */
 	public void stopDownload() {
-		this.itsDownloadStop = Simulator.getCurrentTime();
+		this.itsDownloadStop = System.currentTimeMillis();
 	}
 	
 	/**
 	 * Store the time of the upload start.
 	 */
 	public void startUpload() {
-		this.itsUploadStart = Simulator.getCurrentTime();
+		this.itsUploadStart = System.currentTimeMillis();
 	}
 	
 	/**
 	 * Store the time of the upload stop.
 	 */
 	public void stopUpload() {
-		this.itsUploadStop = Simulator.getCurrentTime();
+		this.itsUploadStop = System.currentTimeMillis();
 	}
 	
 	public long getDownloadStart() {
@@ -91,7 +91,7 @@ public class BTInternStatistic {
 		if (! this.itsDownloadStatistic.containsKey(theSender)) {
 			this.itsDownloadStatistic.put(theSender, new ArrayList<Long>());
 		}
-		this.itsDownloadStatistic.get(theSender).add(Simulator.getCurrentTime());
+		this.itsDownloadStatistic.get(theSender).add(System.currentTimeMillis());
 	}
 	
 	/**
@@ -102,7 +102,7 @@ public class BTInternStatistic {
 		if (! this.itsUploadStatistic.containsKey(theReceiver)) {
 			this.itsUploadStatistic.put(theReceiver, new ArrayList<Long>());
 		}
-		this.itsUploadStatistic.get(theReceiver).add(Simulator.getCurrentTime());
+		this.itsUploadStatistic.get(theReceiver).add(System.currentTimeMillis());
 	}
 	
 	/**

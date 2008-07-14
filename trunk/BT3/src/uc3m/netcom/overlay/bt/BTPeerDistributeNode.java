@@ -7,23 +7,19 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math.random.RandomGenerator;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.ConnectivityEvent;
-import de.tud.kom.p2psim.api.common.Message;
-import de.tud.kom.p2psim.api.common.Operation;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.storage.ContentStorage;
-//import de.tud.kom.p2psim.api.transport.TransInfo;
-//import de.tud.kom.p2psim.api.transport.TransLayer;
-//import de.tud.kom.p2psim.api.transport.TransMessageListener;
-//import de.tud.kom.p2psim.api.transport.TransMsgEvent;
-import de.tud.kom.p2psim.impl.overlay.AbstractOverlayNode;
-import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.api.common.ConnectivityEvent;
+//import de.tud.kom.p2psim.api.common.Message;
+import uc3m.netcom.common.Operation;
+import uc3m.netcom.common.OperationCallback;
+//import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.common.ContentStorage;
+
+import uc3m.netcom.common.AbstractOverlayNode;
+import uc3m.netcom.common.DistributionStrategy;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.transport.TransInfo;
 import uc3m.netcom.transport.TransLayer;
 import uc3m.netcom.transport.TransMessageListener;
@@ -42,8 +38,7 @@ import uc3m.netcom.overlay.bt.message.BTPeerMessageUnchoke;
 import uc3m.netcom.overlay.bt.message.BTPeerMessageUninterested;
 import uc3m.netcom.overlay.bt.operation.BTOperationDownload;
 import uc3m.netcom.overlay.bt.operation.BTOperationUpload;
-//import uc3m.netcom.peerfactsim.impl.util.logging.UC3MLogBT;
-//import uc3m.netcom.peerfactsim.test.GNP_BTSimulation_Periodical;
+
 /**
  * This class is responsible for the communication with other peers.
  * It has methods to start a download, upload and it receives most types of the messages from other peers.
@@ -104,12 +99,13 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	 */
 	private BTDataStore itsDataBus;
 	
-	static final Logger log = SimLogger.getLogger(BTPeerDistributeNode.class);
+//	static final Logger log = SimLogger.getLogger(BTPeerDistributeNode.class);
 	//private UC3MLogBT logger = GNP_BTSimulation_Periodical.logger;
+	private TransLayer transLayer;
+
 	
-	
-	public BTPeerDistributeNode(BTDataStore theDataBus, BTID theOverlayID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
-		super(theOverlayID, thePeerDistributionPort);
+	public BTPeerDistributeNode(BTDataStore theDataBus, BTID theBTID, short thePeerDistributionPort, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
+		super(theBTID, thePeerDistributionPort);
 		this.itsDataBus = theDataBus;
 		this.itsStatistic = theStatistic;
 		this.itsRandomGenerator = theRandomGenerator;
@@ -121,27 +117,27 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	
 	/**
 	 * This method starts a download by creating and activating a download operation.
-	 * @param theOverlayKey the key/hash of the document that we want to download.
+	 * @param theString the key/hash of the document that we want to download.
 	 * @param theOtherPeers a list of peers start also participate in this torrent. We normaly get this list from the tracker.
 	 * @return the operation id of the started download operation.
 	 */
-	public BTOperationDownload downloadDocument(String theOverlayKey, List<TransInfo> theOtherPeers, OperationCallback theCallback) {
-		log.debug("Time: " + Simulator.getCurrentTime() + "; Starting download at '" + this.itsOwnContact + "'.");
+	public BTOperationDownload downloadDocument(String theString, List<TransInfo> theOtherPeers, OperationCallback theCallback) {
+		//log.debug("Time: " + Simulator.getCurrentTime() + "; Starting download at '" + this.itsOwnContact + "'.");
 		BTDocument document;
 		BTConnectionManager connectionManager;
-		if (! this.itsContentStorage.containsDocument(theOverlayKey)) {
-			document = new BTDocument(theOverlayKey, ((BTTorrent) this.itsDataBus.getPerTorrentData(theOverlayKey, "Torrent")).getSize());
+		if (! this.itsContentStorage.containsDocument(theString)) {
+			document = new BTDocument(theString, ((BTTorrent) this.itsDataBus.getPerTorrentData(theString, "Torrent")).getSize());
 			this.itsContentStorage.storeDocument(document);
 		}
 		else {
-			document = (BTDocument)this.itsContentStorage.loadDocument(theOverlayKey);
+			document = (BTDocument)this.itsContentStorage.loadDocument(theString);
 		}
-		if (! this.itsConnectionManagers.containsKey(theOverlayKey)) {
+		if (! this.itsConnectionManagers.containsKey(theString)) {
 			connectionManager = new BTConnectionManager(this.itsOwnContact);
-			this.itsConnectionManagers.put(theOverlayKey, connectionManager);
+			this.itsConnectionManagers.put(theString, connectionManager);
 		}
 		else {
-			connectionManager = this.itsConnectionManagers.get(theOverlayKey);
+			connectionManager = this.itsConnectionManagers.get(theString);
 		}
 		BTOperationDownload<BTPeerDistributeNode> downloadOperation = new BTOperationDownload<BTPeerDistributeNode>(this.itsDataBus, document, this.itsOwnContact, this, this, connectionManager, this.itsStatistic, this.itsRandomGenerator);
 		this.itsDownloadOperations.add(downloadOperation);
@@ -151,31 +147,31 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	
 	/**
 	 * This method starts a upload by creating and activating a download operation.
-	 * @param theOverlayKey the key/hash of the document that we want to upload.
+	 * @param theString the key/hash of the document that we want to upload.
 	 * @return the operation id of the started upload operation.
 	 */
-	public BTOperationUpload uploadDocument(String theOverlayKey, OperationCallback theCallback) {
-		log.debug("Starting upload at '" + this.itsOwnContact + "'.");
+	public BTOperationUpload uploadDocument(String theString, OperationCallback theCallback) {
+		//log.debug("Starting upload at '" + this.itsOwnContact + "'.");
 		BTDocument document;
 		BTConnectionManager connectionManager;
-		if (! this.itsContentStorage.containsDocument(theOverlayKey)) {
+		if (! this.itsContentStorage.containsDocument(theString)) {
 			throw new RuntimeException("You tried to upload an unknown document.");
 		}
 		else {
-			document = (BTDocument)this.itsContentStorage.loadDocument(theOverlayKey);
+			document = (BTDocument)this.itsContentStorage.loadDocument(theString);
 		}
-		if (! this.itsConnectionManagers.containsKey(theOverlayKey)) {
+		if (! this.itsConnectionManagers.containsKey(theString)) {
 			connectionManager = new BTConnectionManager(this.itsOwnContact);
-			this.itsConnectionManagers.put(theOverlayKey, connectionManager);
+			this.itsConnectionManagers.put(theString, connectionManager);
 		}
 		else {
-			connectionManager = this.itsConnectionManagers.get(theOverlayKey);
+			connectionManager = this.itsConnectionManagers.get(theString);
 		}
 		BTOperationUpload<BTPeerDistributeNode> uploadOperation = new BTOperationUpload<BTPeerDistributeNode>(this.itsDataBus, document, this.itsOwnContact, this, this, connectionManager, this.itsStatistic, this.itsRandomGenerator);
 		this.itsUploadOperations.add(uploadOperation);
 		uploadOperation.scheduleImmediately();
-		if (! this.itsCurrentlyUploadedDocuments.containsKey(theOverlayKey)) {
-			this.itsCurrentlyUploadedDocuments.put(theOverlayKey, new BTMessageHandler(this.itsDataBus, document, this.itsOwnContact, uploadOperation, this.getTransLayer(), connectionManager));
+		if (! this.itsCurrentlyUploadedDocuments.containsKey(theString)) {
+			this.itsCurrentlyUploadedDocuments.put(theString, new BTMessageHandler(this.itsDataBus, document, this.itsOwnContact, uploadOperation, this.getTransLayer(), connectionManager));
 		}
 		return uploadOperation;//.getOperationID();
 	}
@@ -192,10 +188,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	 */
 	public void messageArrived(TransMsgEvent theMessageEvent) {
 		
-		Message theMessage = theMessageEvent.getPayload();
+		BTMessage theMessage = theMessageEvent.getPayload();
 		if (! (theMessage instanceof BTMessage)) {
 			String errorMessage = "Received a non-BitTorrent message: '" + theMessage.toString() + "'";
-			log.error(errorMessage);
+			//log.error(errorMessage);
 			throw new RuntimeException(errorMessage);
 		}
 		
@@ -207,10 +203,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		switch (theBTMessage.getType()) {
 			case REQUEST: {
 				BTPeerMessageRequest theRequest = (BTPeerMessageRequest) theBTMessage;
-				OverlayKey theDocument = theRequest.getRequest().getOverlayKey();
+				String theDocument = theRequest.getRequest().getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theDocument)) {
 					//We just ignore this message.
-					log.warn("Received an unexpected request from '" + theOtherPeer + "' for '" + theDocument + "'!");
+					//log.warn("Received an unexpected request from '" + theOtherPeer + "' for '" + theDocument + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -220,10 +216,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case CANCEL: {
 				BTPeerMessageCancel theCancelMessage = (BTPeerMessageCancel) theBTMessage;
-				OverlayKey theDocument = theCancelMessage.getOverlayKey();
+				String theDocument = theCancelMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theCancelMessage.getOverlayKey())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected cancel message from '" + theOtherPeer + "' for '" + theCancelMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected cancel message from '" + theOtherPeer + "' for '" + theCancelMessage.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -233,10 +229,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case HAVE: {
 				BTPeerMessageHave theHaveMessage = (BTPeerMessageHave) theBTMessage;
-				OverlayKey theDocument = theHaveMessage.getOverlayKey();
+				String theDocument = theHaveMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theHaveMessage.getOverlayKey())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected have message from '" + theOtherPeer + "' for '" + theHaveMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected have message from '" + theOtherPeer + "' for '" + theHaveMessage.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -246,10 +242,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case HANDSHAKE: {
 				BTPeerMessageHandshake theHandshake = (BTPeerMessageHandshake) theBTMessage;
-				OverlayKey theDocument = theHandshake.getOverlayKey();
+				String theDocument = theHandshake.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theHandshake.getOverlayKey())) {
 					//We just ignore this message.
-					log.debug("Received an unexpected handshake at '" + this.itsOwnContact.getOverlayID() + "' from '" + theOtherPeer.getOverlayID() + "' for '" + theHandshake.getOverlayKey() + "'!");
+					//log.debug("Received an unexpected handshake at '" + this.itsOwnContact.getBTID() + "' from '" + theOtherPeer.getBTID() + "' for '" + theHandshake.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -259,10 +255,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case BITFIELD: {
 				BTPeerMessageBitField theBitfield = (BTPeerMessageBitField) theBTMessage;
-				OverlayKey theDocument = theBitfield.getOverlayKey();
+				String theDocument = theBitfield.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theBitfield.getOverlayKey())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected bitfield from '" + theOtherPeer + "' for '" + theBitfield.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected bitfield from '" + theOtherPeer + "' for '" + theBitfield.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -272,10 +268,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case INTERESTED: {
 				BTPeerMessageInterested theInterestMessage = (BTPeerMessageInterested) theBTMessage;
-				OverlayKey theDocument = theInterestMessage.getOverlayKey();
+				String theDocument = theInterestMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theInterestMessage.getOverlayKey())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected interest message from '" + theOtherPeer + "' for '" + theInterestMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected interest message from '" + theOtherPeer + "' for '" + theInterestMessage.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -285,10 +281,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case UNINTERESTED: {
 				BTPeerMessageUninterested theUninterestMessage = (BTPeerMessageUninterested) theBTMessage;
-				OverlayKey theDocument = theUninterestMessage.getOverlayKey();
+				String theDocument = theUninterestMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theUninterestMessage.getOverlayKey())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected uninterest message from '" + theOtherPeer + "' for '" + theUninterestMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected uninterest message from '" + theOtherPeer + "' for '" + theUninterestMessage.getOverlayKey() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -298,10 +294,10 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case CHOKE: {
 				BTPeerMessageChoke theChokeMessage = (BTPeerMessageChoke) theBTMessage;
-				OverlayKey theDocument = theChokeMessage.getOverlayKey();
+				String theDocument = theChokeMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theChokeMessage.getOverlayKey())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected choke message from '" + theOtherPeer + "' for '" + theChokeMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected choke message from '" + theOtherPeer + "' for '" + theChokeMessage.getOverlayKey() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
@@ -311,28 +307,28 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case UNCHOKE: {
 				BTPeerMessageUnchoke theUnchokeMessage = (BTPeerMessageUnchoke) theBTMessage;
-				OverlayKey theDocument = theUnchokeMessage.getOverlayKey();
-				if (! this.itsCurrentlyUploadedDocuments.containsKey(theUnchokeMessage.getOverlayKey())) {
+				String theDocument = theUnchokeMessage.getString();
+				if (! this.itsCurrentlyUploadedDocuments.containsKey(theUnchokeMessage.getString())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected unchoke message from '" + theOtherPeer + "' for '" + theUnchokeMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected unchoke message from '" + theOtherPeer + "' for '" + theUnchokeMessage.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
 					this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer).receivedMessage(theUnchokeMessage);
-				this.itsCurrentlyUploadedDocuments.get(theUnchokeMessage.getOverlayKey()).handleUnchokeMessage(theUnchokeMessage, theOtherPeer);
+				this.itsCurrentlyUploadedDocuments.get(theUnchokeMessage.getString()).handleUnchokeMessage(theUnchokeMessage, theOtherPeer);
 				return;
 			}
 			case KEEPALIVE: {
 				BTPeerMessageKeepAlive theKeepAliveMessage = (BTPeerMessageKeepAlive) theBTMessage;
-				OverlayKey theDocument = theKeepAliveMessage.getOverlayKey();
-				if (! this.itsCurrentlyUploadedDocuments.containsKey(theKeepAliveMessage.getOverlayKey())) {
+				String theDocument = theKeepAliveMessage.getString();
+				if (! this.itsCurrentlyUploadedDocuments.containsKey(theKeepAliveMessage.getString())) {
 					//We just ignore this message.
-					log.warn("Received an unexpected keep alive message from '" + theOtherPeer + "' for '" + theKeepAliveMessage.getOverlayKey() + "'!");
+					//log.warn("Received an unexpected keep alive message from '" + theOtherPeer + "' for '" + theKeepAliveMessage.getString() + "'!");
 					return;
 				}
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
 					this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer).receivedMessage(theKeepAliveMessage);
-				this.itsCurrentlyUploadedDocuments.get(theKeepAliveMessage.getOverlayKey()).handleKeepAliveMessage(theOtherPeer);
+				this.itsCurrentlyUploadedDocuments.get(theKeepAliveMessage.getString()).handleKeepAliveMessage(theOtherPeer);
 				return;
 			}
 			case PIECE: {
@@ -350,7 +346,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			default: {
 				String errorMessage = "Received an unknown BitTorrent message: '" + theBTMessage.toString() + "'";
-				log.error(errorMessage);
+				//log.error(errorMessage);
 				throw new RuntimeException(errorMessage);
 			}
 		}
@@ -358,16 +354,20 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	
 	@Override
 	public TransLayer getTransLayer() {
-		return this.getHost().getTransLayer();
+		return this.transLayer;
 	}
 
 	public TransInfo getTransInfo() {
 		return this.itsOwnContact.getTransInfo();
 	}
 
-	public void connect() {
-		this.getTransLayer().addTransMsgListener(this, this.getPort());
-		this.itsContentStorage = this.getHost().getStorage();
+        public void setTransLayer(TransLayer tl){
+            this.transLayer = tl;
+        }
+        
+	public void connect(ContentStorage cs) {
+		//this.getTransLayer().addTransMsgListener(this, this.getPort());
+		this.itsContentStorage = cs;
 		this.itsOwnContact = new BTContact(this.getOverlayID(), this.getTransLayer().getLocalTransInfo(this.getPort()));
 	}
 
@@ -377,16 +377,17 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		//return null;
 	}
 
+        /*
 	public void connectivityChanged(ConnectivityEvent ce) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Method 'connectivityChanged' in class 'BTPeerDistributeNode' not yet implemented!");
 		//
 	}
-
+*/
                 @Override
 	public void calledOperationFailed(Operation op) {
             if(op instanceof BTOperationDownload){
-                logger.process(this.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
+                //logger.process(this.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
             }
 	}
 
@@ -394,7 +395,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	public void calledOperationSucceeded(Operation opd) {
             if(opd instanceof BTOperationDownload){
                 BTOperationDownload op = (BTOperationDownload) opd;
-                logger.process(this.getClass().toString(),new Object[]{op,new Long(op.getFinishedTime()),new Boolean(true)});
+                //logger.process(this.getClass().toString(),new Object[]{op,new Long(op.getFinishedTime()),new Boolean(true)});
             }
 	}
         

@@ -294,32 +294,16 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
+
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
- * 
- * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
+ * Represents an object which can be stored in a Distributed Hash Table (DHT).
+ * @author pussep
+ *
  */
-public class BTID{
-
-	/**
-	 * Returns the unique value of an OverlayID
-	 * 
-	 * @return the unique value of an OverlayID
-	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+public interface DHTObject{
+	// marker interface, intentionally left blank
 
 }

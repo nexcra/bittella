@@ -8,15 +8,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math.random.RandomGenerator;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDocument;
 import uc3m.netcom.overlay.bt.BTInternStatistic;
-import de.tud.kom.p2psim.overlay.bt.manager.BTConnectionManager;
+import uc3m.netcom.overlay.bt.manager.BTConnectionManager;
 
 /**
  * This class contains the choking algorithm.
@@ -57,7 +57,7 @@ public class BTAlgorithmChoking {
 	
 	private static int theirOptimisticUnchokeNumberAsSeeder = BTConstants.CHOKING_NUMBER_OF_OPTIMISTIC_UNCHOKES;
 	 
-        static final Logger log = SimLogger.getLogger(BTAlgorithmChoking.class);
+        //static final Logger log = SimLogger.getLogger(BTAlgorithmChoking.class);
 	
 	/**
 	 * Use this method to use the algorithm.
@@ -67,7 +67,7 @@ public class BTAlgorithmChoking {
 	 */
 	public void filterUploadContacts(Collection<BTContact> theContacts) {
 		if (! this.isSetup()) {
-			log.error("You have to setup this algorithm first!");
+			//log.error("You have to setup this algorithm first!");
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
 		if (theContacts.isEmpty())
@@ -141,7 +141,7 @@ public class BTAlgorithmChoking {
 		
 		//Get the peers that were unchoked(CHANGE from choke to unchoke) in the last few seconds.
 		for (BTContact anOtherPeer : copyOfContacts)
-			if ((! this.itsConnectionManager.getConnection(anOtherPeer).amIChoking()) && (this.itsConnectionManager.getConnection(anOtherPeer).getLastUnchoking() + 20 * Simulator.SECOND_UNIT >= Simulator.getCurrentTime())) //TODO: Konstante
+			if ((! this.itsConnectionManager.getConnection(anOtherPeer).amIChoking()) && (this.itsConnectionManager.getConnection(anOtherPeer).getLastUnchoking() + 20 * 1000 >= System.currentTimeMillis())) //TODO: Konstante
 				unchokedPeers.add(anOtherPeer);
 		
 		//Store the remaining peers.
@@ -180,7 +180,7 @@ public class BTAlgorithmChoking {
 			uploadedBlocks = -1;
 			winner = null;
 			for (BTContact anOtherPeer : copyOfContacts) {
-				uploadedCurrentPeer = uploadedSince(Simulator.getCurrentTime() - 20 * Simulator.SECOND_UNIT, anOtherPeer); //Upload rate in the last 20 seconds. //TODO: CONSTANT
+				uploadedCurrentPeer = uploadedSince(System.currentTimeMillis() - 20 * 1000, anOtherPeer); //Upload rate in the last 20 seconds. //TODO: CONSTANT
 				if (uploadedCurrentPeer > uploadedBlocks) {
 					winner = anOtherPeer;
 					uploadedBlocks = uploadedCurrentPeer;
@@ -190,7 +190,7 @@ public class BTAlgorithmChoking {
 			copyOfContacts.remove(winner);
 		}
 		if ((! sortedPeers.containsAll(theContacts)) || (! theContacts.containsAll(sortedPeers)))
-			log.error("Intern sorting failure!");
+			System.out.println("Intern sorting failure!");
 		return sortedPeers;
 	}
 	
@@ -240,7 +240,7 @@ public class BTAlgorithmChoking {
 		LinkedList<BTContact> remaining = new LinkedList<BTContact>();
 		
 		//Time out of optimistic unchokes:
-		while ((! this.itsOptimisticUnchokeTime.isEmpty()) && ((this.itsOptimisticUnchokeTime.getFirst() + theirOptimisticUnchokeTime) < Simulator.getCurrentTime())) {
+		while ((! this.itsOptimisticUnchokeTime.isEmpty()) && ((this.itsOptimisticUnchokeTime.getFirst() + theirOptimisticUnchokeTime) < System.currentTimeMillis())) {
 			this.itsOptimisticUnchoke.removeFirst();
 			this.itsOptimisticUnchokeTime.removeFirst();
 		}
@@ -256,7 +256,7 @@ public class BTAlgorithmChoking {
 			winner = this.doOptimisticUnchoke(remaining);
 			theContacts.add(winner);
 			this.itsOptimisticUnchoke.addLast(winner);
-			this.itsOptimisticUnchokeTime.addLast(Simulator.getCurrentTime());
+			this.itsOptimisticUnchokeTime.addLast(System.currentTimeMillis());
 		}
 	}
 	
@@ -265,7 +265,7 @@ public class BTAlgorithmChoking {
 		//Delete every peer from the list that didn't upload anything in th last few seconds.
 		for (BTContact anOtherPeer : new LinkedList<BTContact>(theContacts)) {
 			List<Long> temp = this.itsStatistic.getDownloadStatisticForPeer(anOtherPeer);
-			if ((temp.size() == 0) || (Simulator.getCurrentTime() > (temp.get(temp.size() - 1) + 30 * Simulator.SECOND_UNIT))) //If the last received block is older than 30 seconds, we have nothing received in the last 30 seconds from it. Drop it! //TODO: CONSTANT
+			if ((temp.size() == 0) || (System.currentTimeMillis() > (temp.get(temp.size() - 1) + 30 * 1000))) //If the last received block is older than 30 seconds, we have nothing received in the last 30 seconds from it. Drop it! //TODO: CONSTANT
 				theContacts.remove(anOtherPeer);
 		}
 	}
@@ -280,10 +280,10 @@ public class BTAlgorithmChoking {
 		long thirtySecondsAgo; //Stores the time of '30 seconds before now'.
 		
 		//If the simulator started the time at 'Long.MIN_VALUE', we cannot substract 30 second. This could would lead to an underflow, if the simulator has simulated less than 30 seconds.
-		if ((Long.MIN_VALUE + 30 * Simulator.SECOND_UNIT) > Simulator.getCurrentTime()) //TODO: CONSTANT???
+		if ((Long.MIN_VALUE + 30 * 1000) > System.currentTimeMillis()) //TODO: CONSTANT???
 			thirtySecondsAgo = Long.MIN_VALUE;
 		else
-			thirtySecondsAgo = Simulator.getCurrentTime() - 30 * Simulator.SECOND_UNIT; //The normale case: We are more than 30 seconds from Long.MIN_VALUE away.
+			thirtySecondsAgo = System.currentTimeMillis() - 30 * 1000; //The normale case: We are more than 30 seconds from Long.MIN_VALUE away.
 		
 		//Calculate the number of blocks that each peer send us currently(in the last 30 seconds).
 		Map<BTContact, Integer> numberOfSendBlocks = new HashMap<BTContact, Integer>();
@@ -316,7 +316,7 @@ public class BTAlgorithmChoking {
 				numberOfSendBlocks.remove(theWinner);
 			}
 			else {
-				log.error("Internal error in choking algorithm!");
+				//log.error("Internal error in choking algorithm!");
 				break; //Something went wrong...
 			}
 		}

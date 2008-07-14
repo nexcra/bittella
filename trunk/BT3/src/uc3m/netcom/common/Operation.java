@@ -294,32 +294,97 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
+ * This class realizes the <i>command pattern</i> for common operations in a distributed
+ * system. Typically, if some action should take place in a component of a host,
+ * the action will be represented by an operation object providing the required
+ * functionality. Examples of operations could be: JoinOperation,
+ * SearchOperation, DisconnectOperation etc. <p/> The basic operation provides
+ * the knowledge about its state: finished or not and if finished - successful
+ * or not. The main functionality of this class is its ability to be
+ * <i>scheduled</i> in the simulator.
+ * <p>
+ * Note that not all components are Operation-based. Components which work
+ * with operations must implement the <code>SupportOperations</code> interface.
  * 
  * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
+ * @author Konstantin Pussep <pussep@kom.tu-darmstadt.de>
+ * @version 3.0, 11/25/2007
+ * @param <T> They result type of the operation. e.g. LookupOperation in a DHTNode should
+ * return a DHTValue.
+ * 
+ * @see OperationCallback
+ * @see SupportOperations
  */
-public class BTID{
+public interface Operation <T>{
 
 	/**
-	 * Returns the unique value of an OverlayID
+	 * This method returns information whether a given operation was successful
+	 * or not. If the operation has not finished yet it must return false.
 	 * 
-	 * @return the unique value of an OverlayID
+	 * @return returns <code>true</code> if this operation was successful.
 	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+	public boolean isSuccessful();
 
+	/**
+	 * This method returns information whether a given operation is finished or
+	 * not regardless of whether it finished successfully or failed.
+	 * 
+	 * @return returns <code>true</code> if this operation is finished.
+	 */
+	public boolean isFinished();
+
+	/**
+	 * By constructing a new operation instance, each operation is assigned a
+	 * globally unique operation identifier. That is, each operation can be
+	 * differentiated by another one using this identifier. For debugging purposes
+	 * the operation id is even unique among all hosts in the simulator.
+	 * 
+	 * @return the globally unique operation identifier
+	 */
+	public int getOperationID();
+
+	/**
+	 * Schedules the operation with the time delay of <b>zero</b> into the scheduler.
+	 * The sense of this method is that the operations should be executed outside
+	 * of the callers call context. 
+	 * 
+	 */
+	public void scheduleImmediately();
+
+	/**
+	 * This method schedules the operation relatively to the current simulation
+	 * time by using an additional delay. That is, the scheduling time t is
+	 * given by <code>t = currentTime + delay</code>.
+	 * 
+	 * @param delay - relative (virtual) time delay after which the operation will be executed
+	 */
+	public void scheduleWithDelay(long delay);
+
+	/**
+	 * This method schedules the operation at an absolute point in
+	 * time irrespective of the current simulation time. More precisely
+	 * the simulation will be executed at time <code>t = max(currentTime,executionTime)</code> 
+	 * 
+	 * @param executionTime
+	 *            the absolute point in time to execute this operation
+	 */
+	public void scheduleAtTime(long executionTime);
+
+	/**
+	 * Returns the component to which a specific operation object belongs
+	 * to.
+	 * 
+	 * @return the component to which a specific operation object belongs to
+	 */
+	//public SupportOperations getComponent();
+	
+	/**
+	 * The result of the operation, which is only not null
+	 * if the operation finished successfully.
+	 * @return operation result
+	 */
+	public T getResult();
 }

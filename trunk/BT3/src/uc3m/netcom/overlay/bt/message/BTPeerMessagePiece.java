@@ -1,11 +1,11 @@
 package uc3m.netcom.overlay.bt.message;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 //import de.tud.kom.p2psim.api.overlay.OverlayID;
 //import de.tud.kom.p2psim.api.overlay.OverlayKey;
 //import de.tud.kom.p2psim.api.transport.TransProtocol;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.transport.TransProtocol;
 import uc3m.netcom.overlay.bt.BTConstants;
@@ -31,7 +31,7 @@ public class BTPeerMessagePiece extends BTMessage {
 	
 	private static TransProtocol theirTransportProtocol = BTConstants.MESSAGE_SERVICE_CATEGORY_PIECE;
 	
-	static final Logger log = SimLogger.getLogger(BTPeerMessagePiece.class);
+	//static final Logger log = SimLogger.getLogger(BTPeerMessagePiece.class);
 	
 	
 	

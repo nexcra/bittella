@@ -5,20 +5,20 @@ import java.util.Collection;
 import org.apache.commons.math.random.RandomGenerator;
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.ConnectivityEvent;
-import de.tud.kom.p2psim.api.common.Message;
-import de.tud.kom.p2psim.api.common.Operation;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMessageListener;
-import de.tud.kom.p2psim.api.transport.TransMsgEvent;
-import de.tud.kom.p2psim.impl.overlay.AbstractOverlayNode;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
-import de.tud.kom.p2psim.overlay.bt.algorithm.BTAlgorithmTrackerPeerSelection;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerToTrackerRequest;
-import de.tud.kom.p2psim.overlay.bt.message.BTTrackerToPeerReply;
+//import de.tud.kom.p2psim.api.common.ConnectivityEvent;
+import uc3m.netcom.overlay.bt.message.BTMessage;
+import uc3m.netcom.common.Operation;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.overlay.bt.BTID;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMessageListener;
+import uc3m.netcom.transport.TransMsgEvent;
+import uc3m.netcom.common.AbstractOverlayNode;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.overlay.bt.algorithm.BTAlgorithmTrackerPeerSelection;
+import uc3m.netcom.overlay.bt.message.BTPeerToTrackerRequest;
+import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
 
 /**
  * This class handles the trackers issues with the peers.
@@ -56,11 +56,12 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 	 */
 	private final static short theirPeerAmount = BTConstants.TRACKER_REPLY_AMOUNT_OF_PEERS;
 	
-	private static Logger log = SimLogger.getLogger(BTTrackerNode.class);
+	//private static Logger log = SimLogger.getLogger(BTTrackerNode.class);
+	
+        private TransLayer transLayer;
 	
 	
-	
-	public BTTrackerNode(BTDataStore theDataBus, OverlayID theTrackerOverlayID, short theTrackerPort, RandomGenerator theRandomGenerator) {
+	public BTTrackerNode(BTDataStore theDataBus, BTID theTrackerOverlayID, short theTrackerPort, RandomGenerator theRandomGenerator) {
 		super(theTrackerOverlayID, theTrackerPort);
 		this.itsDataBus = theDataBus;
 		this.itsRandomGenerator = theRandomGenerator;
@@ -68,12 +69,14 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 		this.itsSelectionAlgorithm.setup(this.itsRandomGenerator);
 	}
 	
+        
+        
 	/**
 	 * Is this tracker responsible for the given document?
 	 * @param theDocument Has the tracker THIS document?
 	 * @return Has the tracker the document?
 	 */
-	public boolean hasDocument(OverlayKey theDocument) {
+	public boolean hasDocument(String theDocument) {
 		return this.itsDataBus.isTorrentKnown(theDocument);
 	}
 	
@@ -82,7 +85,7 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 	 * @param theDocument The document of the torrent.
 	 * @return If it is already responsible for this document, it returns <code>false</code>. Otherwise <code>true</code>.
 	 */
-	public boolean addDocument(OverlayKey theDocument) {
+	public boolean addDocument(String theDocument) {
 		if (this.hasDocument(theDocument))
 			return false;
 		this.itsDataBus.addTorrent(theDocument);
@@ -103,46 +106,46 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 	public void messageArrived(TransMsgEvent theMessageEvent) {
 		
 		//Check if it is an unexpected message type.
-		Message theMessage = theMessageEvent.getPayload();
+		BTMessage theMessage = theMessageEvent.getPayload();
 		if ( !(theMessage instanceof BTPeerToTrackerRequest)) {
 			String errorMessage = "Received an unknown message!";
-			log.error(errorMessage);
+			//log.error(errorMessage);
 			throw new RuntimeException(errorMessage);
 		}
 		
 		//Cast the message into a more usefull subtype, extract the P2P adress of the peer and select the responsible peer manager.
 		BTPeerToTrackerRequest theRequest = (BTPeerToTrackerRequest) theMessage;
-		BTContact requestingPeerP2PAddress = theRequest.getP2PAddress(); //We have to differentiate here between the address peers use for contacting the tracker, and the address they use between each other.
+		BTContact requestingPeerP2PAddress = theRequest.getPeerID(); //We have to differentiate here between the address peers use for contacting the tracker, and the address they use between each other.
 		if (! this.hasDocument(theRequest.getDocument())) {
-			log.warn("Received an request for an unknown document: '" + theRequest.getDocument() + "'!");
+			//log.warn("Received an request for an unknown document: '" + theRequest.getDocument() + "'!");
 			return;
 		}
 		
 		//switch over the different reasons, why a client could contact the tracker.
 		// Sch�ner als so ein "switch" w�re hier nat�rlich ein Tabellen-Lookup. Allerdings ist der Aufwand daf�r in Java immens. Ich m�sste f�r jeden Fall eine extra-Klasse schreiben, in der ich die Aktion kapsle. First-Order-Functions sind halt doch nicht ganz unn�tze... was erkl�rt, warum Java sie nicht hat.
 		switch (theRequest.getReason()) {
-			case STOPPED :
+			case stopped :
 				this.itsDataBus.removePeer(theRequest.getDocument(), requestingPeerP2PAddress);
 				break; //TODO: Statistik auslesen und speichern.
-			case COMPLETED :
+			case completed :
 				this.itsDataBus.storePeer(theRequest.getDocument(), requestingPeerP2PAddress); //Just to be sure. But it should allready be known.
 				break; //TODO: Statistik auslesen und speichern.
-			case EMPTY : //In diesem Fall sendet der Peer nur Statistikdaten.
+			case empty : //In diesem Fall sendet der Peer nur Statistikdaten.
 				this.itsDataBus.storePeer(theRequest.getDocument(), requestingPeerP2PAddress); //Just to be sure. But it should allready be known.
 				break; //TODO: Statistik auslesen und speichern.
-			case STARTED :
+			case started :
 				this.itsDataBus.storePeer(theRequest.getDocument(), requestingPeerP2PAddress);
 				break;
 			default: {
 				String errorMessage = "A message I(a tracker) received has an unknown reason: " + theRequest.getReason();
-				log.error(errorMessage);
+				//log.error(errorMessage);
 				throw new RuntimeException(errorMessage);
 			}
 		}
 		
 		//if the client requested a new set of peers, we create one and send it.
-		if (theRequest.getNumberOfRequestedPeers() != 0) {
-			int numberOfRequestedPeers = theRequest.getNumberOfRequestedPeers();
+		if (theRequest.getNumberOfWanted() != 0) {
+			int numberOfRequestedPeers = theRequest.getNumberOfWanted();
 			if (numberOfRequestedPeers < 0) //A Number smaller than 0 means: Use the standard value.
 				numberOfRequestedPeers = theirPeerAmount;
 			Collection<BTContact> otherPeers = this.itsSelectionAlgorithm.computePeerSelection(this.itsDataBus.getListOfPeersForTorrent(theRequest.getDocument()), requestingPeerP2PAddress, numberOfRequestedPeers);
@@ -155,17 +158,21 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 	 * Returns all documents for which the tracker is responsible.
 	 * @return The list of all the document, for whicht the tracker is responsible.
 	 */
-	public Collection<OverlayKey> listDocuments() {
+	public Collection<String> listDocuments() {
 		return this.itsDataBus.getListOfTorrents();
 	}
 	
+        public void setTransLayer(TransLayer transLayer){
+            this.transLayer = transLayer;
+        }
+        
 	@Override
 	public TransLayer getTransLayer() {
-		return this.getHost().getTransLayer();
+		return this.transLayer;
 	}
 	
 	public void connect() {
-		this.getTransLayer().addTransMsgListener(this, this.getPort());
+		this.transLayer.addTransMsgListener(this, this.getPort());
 	}
 
 	public Operation createOperation(String opName, String[] params, OperationCallback caller) {
@@ -174,10 +181,10 @@ public class BTTrackerNode extends AbstractOverlayNode implements TransMessageLi
 		//return null;
 	}
 	
-	public void connectivityChanged(ConnectivityEvent ce) {
+/*	public void connectivityChanged(ConnectivityEvent ce) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Method 'connectivityChanged' in class 'BTTrackerNode' not yet implemented!");
 		//
 	}
-	
+*/ 	
 }

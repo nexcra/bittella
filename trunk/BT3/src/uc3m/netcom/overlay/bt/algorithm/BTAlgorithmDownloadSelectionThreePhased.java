@@ -8,9 +8,9 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import org.apache.commons.math.random.RandomGenerator;
-import org.apache.log4j.Logger;
-
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import org.apache.log4j.Logger;
+//
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTBitSetUtil;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
@@ -55,7 +55,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 	
 	private static int theirQueueSize = BTConstants.DOWNLOAD_QUEUE_REQUEST_SIZE; //This value may be crucial for performance.
 	
-	static final Logger log = SimLogger.getLogger(BTAlgorithmDownloadSelectionThreePhased.class);
+	//static final Logger log = SimLogger.getLogger(BTAlgorithmDownloadSelectionThreePhased.class);
 	
 	public void setup(BTDocument theDocument, RandomGenerator theRandomGenerator) {
 		this.itsDocument = theDocument;
@@ -69,7 +69,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 	
 	public Collection<BTInternRequest> computeRequests(Map<BTContact, BitSet> theOtherPeersPieces, Collection<BTInternRequest> thePendingRequests) {
 		if (! this.isSetup()) {
-			log.error("You have to setup this algorithm first!");
+			//log.error("You have to setup this algorithm first!");
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
 		this.itsRequestsPerContact.clear();
@@ -194,7 +194,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 						this.itsRequestsPerContact.get(anOtherPeer).put(pieceNumber, new BitSet(this.itsDocument.getNumberOfBlocksInPiece(pieceNumber)));
 					int blockNumber = BTBitSetUtil.or(this.itsDocument.getFinishedBlocks(pieceNumber), this.itsRequestsPerContact.get(anOtherPeer).get(pieceNumber)).nextClearBit(0); //Take the first valid block. (neither downloaded nor requested)
 					if ((blockNumber >= this.itsDocument.getNumberOfBlocksInPiece(pieceNumber)) || (blockNumber < 0)) {
-						log.error("Internal Error: Invalid block number generated: '" + blockNumber + "', but it only has '" + this.itsDocument.getNumberOfBlocksInPiece(pieceNumber) + "' blocks.");
+						//log.error("Internal Error: Invalid block number generated: '" + blockNumber + "', but it only has '" + this.itsDocument.getNumberOfBlocksInPiece(pieceNumber) + "' blocks.");
 						continue;
 					}
 					

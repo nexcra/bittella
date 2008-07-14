@@ -2,10 +2,10 @@ package uc3m.netcom.overlay.bt.operation;
 
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 //import de.tud.kom.p2psim.api.common.Message;
-import de.tud.kom.p2psim.api.common.OperationCallback;
+import uc3m.netcom.common.OperationCallback;
 //import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 
 import uc3m.netcom.overlay.bt.message.BTMessage;
@@ -53,7 +53,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	
 	private static long theirOperationTimeout = BTConstants.PEER_TO_TRACKER_CONTACT_TIMEOUT;
 	
-	static final Logger log = SimLogger.getLogger(BTOperationValueLookup.class);
+//	static final Logger log = SimLogger.getLogger(BTOperationValueLookup.class);
 	
 	
 	
@@ -63,7 +63,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 		this.itsTrackerPort = theTrackerPort;
 		this.itsP2PPort = theP2PPort;
 		this.itsTorrent = theTorrent;
-		this.itsTransLayer = this.getComponent().getHost().getTransLayer();
+		this.itsTransLayer = theOwningComponent.getTransLayer();
 		this.itsOverlayID = theOverlayID;
 	}
 	
@@ -93,7 +93,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	@Override
 	protected void operationTimeoutOccured() {
 		this.operationFinished(false);
-		log.warn("Peer value lookup operation timed out.");
+//		log.warn("Peer value lookup operation timed out.");
 	}
 	
 	public void messageTimeoutOccured(int commId) {
@@ -104,7 +104,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 		}
 		else {
 			this.operationFinished(false);
-			log.warn("Peer message to the tracker timed out.");
+//			log.warn("Peer message to the tracker timed out.");
 		}
 	}
 	
@@ -118,7 +118,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	 */
 	public void receive(BTMessage theMessage, TransInfo theSenderInfo, int theCommunicationID) {
 		if (!(theMessage instanceof BTTrackerToPeerReply)) {
-			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
+//			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
 			return;
 		}
 		Collection<BTContact> theNewPeers = ((BTTrackerToPeerReply)theMessage).getNewPeerSet();

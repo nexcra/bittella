@@ -294,32 +294,49 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
+ * Operation callback is used to inform the caller of an operation
+ * about operation's finish status. In a <i>real-world<i/> java programm you would
+ * write something like <code>Foo result = someObject.doSomething(params);</code>
+ * As this would not work in a discrete event-based simulator (you have to pass the control to the simulator
+ * in order to get messages sent through the network) you have to do something like:
+ * <code> 
+ * 	someObject.doSomething(params, new OperationCallback(){ 
+ * 	
+ * 		public void calledOperationFailed(Operation op){
+ *	        processResult((Foo) op.getResult());
+ *  		}
+ *
+ *  	public void calledOperationSucceeded(Operation op){
+ *			processFailure();
+ *  	}
+ *  }
+ * </code>
+ * So what happens here is actually is making the operation call asynchronous.
  * 
- * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
+ * @author Konstantin Pussep
+ * @author Sebastian Kaune
+ * @version 3.0, 03.12.2007
+ * 
+ * @param <T> The type of the operation result, which is specific for any operation.
+ * 
+ * @see Operation
  */
-public class BTID{
-
+public interface OperationCallback<T>{
+	
 	/**
-	 * Returns the unique value of an OverlayID
-	 * 
-	 * @return the unique value of an OverlayID
+	 * Called if the operation failed.
+	 * @param op failed operation
 	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
-
+	public void calledOperationFailed(Operation<T> op);
+	
+	/**
+	 * Called if the operation was finished successfully.
+	 * @param op finished operation
+	 */
+	public void calledOperationSucceeded(Operation<T> op);
+	
 }

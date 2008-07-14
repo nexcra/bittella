@@ -294,32 +294,70 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.transport.TransInfo;
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
+ * This interface provides a common API for structured peer-to-peer overlays.
  * 
- * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
+ * @author Sebastian Kaune
+ * 
  */
-public class BTID{
+
+public interface DHTNode extends OverlayNode {
+	/**
+	 * Store the given document with the given key at the responsible node. The
+	 * result (provided to the caller object) will be an OverlayContact of the
+	 * node which performed the store operation.
+	 * 
+	 * @param key - key of the mapping to store
+	 * @param obj - value of the mapping to store
+	 * @param callback - callback which will receive the operation result, i.e. which is either ok (=null) or a failure
+	 * @return operation id
+	 */
+	public int store(String key, DHTObject obj, OperationCallback callback);
 
 	/**
-	 * Returns the unique value of an OverlayID
+	 * Get the value stored with the given. The result will be an instance of
+	 * DHTObject or a null reference if such a value was not found.
+	 * @param key - key of the value to look up
+	 * @param callback - callback which will receive the operation result, i.e. the wanted DHTObject if present in the DHT
+	 * @return operation id
 	 * 
-	 * @return the unique value of an OverlayID
 	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+	public int valueLookup(String key, OperationCallback<DHTObject> callback);
 
+	/**
+	 * Get the node responsible for the given key, if a document with such a key
+	 * does not exist. The result will be an overlay contact.
+	 * @param key - key of the OverlayNode to lookup
+	 * @param callback - callback which will receive the operation result, i.e. the TransInfo of the searched node  
+	 * @return operation id 
+	 * 
+	 */ // TODO shouldn't it be an OverlayID? and can the result be a list of transinfos?
+	public int nodeLookup(String key, OperationCallback<TransInfo> callback);
+
+	/**
+	 * Invoking this method bootstraps an OverlayNode into the overlay network.
+	 * After the bootstraping process is finished, the registered
+	 * <code>OverlayEventHandler</code> listening on <code>handerId</code>
+	 * will be informed using an <code>OverlayEvent</code>.
+	 * 
+	 * @param callback - callback which will receive the operation result (either operation succeeds with result==null or fails) 
+	 * @return id of the associated join operation
+	 */
+	public int join(OperationCallback callback);
+
+	/**
+	 * Invoking this method results in leaving the network an OverlayNode is
+	 * participating in. After the leave operation is finished, the registered
+	 * <code>OverlayEventHandler</code> listening on <code>handerId</code>
+	 * will be informed using an <code>OverlayEvent</code>.
+	 * 
+	 * @param callback - callback which will receive the operation result (either operation succeeds with result==null or fails)
+	 * @return id of the associated leave operation
+	 */
+	public int leave(OperationCallback callback);
 }

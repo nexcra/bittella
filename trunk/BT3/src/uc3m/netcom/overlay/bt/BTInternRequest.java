@@ -1,7 +1,7 @@
 package uc3m.netcom.overlay.bt;
 
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
 
 /**
  * This class is the peer intern representation of a request.
@@ -22,7 +22,7 @@ public class BTInternRequest {
 	/**
 	 * About which documents do we talk?
 	 */
-	private OverlayKey itsOverlayKey;
+	private String itsOverlayKey;
 	
 	/**
 	 * The piece number in which the requested block is located.
@@ -39,16 +39,16 @@ public class BTInternRequest {
 	 */
 	private long itsCreationTime;
 	
-	public BTInternRequest(BTContact theRequestingPeer, BTContact theRequestedPeer, OverlayKey theOverlayKey, int thePieceNumber, int theBlockNumber) {
+	public BTInternRequest(BTContact theRequestingPeer, BTContact theRequestedPeer, String theOverlayKey, int thePieceNumber, int theBlockNumber) {
 		this.itsRequestingPeer = theRequestingPeer;
 		this.itsRequestedPeer = theRequestedPeer;
 		this.itsOverlayKey = theOverlayKey;
 		this.itsPieceNumber = thePieceNumber;
 		this.itsBlockNumber = theBlockNumber;
-		this.itsCreationTime = Simulator.getCurrentTime(); //To distinguish between repeated requests.
+		this.itsCreationTime = System.currentTimeMillis(); //To distinguish between repeated requests.
 	}
 	
-	public OverlayKey getOverlayKey() {
+	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}
 	

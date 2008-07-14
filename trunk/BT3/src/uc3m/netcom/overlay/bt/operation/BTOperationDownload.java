@@ -3,23 +3,23 @@ package uc3m.netcom.overlay.bt.operation;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
+//import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math.random.RandomGenerator;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 //import de.tud.kom.p2psim.api.common.Message;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.DistributionStrategy;
 //import de.tud.kom.p2psim.api.transport.TransInfo;
 //import de.tud.kom.p2psim.api.transport.TransLayer;
 //import de.tud.kom.p2psim.api.transport.TransMessageCallback;
 //import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.message.BTMessage;
 import uc3m.netcom.transport.TransInfo;
 import uc3m.netcom.transport.TransLayer;
@@ -30,6 +30,7 @@ import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTDocument;
 import uc3m.netcom.overlay.bt.BTInternRequest;
 import uc3m.netcom.overlay.bt.BTInternStatistic;
+import uc3m.netcom.overlay.bt.BTPeerDistributeNode;
 import uc3m.netcom.overlay.bt.BTDocument.BTDocumentFinishedListener;
 import uc3m.netcom.overlay.bt.BTDocument.BTPieceFinishedListener;
 import uc3m.netcom.overlay.bt.algorithm.BTAlgorithmDownloadPeerSelection;
@@ -86,13 +87,13 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
     private static long theirReplyTimeout = BTConstants.PEER_REQUEST_TIMEOUT;
     private static long theirConnectRetry = BTConstants.PEER_CONNECT_RETRY;
     private static int theirNumberOfActiveNodes = 0;
-    static final Logger log = SimLogger.getLogger(BTOperationDownload.class);
+    //static final Logger log = SimLogger.getLogger(BTOperationDownload.class);
 
     public BTOperationDownload(BTDataStore theDataBus, BTDocument theDocument, BTContact theOwnContact, OwnerType theOwningComponent, OperationCallback<BTDocument> theOperationCallback, BTConnectionManager theConnectionManager, BTInternStatistic theStatistic, RandomGenerator theRandomGenerator) {
         super(theOwningComponent, theOperationCallback);
         this.itsDataBus = theDataBus;
         this.itsDocument = theDocument;
-        this.itsTransLayer = this.getComponent().getHost().getTransLayer();
+        this.itsTransLayer = ((BTPeerDistributeNode)theOwningComponent).getTransLayer();
         this.itsOwnContact = theOwnContact;
         this.itsConnectionManager = theConnectionManager;
         this.itsRandomGenerator = theRandomGenerator;
@@ -135,7 +136,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
                 long requiredHours = requiredMinutes / 60;
                 long requiredDays = requiredHours / 24;
                 theirNumberOfActiveNodes -= 1;
-                log.info("+++Download finished at time " + System.currentTimeMillis() + " after '" + requiredDays + "' days, '" + (requiredHours % 24) + "' hours, '" + (requiredMinutes % 60) + "' minutes, '" + (requiredSeconds % 60) + "' seconds (" + requiredSeconds + ") at '" + this.itsOwnContact.getOverlayID() + "'. There are still " + theirNumberOfActiveNodes + " downloads active.");
+                //log.info("+++Download finished at time " + System.currentTimeMillis() + " after '" + requiredDays + "' days, '" + (requiredHours % 24) + "' hours, '" + (requiredMinutes % 60) + "' minutes, '" + (requiredSeconds % 60) + "' seconds (" + requiredSeconds + ") at '" + this.itsOwnContact.getOverlayID() + "'. There are still " + theirNumberOfActiveNodes + " downloads active.");
                 this.itsStatistic.stopDownload();
                 return;
             }
@@ -149,7 +150,12 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
 //		log.debug("ID: " + this.itsOwnContact.getOverlayID() + "; Connections: " + this.itsConnectionManager.getNumberOfConnectedContacts() + "; Requests: " + this.itsRequests.size());
 
             this.updateDataBus();
-            Thread.sleep(this.itsPeriod);
+            try {
+                Thread.sleep(this.itsPeriod);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -172,7 +178,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
     @Override
     protected void operationTimeoutOccured() {
         this.operationFinished(false);
-        log.warn("Downloading document timed out.");
+        //log.warn("Downloading document timed out.");
     }
 
     public void messageTimeoutOccured(int theCommunicationId) {
@@ -190,18 +196,18 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
     public void receive(BTMessage theMessage, TransInfo theSenderAddress, int theCommunicationID) {
         if (!(theMessage instanceof BTMessage)) {
             String errorMessage = "Received a non-BitTorrent message: '" + theMessage.toString() + "'";
-            log.error(errorMessage);
+            //log.error(errorMessage);
             throw new RuntimeException(errorMessage);
         }
         BTMessage theBTMessage = (BTMessage) theMessage;
         if (theBTMessage.getType() != Type.PIECE) {
             String errorMessage = "Received an unknown BitTorrent message: '" + theBTMessage.toString() + "'";
-            log.error(errorMessage);
+            //log.error(errorMessage);
             throw new RuntimeException(errorMessage);
         }
         BTPeerMessagePiece theAnswer = (BTPeerMessagePiece) theBTMessage;
         if (this.itsDocument.getKey().equals(theAnswer.getOverlayKey())) {
-            log.error("Received a block for an unexpected document: '" + this.itsDocument.toString() + "'!");
+            //log.error("Received a block for an unexpected document: '" + this.itsDocument.toString() + "'!");
             return;
         }
         BTContact theOtherPeer = new BTContact(theAnswer.getSender(), theSenderAddress);
@@ -374,7 +380,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
     public void pieceFinished(int thePieceNumber) {
 //		log.debug("Piece " + thePieceNumber + " finished at " + this.itsOwnContact.getOverlayID() + ".");
         if (this.itsOwnContact.getOverlayID().toString().equals("1")) { //TODO: Tells the user, how much the first peer downloaded. If we remove it, the user has no idea, how long the simulation will last.
-            log.info("Simulated Time: " + System.currentTimeMillis() + "; Real time: " + (new Date()).toString() + "; I completed circa " + ((100 * this.itsDocument.getNumberOfFinishedPieces()) / this.itsDocument.getNumberOfPieces()) + "% of the simulation. (More precise: " + ((100 * this.itsDocument.getNumberOfFinishedPieces()) / (double) this.itsDocument.getNumberOfPieces()) + "%, +- 10%)");
+            //log.info("Simulated Time: " + System.currentTimeMillis() + "; Real time: " + (new Date()).toString() + "; I completed circa " + ((100 * this.itsDocument.getNumberOfFinishedPieces()) / this.itsDocument.getNumberOfPieces()) + "% of the simulation. (More precise: " + ((100 * this.itsDocument.getNumberOfFinishedPieces()) / (double) this.itsDocument.getNumberOfPieces()) + "%, +- 10%)");
         }
         for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
             BTPeerMessageHave haveMessage = new BTPeerMessageHave(thePieceNumber, this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());

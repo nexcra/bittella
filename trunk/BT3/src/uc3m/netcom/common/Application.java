@@ -294,32 +294,39 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
+ * Application interface provides basic methods common to any application
+ * behavior
  * 
- * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
+ * @author Sebastian Kaune
  */
-public class BTID{
+public interface Application extends SupportOperations{
+
+	
+	// TODO reconsider whether we really need these methods in the interface
 
 	/**
-	 * Returns the unique value of an OverlayID
-	 * 
-	 * @return the unique value of an OverlayID
+	 * Starts the application and establishes all necessary connections.
+	 * @param callback - callback which will receive the result of the operation.
+	 * @return operation id
 	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+	public int start(OperationCallback callback);
 
+	
+	/**
+	 * simulate an application crash
+	 * 
+	 */
+//	public void crash();
+
+	/**
+	 * Application do a regular close.
+	 * @param callback - callback which will receive the result of the operation.
+	 * @return operation id
+	 */
+	public int close(OperationCallback callback);
+	
 }
