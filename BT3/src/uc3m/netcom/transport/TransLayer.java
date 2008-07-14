@@ -324,7 +324,7 @@ import java.util.HashMap;
 public class TransLayer {//extends Component {
 
         
- private HashMap<TransInfo,TransCon> connections;       
+ private HashMap<Integer,TransCon> connections;       
  private TransInfo localAddress;
  private int lastComm;
  private TransMessageListener tml;
@@ -334,7 +334,7 @@ public class TransLayer {//extends Component {
             TransReceiver tr = new TransReceiver(this);
             Thread t = new Thread(tr);
             t.start();
-            connections = new HashMap<int,TransCon>();
+            connections = new HashMap<Integer,TransCon>();
             localAddress = new TransInfo(netID,port);
             this.tml = tml;
             
@@ -392,7 +392,9 @@ public class TransLayer {//extends Component {
 	 * @param port
 	 *            the port on which to listen for incoming messages
 	 */
-	//public void addTransMsgListener(TransMessageListener receiver, short port);
+	public void addTransMsgListener(TransMessageListener receiver, short port){
+            
+        }
 
 	/**
 	 * Removes a TransMessageListener listening for incoming messages on a
@@ -403,7 +405,9 @@ public class TransLayer {//extends Component {
 	 * @param port
 	 *            the listening port
 	 */
-	//public void removeTransMsgListener(TransMessageListener receiver, short port);
+	public void removeTransMsgListener(TransMessageListener receiver, short port){
+            
+        }
 
 	/**
 	 * Sends a message to a remote host by using the given
@@ -424,7 +428,7 @@ public class TransLayer {//extends Component {
 	 */
 	public int send(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol){
   
-            TransCon tc = connections.get(receiverInfo);
+            TransCon tc = connections.get(receiverInfo.hashCode());
             if(tc == null){
                 tc = this.createConnection(receiverInfo, tml);
                 tc.start();

@@ -5,14 +5,15 @@ import java.util.LinkedList;
 
 import org.apache.commons.math.random.RandomGenerator;
 
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
-import de.tud.kom.p2psim.api.transport.TransLayer;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.DistributionStrategy;
+import uc3m.netcom.transport.TransLayer;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTDocument;
 import uc3m.netcom.overlay.bt.BTInternStatistic;
+import uc3m.netcom.overlay.bt.BTPeerDistributeNode;
 import uc3m.netcom.overlay.bt.algorithm.BTAlgorithmChoking;
 import uc3m.netcom.overlay.bt.manager.BTConnectionManager;
 import uc3m.netcom.overlay.bt.message.BTMessage;
@@ -51,7 +52,7 @@ public class BTOperationChoking<OwnerType extends DistributionStrategy> extends 
 		this.itsStatistic = theStatistic;
 		this.itsRandomGenerator = theRandomGenerator;
 		this.itsConnectionManager = theConnectionManager;
-		this.itsTransportLayer = this.getComponent().getHost().getTransLayer();
+		this.itsTransportLayer = ((BTPeerDistributeNode)theOwningComponent).getTransLayer();
 		this.itsAlgorithm = new BTAlgorithmChoking();
 		this.itsAlgorithm.setup(this.itsDocument, this.itsConnectionManager, this.itsStatistic, this.itsRandomGenerator);
 	}

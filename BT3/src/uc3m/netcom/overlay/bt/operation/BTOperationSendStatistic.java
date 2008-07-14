@@ -3,17 +3,17 @@ package uc3m.netcom.overlay.bt.operation;
 import java.util.Collection;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 //import de.tud.kom.p2psim.api.common.Message;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DHTNode;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.DHTNode;
 //import de.tud.kom.p2psim.api.overlay.OverlayID;
 //import de.tud.kom.p2psim.api.transport.TransInfo;
 //import de.tud.kom.p2psim.api.transport.TransLayer;
 //import de.tud.kom.p2psim.api.transport.TransMessageCallback;
 //import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.transport.TransInfo;
 import uc3m.netcom.transport.TransLayer;
@@ -22,6 +22,7 @@ import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTTorrent;
+import uc3m.netcom.overlay.bt.BTPeerDistributeNode;
 import uc3m.netcom.overlay.bt.message.BTMessage;
 import uc3m.netcom.overlay.bt.message.BTPeerToTrackerRequest;
 import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
@@ -61,7 +62,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 	
 	private static long theirMessageTimeout = BTConstants.PEER_TO_TRACKER_MESSAGE_TIMEOUT;
 	
-	static final Logger log = SimLogger.getLogger(BTOperationSendStatistic.class);
+//	static final Logger log = SimLogger.getLogger(BTOperationSendStatistic.class);
 	
 	
 	
@@ -70,7 +71,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		this.itsDataBus = theDataBus;
 		this.itsP2PPort = theP2PPort;
 		this.itsTorrent = theTorrent;
-		this.itsTransLayer = this.getComponent().getHost().getTransLayer();
+		this.itsTransLayer = ((BTPeerDistributeNode)theOwningComponent).getTransLayer();
 		this.itsOverlayID = theOverlayID;
 		this.itsLastRequest = System.currentTimeMillis();
 	}
@@ -112,10 +113,15 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		}
 
 		if (this.itsOverlayID.toString().equals("0")) { //TODO: Tells the user, what time it is in the simulation.
-			log.info("Simulated Time: " + (System.currentTimeMillis() / (1000*60)) + " Minutes; Real time: " + (new Date()).toString() + ";");
+//			log.info("Simulated Time: " + (System.currentTimeMillis() / (1000*60)) + " Minutes; Real time: " + (new Date()).toString() + ";");
 		}
                 
-		Thread.sleep(this.theirCallPeriod);
+                try{
+                    Thread.sleep(BTOperationSendStatistic.theirCallPeriod);
+                    }catch(InterruptedException e){
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
 		
             }
 	}
@@ -146,7 +152,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 	@Override
 	protected void operationTimeoutOccured() {
 		this.operationFinished(false);
-		log.warn("Sending statistic data timed out.");
+//		log.warn("Sending statistic data timed out.");
 	}
 	
 	public void messageTimeoutOccured(int commId) {
@@ -157,7 +163,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		assert (this.itsCommunicationID == theCommunicationID);
 		assert (this.itsTorrent.getTrackerAddress().equals(theSenderInfo));
 		if (!(theMessage instanceof BTTrackerToPeerReply)) {
-			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
+//			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
 			return;
 		}
 		Collection<BTContact> theNewPeers = ((BTTrackerToPeerReply)theMessage).getNewPeerSet();

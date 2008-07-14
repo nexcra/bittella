@@ -8,7 +8,7 @@ import java.util.Set;
 import org.apache.commons.math.random.RandomGenerator;
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTUtil;
 
@@ -25,7 +25,7 @@ public class BTAlgorithmTrackerPeerSelection implements BTAlgorithm {
 	
 	private boolean itsIsSetup = false;
 	
-	static final Logger log = SimLogger.getLogger(BTAlgorithmTrackerPeerSelection.class);
+//	static final Logger log = SimLogger.getLogger(BTAlgorithmTrackerPeerSelection.class);
 	
 	public boolean isSetup() {
 		return this.itsIsSetup;
@@ -49,7 +49,7 @@ public class BTAlgorithmTrackerPeerSelection implements BTAlgorithm {
 	 */
 	public Collection<BTContact> computePeerSelection(List<BTContact> theOtherPeers, BTContact theRequestingPeer, int theAmount) {
 		if (! this.isSetup()) {
-			log.error("You have to setup this algorithm first!");
+//			log.error("You have to setup this algorithm first!");
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
 		Set<Integer> indexOfSelectedPeers = BTUtil.getRandomSubSetIndexes(theAmount + 1, theOtherPeers.size(), this.itsRandomGenerator);

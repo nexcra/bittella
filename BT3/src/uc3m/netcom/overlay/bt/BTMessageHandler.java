@@ -2,25 +2,25 @@ package uc3m.netcom.overlay.bt;
 
 import java.util.BitSet;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.Component;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMsgEvent;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
-import de.tud.kom.p2psim.overlay.bt.algorithm.BTAlgorithmInterested;
-import de.tud.kom.p2psim.overlay.bt.manager.BTConnectionManager;
-import de.tud.kom.p2psim.overlay.bt.message.BTMessage;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageBitField;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageCancel;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageChoke;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageHandshake;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageHave;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageInterested;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageRequest;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUnchoke;
-import de.tud.kom.p2psim.overlay.bt.message.BTPeerMessageUninterested;
-import de.tud.kom.p2psim.overlay.bt.operation.BTOperationUpload;
+//import de.tud.kom.p2psim.api.common.Component;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMsgEvent;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.overlay.bt.algorithm.BTAlgorithmInterested;
+import uc3m.netcom.overlay.bt.manager.BTConnectionManager;
+import uc3m.netcom.overlay.bt.message.BTMessage;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageBitField;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageCancel;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageChoke;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageHandshake;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageHave;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageInterested;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageRequest;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageUnchoke;
+import uc3m.netcom.overlay.bt.message.BTPeerMessageUninterested;
+import uc3m.netcom.overlay.bt.operation.BTOperationUpload;
 
 /**
  * This class handles most types of messages a peer can receive from other peers.
@@ -35,8 +35,6 @@ public class BTMessageHandler {
 	@SuppressWarnings("unchecked")
 	private BTOperationUpload itsUploadOperation;
 	
-	private Component itsComponent;
-	
 	private TransLayer itsTransLayer;
 	
 	private BTConnectionManager itsConnectionManager;
@@ -45,18 +43,17 @@ public class BTMessageHandler {
 	
 	private BTDataStore itsDataBus;
 	
-	static final Logger log = SimLogger.getLogger(BTMessageHandler.class);
+	//static final Logger log = SimLogger.getLogger(BTMessageHandler.class);
 	
 	
 	
 	@SuppressWarnings("unchecked")
-	public BTMessageHandler(BTDataStore theDataBus, BTDocument theDocument, BTContact theOwnContact, BTOperationUpload theUploadOperation, Component theOwningComponent, BTConnectionManager theConnectionManager) {
+	public BTMessageHandler(BTDataStore theDataBus, BTDocument theDocument, BTContact theOwnContact, BTOperationUpload theUploadOperation, TransLayer transLayer, BTConnectionManager theConnectionManager) {
 		this.itsDataBus = theDataBus;
 		this.itsDocument = theDocument;
 		this.itsOwnContact = theOwnContact;
 		this.itsUploadOperation = theUploadOperation;
-		this.itsComponent = theOwningComponent;
-		this.itsTransLayer = this.itsComponent.getHost().getTransLayer();
+		this.itsTransLayer = transLayer;
 		this.itsConnectionManager = theConnectionManager;
 		this.itsInterestAlgorithm = new BTAlgorithmInterested();
 		this.itsInterestAlgorithm.setup(this.itsDocument);
@@ -73,7 +70,7 @@ public class BTMessageHandler {
 	public void handleHaveMessage(BTPeerMessageHave theHaveMessage, BTContact theOtherPeer) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected have from '" + theOtherPeer + "' for '" + theHaveMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected have from '" + theOtherPeer + "' for '" + theHaveMessage.getOverlayKey() + "'!");
 			return;
 		}
 		((BitSet) this.itsDataBus.getPerPeerData(theOtherPeer, "BitSet")).set(theHaveMessage.getPieceNumber());
@@ -93,7 +90,7 @@ public class BTMessageHandler {
 	public void handleInterestMessage(BTPeerMessageInterested theInterestMessage, BTContact theOtherPeer) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected interest message from '" + theOtherPeer + "' for '" + theInterestMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected interest message from '" + theOtherPeer + "' for '" + theInterestMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsConnectionManager.getConnection(theOtherPeer).setInterested(true);
@@ -104,7 +101,7 @@ public class BTMessageHandler {
 	public void handleUninterestMessage(BTPeerMessageUninterested theUninterestMessage, BTContact theOtherPeer) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected uninterest message from '" + theOtherPeer + "' for '" + theUninterestMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected uninterest message from '" + theOtherPeer + "' for '" + theUninterestMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsConnectionManager.getConnection(theOtherPeer).setInterested(false);
@@ -114,7 +111,7 @@ public class BTMessageHandler {
 	public void handleChokeMessage(BTPeerMessageChoke theChokeMessage, BTContact theOtherPeer) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected choke message from '" + theOtherPeer + "' for '" + theChokeMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected choke message from '" + theOtherPeer + "' for '" + theChokeMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsConnectionManager.getConnection(theOtherPeer).setChoked(true);
@@ -123,7 +120,7 @@ public class BTMessageHandler {
 	public void handleUnchokeMessage(BTPeerMessageUnchoke theUnchokeMessage, BTContact theOtherPeer) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message. It can happen, if I contacted him and he immediately unchokes me, before I received his handshake.
-			log.debug("Received an unexpected unchoke message from '" + theOtherPeer + "' for '" + theUnchokeMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected unchoke message from '" + theOtherPeer + "' for '" + theUnchokeMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsConnectionManager.getConnection(theOtherPeer).setChoked(false);
@@ -144,7 +141,7 @@ public class BTMessageHandler {
 	public void handleHandshakeMessage(BTPeerMessageHandshake theHandshakeMessage, BTContact theOtherPeer) {
 		if (this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer) && this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected handshake at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theHandshakeMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected handshake at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theHandshakeMessage.getOverlayKey() + "'!");
 			return;
 		}
 		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer))
@@ -183,11 +180,11 @@ public class BTMessageHandler {
 	
 	public void handleBitfieldMessage(BTPeerMessageBitField theBitfieldMessage, BTContact theOtherPeer) {
 		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) {
-			log.debug("Received an unexpected bitfield at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected bitfield at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
 			return;
 		}
 		if (this.itsDocument.getFinishedPieces().size() != theBitfieldMessage.getBitset().size()) { //Checking against the number of pieces is impossible, as BitSets don't have any method for getting the size correctly.
-			log.debug("Received an wrong-sized bitfield from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
+			//log.debug("Received an wrong-sized bitfield from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsDataBus.storePerPeerData(theOtherPeer, "BitSet", theBitfieldMessage.getBitset(), (new BitSet()).getClass());
@@ -205,7 +202,7 @@ public class BTMessageHandler {
 	public void handleRequestMessage(BTPeerMessageRequest theRequestMessage, BTContact theOtherPeer, TransMsgEvent theMessageEvent) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected request from '" + theOtherPeer + "' for '" + theRequestMessage.getRequest().getOverlayKey() + "'!");
+			//log.debug("Received an unexpected request from '" + theOtherPeer + "' for '" + theRequestMessage.getRequest().getOverlayKey() + "'!");
 			return;
 		}
 		if (this.uploadFinished()) {
@@ -220,7 +217,7 @@ public class BTMessageHandler {
 	public void handleCancelMessage(BTPeerMessageCancel theCancelMessage, BTContact theOtherPeer) {
 		if ((! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) || ! this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
-			log.debug("Received an unexpected cancel from '" + theOtherPeer + "' for '" + theCancelMessage.getOverlayKey() + "'!");
+			//log.debug("Received an unexpected cancel from '" + theOtherPeer + "' for '" + theCancelMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsUploadOperation.handleCancel(theCancelMessage.getPieceNumber(), theCancelMessage.getBlockNumber(), theOtherPeer);

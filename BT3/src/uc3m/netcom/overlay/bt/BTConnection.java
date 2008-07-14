@@ -3,10 +3,10 @@ package uc3m.netcom.overlay.bt;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.message.BTMessage;
 
 /**
@@ -61,7 +61,7 @@ public class BTConnection {
 	
 	private static long theirHandshakingTimeFalseValue = Long.MAX_VALUE;
 	
-	static final Logger log = SimLogger.getLogger(BTConnection.class);
+	//static final Logger log = SimLogger.getLogger(BTConnection.class);
 	
 	
 	
@@ -76,7 +76,7 @@ public class BTConnection {
 		this.itsChoked = true;
 		this.itsMessageQueue = new LinkedList<BTMessage>();
 		this.itsLastUnchoking = Long.MIN_VALUE;
-		this.itsLastKeepAlive = Simulator.getCurrentTime();
+		this.itsLastKeepAlive = System.currentTimeMillis();
 	}
 	
 	/**
@@ -136,7 +136,7 @@ public class BTConnection {
 	 */
 	public void handshaking() {
 		this.itsState = State.HANDSHAKING;
-		this.itsHandshakingTime = Simulator.getCurrentTime();
+		this.itsHandshakingTime = System.currentTimeMillis();
 	}
 	
 	/**
@@ -204,7 +204,7 @@ public class BTConnection {
 	 */
 	public void setChoking(boolean theNewChokingState) {
 		if (this.itsChoking && ! theNewChokingState) //If it gets unchoked...
-			this.itsLastUnchoking = Simulator.getCurrentTime();
+			this.itsLastUnchoking = System.currentTimeMillis();
 		this.itsChoking = theNewChokingState;
 	}
 	
@@ -259,7 +259,7 @@ public class BTConnection {
 	 * The same, if he sends an handshake and you accept it.
 	 */
 	public void keepAliveReceived() {
-		this.itsLastKeepAlive = Simulator.getCurrentTime();
+		this.itsLastKeepAlive = System.currentTimeMillis();
 	}
 	
 	@Deprecated

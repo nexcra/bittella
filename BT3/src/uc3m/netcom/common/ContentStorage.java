@@ -294,32 +294,72 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
+
+//import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+
+//import org.apache.log4j.Logger;
+
+//import de.tud.kom.p2psim.api.common.ConnectivityListener;
+//import de.tud.kom.p2psim.api.common.Host;
+//import de.tud.kom.p2psim.api.overlay.OverlayKey;
+//import de.tud.kom.p2psim.api.storage.ContentStorage;
+//import de.tud.kom.p2psim.api.storage.Document;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.overlay.bt.BTDocument;
+
 
 /**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
- * 
- * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
+ * Default implementation of a content storage.
+ * @author pussep
+ * @version 0.1, 28.11.2007
+ * @see ContentStorage
  */
-public class BTID{
-
-	/**
-	 * Returns the unique value of an OverlayID
-	 * 
-	 * @return the unique value of an OverlayID
-	 */
-    private String id;
+public class ContentStorage{
     
-    public BTID(){
+	//private static final Logger log = SimLogger.getLogger(ContentStorage.class);
+	Map<String, BTDocument> documents = new LinkedHashMap<String, BTDocument>();
+	//private Host host;
+
+	public ContentStorage() {
+		// nothing to do
+	}
+	
+	public Collection<BTDocument> listDocuments() {
+		return new LinkedHashSet<BTDocument>(documents.values());
+	}
+
+	public void storeDocument(BTDocument doc) {
+		String key = doc.getKey();
+		documents.put(key, doc);
+		//log.debug("store "+doc+" at "+this);
+	}
+
+	public BTDocument loadDocument(String key) {
+		return documents.get(key);
+	}
+
+	public Collection<String> listDocumentKeys() {
+//		return new ArrayList<OverlayKey>(documents.keySet());
+		return Collections.unmodifiableSet(documents.keySet());
+	}
+
+	public boolean containsDocument(String key) {
+		return documents.containsKey(key);
+	}
+
+/*	public Host getHost() {
+		return host;
+	}
+
+	public void setHost(Host host) {
+		this.host=host;
+	}
+*/
         
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
-
 }

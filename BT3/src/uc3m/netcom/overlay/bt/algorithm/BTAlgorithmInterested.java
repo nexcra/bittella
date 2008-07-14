@@ -4,9 +4,9 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import org.apache.log4j.Logger;
+//
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTBitSetUtil;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDocument;
@@ -23,7 +23,7 @@ public class BTAlgorithmInterested implements BTAlgorithm {
 	
 	private boolean itsIsSetup = false;
 	
-	static final Logger log = SimLogger.getLogger(BTAlgorithmInterested.class);
+	//static final Logger log = SimLogger.getLogger(BTAlgorithmInterested.class);
 	
 	public void setup(BTDocument theDocument) {
 		this.itsDocument = theDocument;
@@ -40,7 +40,7 @@ public class BTAlgorithmInterested implements BTAlgorithm {
 	 */
 	public boolean computeInterest(BitSet theBitset) {
 		if (! this.isSetup()) {
-			log.error("You have to setup this algorithm first!");
+//			log.error("You have to setup this algorithm first!");
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
 		return computeInterest(theBitset, this.itsDocument);
@@ -52,7 +52,7 @@ public class BTAlgorithmInterested implements BTAlgorithm {
 	 */
 	public Map<BTContact, Boolean> computeInterest(Map<BTContact, BitSet> theOtherPeersPieces) {
 		if (! this.isSetup()) {
-			log.error("You have to setup this algorithm first!");
+//			log.error("You have to setup this algorithm first!");
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
 		return computeInterest(theOtherPeersPieces, this.itsDocument);

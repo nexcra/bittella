@@ -6,10 +6,10 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.application.Application;
-import de.tud.kom.p2psim.api.common.Operation;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.common.Application;
+import uc3m.netcom.common.Operation;
+import uc3m.netcom.common.OperationCallback;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTDocument;
@@ -43,7 +43,7 @@ public class BTOperationDistribute<OwnerType extends Application>  extends BTOpe
 	
 	private BTDataStore itsDataBus;
 	
-	static final Logger log = SimLogger.getLogger(BTOperationDistribute.class);
+//	static final Logger log = SimLogger.getLogger(BTOperationDistribute.class);
 	
 	
 	
@@ -59,6 +59,10 @@ public class BTOperationDistribute<OwnerType extends Application>  extends BTOpe
 	protected void execute() {
 		this.step1();
 	}
+        
+        public void start(){
+            this.step1();
+        }
 	
 	@Override
 	public BTDocument getResult() {
@@ -90,7 +94,7 @@ public class BTOperationDistribute<OwnerType extends Application>  extends BTOpe
 	 */
 	@SuppressWarnings("unchecked")
 	private void step2(Collection<BTContact> theDocumentHolder) {
-		log.debug("Tracker successfully contacted. I received " + theDocumentHolder.size() + " new peers.");
+//		log.debug("Tracker successfully contacted. I received " + theDocumentHolder.size() + " new peers.");
 		
 		this.itsSendStatisticOperation = new BTOperationSendStatistic(this.itsDataBus, this.itsDistributionNode.getPort(), this.itsTorrent, this.itsDhtNode.getOverlayID(), this.itsDhtNode, this);
 		//this.itsSendStatisticOperation.scheduleWithDelay(BTOperationSendStatistic.getPeriod());
@@ -118,7 +122,7 @@ public class BTOperationDistribute<OwnerType extends Application>  extends BTOpe
 	
 	public void calledOperationFailed(Operation<BTDocument> theOperation) {
 		//if (this.itsLookupOperationID == theOperation.getOperationID()) {
-			log.error("Failed connecting to tracker. Aborting.");
+//			log.error("Failed connecting to tracker. Aborting.");
 			this.operationFinished(false);
 		//}
 	}

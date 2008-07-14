@@ -5,21 +5,23 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import org.apache.commons.math.random.RandomGenerator;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DistributionStrategy;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.api.transport.TransMsgEvent;
-import de.tud.kom.p2psim.impl.common.Operations;
-import de.tud.kom.p2psim.impl.simengine.Simulator;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.DistributionStrategy;
+import uc3m.netcom.common.Operations;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMsgEvent;
+//import de.tud.kom.p2psim.impl.common.Operations;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTDocument;
 import uc3m.netcom.overlay.bt.BTInternRequest;
 import uc3m.netcom.overlay.bt.BTInternStatistic;
+import uc3m.netcom.overlay.bt.BTPeerDistributeNode;
 import uc3m.netcom.overlay.bt.manager.BTConnectionManager;
 import uc3m.netcom.overlay.bt.message.BTPeerMessagePiece;
 
@@ -63,7 +65,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 	
 	private static long theirRequestTimeout = BTConstants.PEER_REPLY_TIMEOUT;
 	
-	static final Logger log = SimLogger.getLogger(BTOperationUpload.class);
+//	static final Logger log = SimLogger.getLogger(BTOperationUpload.class);
 	
 	
 	
@@ -72,7 +74,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 		super(theOwningComponent, theOperationCallback);
 		this.itsDataBus = theDataBus;
 		this.itsDocument = theDocument;
-		this.itsTransLayer = this.getComponent().getHost().getTransLayer();
+		this.itsTransLayer = ((BTPeerDistributeNode)theOwningComponent).getTransLayer();
 		this.itsOwnContact = theOwnContact;
 		this.itsConnectionManager = theConnectionManager;
 		this.itsStatistic = theStatistic;
@@ -104,7 +106,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 			this.itsChokingOperation.stop(true);
 			this.itsKeepAliveOperation.stop(true);
 			this.itsStatistic.stopUpload();
-			log.info("---Upload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
+			//log.info("---Upload stopped at time " + Simulator.getCurrentTime() + " at '" + this.itsOwnContact.getOverlayID() + "'.");
 			return;
 		}
 		if(this.itsIsFirstTime) {
@@ -133,7 +135,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 		//Timeout of cancel requests. If they come to late, they would stay forever, otherwise.
 		Collection<BTInternRequest> timedOutCancels = new LinkedList<BTInternRequest>();
 		for (BTInternRequest aCanceledRequest : this.itsCanceledRequests) {
-			if (aCanceledRequest.getCreationTime() + 15 * Simulator.MINUTE_UNIT < Simulator.getCurrentTime())
+			if (aCanceledRequest.getCreationTime() + 15 * 60000 < System.currentTimeMillis())
 				timedOutCancels.add(aCanceledRequest);
 		}
 		for (BTInternRequest aCanceledRequest : timedOutCancels)
@@ -156,7 +158,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 			}
 			
 			//Take care of timeouts:
-			if (Simulator.getCurrentTime() > (aArrivelTime + theirRequestTimeout)) {
+			if (System.currentTimeMillis() > (aArrivelTime + theirRequestTimeout)) {
 //				log.debug("Removed a timed out request: " + aRequest);
 				this.itsRequests.removeFirst();
 				this.itsRequestEvents.removeFirst();
@@ -186,7 +188,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 			
 			//Check, if we have the requested piece:
 			if (1 != this.itsDocument.getPieceState(aRequest.getPieceNumber())) {
-				log.error("Removed a impossible request: " + aRequest);
+				//log.error("Removed a impossible request: " + aRequest);
 				this.itsRequests.removeFirst();
 				this.itsRequestEvents.removeFirst();
 				this.itsRequestArrivels.removeFirst();
@@ -250,7 +252,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 	 */
 	public void handleRequest(BTInternRequest theRequest, TransMsgEvent theMessageEvent) {
 		if (1 != this.itsDocument.getPieceState(theRequest.getPieceNumber())) {
-			log.warn("Received an request for an piece that I don't have: '" + theRequest.getPieceNumber() + "'");
+			//log.warn("Received an request for an piece that I don't have: '" + theRequest.getPieceNumber() + "'");
 			return;
 		}
 		if (! this.itsConnectionManager.getConnection(theRequest.getRequestingPeer()).isInterestedInMe()) {
@@ -261,7 +263,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 //		log.debug("Time: " + Simulator.getCurrentTime() + "; Peer: " + this.itsOwnContact.getOverlayID() + "; Requests: " + this.itsRequests.size() + "; Received a request: " + theRequest);
 		this.itsRequests.addLast(theRequest);
 		this.itsRequestEvents.addLast(theMessageEvent);
-		this.itsRequestArrivels.addLast(Simulator.getCurrentTime());
+		this.itsRequestArrivels.addLast(System.currentTimeMillis());
 	}
 	
 	/**

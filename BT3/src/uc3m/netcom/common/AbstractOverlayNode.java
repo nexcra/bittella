@@ -294,32 +294,90 @@
  * 
  */
 
-package uc3m.netcom.overlay.bt;
+package uc3m.netcom.common;
 
-/**
- * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
- * large identifier space.
- * 
- * @author Sebastian Kaune <kaune@kom.tu-darmstadt.de>
- * @version 1.0, 11/25/2007
- */
-public class BTID{
+//import org.apache.log4j.Logger;
 
-	/**
-	 * Returns the unique value of an OverlayID
-	 * 
-	 * @return the unique value of an OverlayID
-	 */
-    private String id;
-    
-    public BTID(){
-        
-        //Aqui es donde se genera un ID aleatorio.
-    }
-    
-    @Override
-	public String toString(){
-            return id;
-        }
+//import de.tud.kom.p2psim.api.common.ConnectivityListener;
+//import de.tud.kom.p2psim.api.common.Host;
+import uc3m.netcom.common.Operation;
+import uc3m.netcom.overlay.bt.BTID;
+//import de.tud.kom.p2psim.api.overlay.OverlayNode;
+//import de.tud.kom.p2psim.api.overlay.OverlayRoutingTable;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.transport.TransMessageListener;
+//import de.tud.kom.p2psim.impl.simengine.Simulator;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+
+public abstract class AbstractOverlayNode {//implements OverlayNode, ConnectivityListener {
+
+	public enum PeerStatus {
+		ABSENT, PRESENT, TO_JOIN
+	}
+
+	//final static Logger log = SimLogger.getLogger(AbstractOverlayNode.class);
+
+	private PeerStatus peerStatus;
+
+	private final BTID overlayPeerId;
+
+	//protected OverlayRoutingTable routingTable;
+
+	private final short port;
+
+	//private Host host;
+
+	protected AbstractOverlayNode(BTID peerId, short port) {
+		this.overlayPeerId = peerId;
+		this.peerStatus = PeerStatus.ABSENT;
+		this.port = port;
+	}
+
+	public PeerStatus getPeerStatus() {
+		return peerStatus;
+	}
+
+	public void setPeerStatus(PeerStatus peerStatus) {
+		this.peerStatus = peerStatus;
+	}
+
+	public void calledOperationFailed(Operation op) {
+		// TODO: now done in AbstractOperation
+		// Simulator.getMonitor().operationFinished(op);
+	}
+
+	public void calledOperationSucceeded(Operation op) {
+		// TODO: now done in AbstractOperation
+		// Simulator.getMonitor().operationFinished(op);
+	}
+
+/*	public final OverlayRoutingTable getRoutingTable() {
+		if (this.routingTable == null)
+			throw new IllegalStateException("No RoutingTable defined!");
+		return this.routingTable;
+	}
+*/
+	public final BTID getOverlayID() {
+		return overlayPeerId;
+	}
+
+	public String toString() {
+		return "{" + "overlayPeerId=" + overlayPeerId + ", peerStatus=" + peerStatus + '}';
+	}
+
+	public short getPort() {
+		return this.port;
+	}
+
+/*	public void setHost(Host host) {
+		this.host = host;
+		this.host.getProperties().addConnectivityListener(this);
+	}
+
+	public Host getHost() {
+		return this.host;
+	}
+*/
+	public abstract TransLayer getTransLayer();
 
 }

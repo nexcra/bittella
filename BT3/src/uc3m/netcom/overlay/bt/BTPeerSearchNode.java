@@ -1,17 +1,16 @@
 package uc3m.netcom.overlay.bt;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.ConnectivityEvent;
-import de.tud.kom.p2psim.api.common.Operation;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.DHTNode;
-import de.tud.kom.p2psim.api.overlay.DHTObject;
-import de.tud.kom.p2psim.api.overlay.OverlayID;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.transport.TransLayer;
-import de.tud.kom.p2psim.impl.overlay.AbstractOverlayNode;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
+//import de.tud.kom.p2psim.api.common.ConnectivityEvent;
+import uc3m.netcom.common.Operation;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.DHTNode;
+import uc3m.netcom.common.DHTObject;
+//import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.transport.TransLayer;
+import uc3m.netcom.common.AbstractOverlayNode;
+//import de.tud.kom.p2psim.impl.util.logging.SimLogger;
 import uc3m.netcom.overlay.bt.operation.BTOperationValueLookup;
 
 /**
@@ -26,23 +25,32 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 	
 	private BTDataStore itsDataBus;
 	
-	protected static Logger log = SimLogger.getLogger(BTPeerSearchNode.class);
+	//protected static Logger log = SimLogger.getLogger(BTPeerSearchNode.class);
 	
+	private TransLayer transLayer;
+        
 	
-	
-	public BTPeerSearchNode(BTDataStore theDataBus, OverlayID theOverlayID, short thePeerSearchPort, short theP2PPort) {
+	public BTPeerSearchNode(BTDataStore theDataBus, BTID theOverlayID, short thePeerSearchPort, short theP2PPort) {
 		super(theOverlayID, thePeerSearchPort);
 		this.itsDataBus = theDataBus;
 		this.itsP2PPort = theP2PPort;
 	}
 	
+        public TransLayer getTransLayer(){
+            return transLayer;
+        }
+        
+        public void setTransLayer(TransLayer transLayer){
+            this.transLayer = transLayer;
+        }
+        
 	@SuppressWarnings("unchecked")
-	public int nodeLookup(OverlayKey theDocument, OperationCallback theCallback) {
+	public int nodeLookup(String theDocument, OperationCallback theCallback) {
 		throw new RuntimeException("The 'nodeLookup' operation is not supported by the '" + this.getClass().getSimpleName() + "'.");
 	}
 	
 	@SuppressWarnings("unchecked")
-	public int store(OverlayKey key, DHTObject obj, OperationCallback theCallback) {
+	public int store(String key, DHTObject obj, OperationCallback theCallback) {
 		throw new RuntimeException("The 'store' operation is not supported by the '" + this.getClass().getSimpleName() + "'.");
 	}
 	
@@ -52,7 +60,7 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 	 * @param theOverlayKey the key/hash of the torrent.
 	 * @return the operation id of the started <code>BTOperationValueLookup<code>.
 	 */
-	public int valueLookup(OverlayKey theOverlayKey, OperationCallback theCallback) { //The OperationManager is set as the event handler. This class doesn't care about the events. That's up to the caller.
+	public int valueLookup(String theOverlayKey, OperationCallback theCallback) { //The OperationManager is set as the event handler. This class doesn't care about the events. That's up to the caller.
 		if (! this.itsDataBus.isTorrentKnown(theOverlayKey)) {
 			this.itsDataBus.addTorrent(theOverlayKey);
 		}
@@ -75,10 +83,6 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 		return this.valueLookup(theTorrent.getKey(), theCallback);
 	}
 	
-	@Override
-	public TransLayer getTransLayer() {
-		return this.getHost().getTransLayer();
-	}
 	
 	public void connect() {
 		//Nothing to do...
@@ -102,10 +106,10 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 		//return null;
 	}
 	
-	public void connectivityChanged(ConnectivityEvent ce) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Method 'connectivityChanged' in class 'BTPeerSearchNode' not yet implemented!");
-		//
-	}
+//	public void connectivityChanged(ConnectivityEvent ce) {
+//		// TODO Auto-generated method stub
+//		throw new RuntimeException("Method 'connectivityChanged' in class 'BTPeerSearchNode' not yet implemented!");
+//		//
+//	}
 	
 }

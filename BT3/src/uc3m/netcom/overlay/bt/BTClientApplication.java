@@ -7,17 +7,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
-import de.tud.kom.p2psim.api.common.Operation;
-import de.tud.kom.p2psim.api.common.OperationCallback;
-import de.tud.kom.p2psim.api.overlay.OverlayKey;
-import de.tud.kom.p2psim.api.storage.ContentStorage;
-import de.tud.kom.p2psim.api.storage.Document;
-import de.tud.kom.p2psim.impl.application.AbstractApplication;
-import de.tud.kom.p2psim.impl.util.logging.SimLogger;
-import de.tud.kom.p2psim.overlay.bt.operation.BTOperationDistribute;
-
+import uc3m.netcom.common.Application;
+import uc3m.netcom.common.Operation;
+import uc3m.netcom.common.OperationCallback;
+import uc3m.netcom.common.ContentStorage;
+import uc3m.netcom.overlay.bt.operation.BTOperationDistribute;
 
 
 /**
@@ -28,7 +24,7 @@ import de.tud.kom.p2psim.overlay.bt.operation.BTOperationDistribute;
  * and accessing its databus.
  * @author Jan Stolzenburg
  */
-public class BTClientApplication extends AbstractApplication {
+public class BTClientApplication implements Application,OperationCallback{// extends AbstractApplication {
 	
 	
 	
@@ -56,7 +52,7 @@ public class BTClientApplication extends AbstractApplication {
 	 * All currently running distribute operations.
 	 * If the clients is closed, we stop them over this list.
 	 */
-	private Map<OverlayKey, BTOperationDistribute<BTClientApplication>> itsDistributeOperations;
+	private Map<String, BTOperationDistribute<BTClientApplication>> itsDistributeOperations;
 	
 	/**
 	 * The databus is a large storage for every kind of information
@@ -65,7 +61,7 @@ public class BTClientApplication extends AbstractApplication {
 	 */
 	private BTDataStore itsDataBus;
 	
-	static final Logger log = SimLogger.getLogger(BTClientApplication.class);
+	//static final Logger log = SimLogger.getLogger(BTClientApplication.class);
 	
 	
 	
@@ -73,26 +69,10 @@ public class BTClientApplication extends AbstractApplication {
 		super();
 		this.itsDataBus = theDataBus;
 		this.itsSearchNode = theSearchNode;
-//		this.itsSearchNode.registerEventHandler(this);
 		this.itsDistributionNode = theDownloadNode;
-//		this.itsDistributionNode.registerEventHandler(this);
-//		this.itsApplicationEventHandler = new LinkedList<ApplicationEventHandler>();
-		this.itsDistributeOperations = new HashMap<OverlayKey, BTOperationDistribute<BTClientApplication>>();
+		this.itsDistributeOperations = new HashMap<String, BTOperationDistribute<BTClientApplication>>();
 	}
 	
-//	/**
-//	 * @see de.tud.kom.p2psim.api.application.Application#registerEventHandler(de.tud.kom.p2psim.api.application.ApplicationEventHandler)
-//	 */
-//	public void registerEventHandler(ApplicationEventHandler handler) {
-//		this.itsApplicationEventHandler.add(handler);
-//	}
-	
-//	/**
-//	 * @see de.tud.kom.p2psim.api.overlay.OverlayEventHandler#eventOccurred(de.tud.kom.p2psim.api.overlay.OverlayEvent)
-//	 */
-//	public void eventOccurred(OverlayEvent theOverlayEvent) {
-//		log.debug("Received an event: '" + theOverlayEvent.toString() + "'; Type: '" + theOverlayEvent.getType() + "'; Data: '" + theOverlayEvent.getData() + "'.");
-//	}
 	
 	/**
 	 * This method will start a download.
@@ -106,7 +86,7 @@ public class BTClientApplication extends AbstractApplication {
 			throw new RuntimeException("This document is already beeing downloaded.");
 		BTOperationDistribute<BTClientApplication> distributeOperation = new BTOperationDistribute<BTClientApplication>(this.itsDataBus, theTorrent, this.itsSearchNode, this.itsDistributionNode, this, this);
 		this.itsDistributeOperations.put(theTorrent.getKey(), distributeOperation);
-		distributeOperation.scheduleImmediately();
+		distributeOperation.start();
 	}
 	
 	/**
@@ -115,7 +95,7 @@ public class BTClientApplication extends AbstractApplication {
 	 */
 	public Collection<BTDocument> listDocuments() {
 		Collection<BTDocument> result = new LinkedList<BTDocument>();
-		for (Document aDocument : this.itsDocumentStorage.listDocuments()) {
+		for (BTDocument aDocument : this.itsDocumentStorage.listDocuments()) {
 			result.add((BTDocument)aDocument);
 		}
 		return result;
@@ -136,18 +116,12 @@ public class BTClientApplication extends AbstractApplication {
 		}
 	}
 	
-	public void connect() {
-		this.itsDocumentStorage = this.getHost().getStorage();
+	public void connect(ContentStorage cs) {
+		this.itsDocumentStorage = cs;
 		this.itsSearchNode.connect();
-		this.itsDistributionNode.connect();
+		this.itsDistributionNode.connect(cs);
 	}
 	
-//	protected void notifyEvent(ApplicationEvent event) {
-//		log.debug("notify " + this.itsApplicationEventHandler + " of event " + event);
-//		for (ApplicationEventHandler handler : this.itsApplicationEventHandler) {
-//			handler.eventOccurred(event);
-//		}
-//	}
 	
 	/**
 	 * Use this method, if you want to access the databus from outside the client.
@@ -164,5 +138,23 @@ public class BTClientApplication extends AbstractApplication {
 		throw new RuntimeException("Method 'createOperation' in class 'BTClientApplication' not yet implemented!");
 		//return null;
 	}
-	
+        
+	public int close(OperationCallback callback) {
+		return -1;
+	}
+
+	public int start(OperationCallback callback) {
+		return -1;
+	}        
+        
+	public void calledOperationFailed(Operation op) {
+//		 FIXME inform the monitor here
+		
+	}
+
+	public void calledOperationSucceeded(Operation op) {
+//		 FIXME inform the monitor here
+		
+	}	
+        
 }
