@@ -330,7 +330,7 @@ public class TransLayer {//extends Component {
  
         public TransLayer(String netID,short port,TransMessageListener tml){
             
-            TransReceiver trv = new TransReceiver(this,port);
+            trv = new TransReceiver(this,port);
             Thread t = new Thread(trv);
             t.start();
             connections = new HashMap<Integer,TransCon>();
@@ -343,19 +343,26 @@ public class TransLayer {//extends Component {
                 connections.put(info.hashCode(), connection);
         }
         
-        public TransCon createConnection(TransInfo info,TransMessageListener listener)throws Exception{
+        public TransCon createConnection(BTID local,BTID remote, TransLayer layer, TransInfo info,TransMessageListener listener)throws Exception{
             
             Socket s = new Socket(info.getNetId(),info.getPort());
-            TransCon tc = new TransCon(info,listener,s,true);
+            TransCon tc = new TransCon(local,remote,layer,info,listener,s);
             return tc;
         }
         
-        public TransCon createConnection(TransInfo info,TransMessageCallback listener)throws Exception{
+        public TransCon createConnection(TransLayer layer, TransInfo info,TransMessageListener listener)throws Exception{
             
             Socket s = new Socket(info.getNetId(),info.getPort());
-            TransCon tc = new TransCon(info,listener,s,false);
+            TransCon tc = new TransCon(layer,info,listener,s);
             return tc;
         }
+        
+//        public TransCon createConnection(TransInfo info,TransMessageCallback listener)throws Exception{
+//            
+//            Socket s = new Socket(info.getNetId(),info.getPort());
+//            TransCon tc = new TransCon(info,listener,s,false);
+//            return tc;
+//        }
                 
         
 	public void addTransMsgListener(TransMessageListener receiver, short port){
@@ -370,11 +377,10 @@ public class TransLayer {//extends Component {
   
             TransCon tc = connections.get(receiverInfo.hashCode());
             if(tc == null){
-                tc = this.createConnection(receiverInfo, tml);
+                tc = this.createConnection(msg.getSender(),msg.getReceiver(),this,receiverInfo, tml);
                 this.addConnection(receiverInfo, tc);
-                tc.start();
             }
-            tc.send(msg.generate());
+            tc.send(msg);
             this.lastComm = receiverInfo.hashCode();
             return lastComm;
         }
@@ -394,9 +400,8 @@ public class TransLayer {//extends Component {
 
             TransCon tc = connections.get(receivingEvent.getSenderTransInfo());
             if(tc == null){
-                tc = this.createConnection(receivingEvent.getSenderTransInfo(), tml);
+                tc = this.createConnection(msg.getSender(),msg.getReceiver(),this,receivingEvent.getSenderTransInfo(), tml);
                 this.addConnection(receivingEvent.getSenderTransInfo(), tc);
-                tc.start();
             }
             tc.send(msg.generate());
             this.lastComm = receivingEvent.getSenderTransInfo().hashCode();

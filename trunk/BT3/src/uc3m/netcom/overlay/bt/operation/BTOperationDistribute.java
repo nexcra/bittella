@@ -4,7 +4,7 @@ package uc3m.netcom.overlay.bt.operation;
 
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 import uc3m.netcom.common.Application;
 import uc3m.netcom.common.Operation;
