@@ -9,7 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import uc3m.netcom.overlay.bt.message.*;
 import uc3m.netcom.overlay.bt.BTID;
-import uc3m.netcom.overlay.bt.BTConstants;
+import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTInternRequest;
 import jBittorrentAPI.Message;
 import jBittorrentAPI.Message_HS;
@@ -21,6 +21,7 @@ import jBittorrentAPI.OutgoingListener;
 
 public class TransCon implements IncomingListener,OutgoingListener{
     
+    private String overlayKey;
     private BTID localID;
     private BTID remoteID;
     private TransLayer layer;
@@ -29,8 +30,9 @@ public class TransCon implements IncomingListener,OutgoingListener{
     private MessageReceiver mr;
     private MessageSender ms;
     
-    public TransCon(BTID localID,BTID remoteID,TransLayer layer,TransInfo info, TransMessageListener listener,Socket s)throws IOException{
+    public TransCon(String overlayKey,BTID localID,BTID remoteID,TransLayer layer,TransInfo info, TransMessageListener listener,Socket s)throws IOException{
       
+        this.overlayKey = overlayKey;
         this.localID = localID;
         this.remoteID = remoteID;
         this.layer = layer;
@@ -68,7 +70,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
             ba.write(cancel.getPieceNumber());
             ba.write(cancel.getBlockNumber());
-            ba.write((int)Math.pow(2,BTConstants.DOCUMENT_DEFAULT_BLOCK_EXPONENT));
+            ba.write(cancel.getChunkSize());
             byte[] payload = ba.toByteArray();
             ms.addMessageToQueue(new Message_PP(BTMessage.CANCEL,payload));
         }else if(msg instanceof BTPeerMessageChoke){
@@ -103,7 +105,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
             ba.write(req.getRequest().getPieceNumber());
             ba.write(req.getRequest().getBlockNumber());
-            ba.write((int)Math.pow(2,BTConstants.DOCUMENT_DEFAULT_BLOCK_EXPONENT));
+            ba.write(req.getRequest().getChunkLength());
             byte[] payload = ba.toByteArray();
             ms.addMessageToQueue(new Message_PP(BTMessage.REQUEST,payload));            
         }else if(msg instanceof BTPeerMessageUninterested){
@@ -115,7 +117,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
     
     // Returns a bitset containing the values in bytes.
     // The byte-ordering of bytes must be big-endian which means the most significant bit is in element 0.
-    public static BitSet fromByteArray(byte[] bytes) {
+    private static BitSet fromByteArray(byte[] bytes) {
         BitSet bits = new BitSet();
         for (int i=0; i<bytes.length*8; i++) {
             if ((bytes[bytes.length-i/8-1]&(1<<(i%8))) > 0) {
@@ -130,7 +132,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
     // (since BitSet does not support sign extension).
     // The byte-ordering of the result is big-endian which means the most significant bit is in element 0.
     // The bit at index 0 of the bit set is assumed to be the least significant bit.
-    public static byte[] toByteArray(BitSet bits) {
+    private static byte[] toByteArray(BitSet bits) {
         byte[] bytes = new byte[bits.length()/8+1];
         for (int i=0; i<bits.length(); i++) {
             if (bits.get(i)) {
@@ -167,47 +169,58 @@ public class TransCon implements IncomingListener,OutgoingListener{
         switch(tipo){
             
             case BTMessage.BITFIELD:
-                return new BTPeerMessageBitField(this.fromByteArray(payload),null,this.remoteID,this.localID);
-                break;
+                return new BTPeerMessageBitField(this.fromByteArray(payload),this.overlayKey,this.remoteID,this.localID);
+
             case BTMessage.CANCEL:
                 ByteArrayInputStream bi = new ByteArrayInputStream(payload);
                 int piece = bi.read();
                 int block = bi.read();
-                return new BTPeerMessageCancel(piece,block,null,this.remoteID,this.localID);
-                break;
+                int chunk = bi.read();
+                return new BTPeerMessageCancel(piece,block,chunk,this.overlayKey,this.remoteID,this.localID);
+
             case BTMessage.CHOKE:
-                return new BTPeerMessageChoke(null,this.remoteID,this.localID);
-                break;
+                return new BTPeerMessageChoke(this.overlayKey,this.remoteID,this.localID);
+
             case BTMessage.HAVE:
                 ByteArrayInputStream bi2 = new ByteArrayInputStream(payload);
                 int piece_num = bi2.read();
-                return new BTPeerMessageHave(piece_num,null,this.remoteID,this.localID);
-                break;
+                return new BTPeerMessageHave(piece_num,this.overlayKey,this.remoteID,this.localID);
+
             case BTMessage.INTERESTED:
-                return new BTPeerMessageInterested(null,this.remoteID,this.localID);
-                break;
+                return new BTPeerMessageInterested(this.overlayKey,this.remoteID,this.localID);
+
             case BTMessage.PIECE:
                 ByteArrayInputStream bi3 = new ByteArrayInputStream(payload);
                 int piece_num2 = bi3.read();
                 int block_num2 = bi3.read();
-                byte[] block2 = new byte[bi3.available()];
-                bi3.read(block2);
-                return new BTPeerMessagePiece(piece_num2,block_num2,block2,null,this.remoteID,this.localID);
-                break;
+                int chunk_num2 = bi3.available();
+                byte[] block2 = new byte[chunk_num2];
+                try{
+                    bi3.read(block2);
+                }catch(IOException ioe){
+                    System.out.println(ioe.getMessage());
+                    ioe.printStackTrace();
+                }
+                return new BTPeerMessagePiece(piece_num2,block_num2,chunk_num2,block2,this.overlayKey,true,this.remoteID,this.localID);
+                
             case BTMessage.REQUEST:
                 ByteArrayInputStream bi4 = new ByteArrayInputStream(payload);
                 int piece_num4 = bi4.read();
                 int block_num4 = bi4.read();
                 int length4 = bi4.read();
-                BTInternRequest req = new BTInternRequest(null,null,null,piece_num4,block_num4);
+                BTContact requesting = new BTContact(this.remoteID,this.info);
+                BTContact requested = new BTContact(this.localID,this.layer.getLocalTransInfo((short)0));
+                BTInternRequest req = new BTInternRequest(requesting,requested,this.overlayKey,piece_num4,block_num4,length4);
                 return new BTPeerMessageRequest(req,this.remoteID,this.localID);
-                break;
+
             case BTMessage.UNCHOKE:
-                return new BTPeerMessageUnchoke(null,this.remoteID,this.localID);
-                break;
+                return new BTPeerMessageUnchoke(this.overlayKey,this.remoteID,this.localID);
+
             case BTMessage.UNINTERESTED:
-                return new BTPeerMessageUninterested(null,this.remoteID,this.localID);
-                break;
+                return new BTPeerMessageUninterested(this.overlayKey,this.remoteID,this.localID);
+            
+            default:
+                return null;
             
         }
         

@@ -34,17 +34,19 @@ public class BTInternRequest {
 	 */
 	private int itsBlockNumber;
 	
+        private int itsLength;
 	/**
 	 * At what time has this request been created?
 	 */
 	private long itsCreationTime;
 	
-	public BTInternRequest(BTContact theRequestingPeer, BTContact theRequestedPeer, String theOverlayKey, int thePieceNumber, int theBlockNumber) {
+	public BTInternRequest(BTContact theRequestingPeer, BTContact theRequestedPeer, String theOverlayKey, int thePieceNumber, int theBlockNumber, int theLength) {
 		this.itsRequestingPeer = theRequestingPeer;
 		this.itsRequestedPeer = theRequestedPeer;
 		this.itsOverlayKey = theOverlayKey;
 		this.itsPieceNumber = thePieceNumber;
 		this.itsBlockNumber = theBlockNumber;
+                this.itsLength = theLength;
 		this.itsCreationTime = System.currentTimeMillis(); //To distinguish between repeated requests.
 	}
 	
@@ -59,6 +61,10 @@ public class BTInternRequest {
 	public int getBlockNumber() {
 		return this.itsBlockNumber;
 	}
+        
+        public int getChunkLength() {
+            return this.itsLength;
+        }
 	
 	public BTContact getRequestedPeer() {
 		return this.itsRequestedPeer;

@@ -22,6 +22,9 @@ public class BTPeerMessagePiece extends BTMessage {
 	 */
 	private int itsBlockNumber;
 	
+        private int itsLength;
+        
+        private byte[] itsPayload;
 	/**
 	 * The overlaykey of the document.
 	 */
@@ -35,11 +38,13 @@ public class BTPeerMessagePiece extends BTMessage {
 	
 	
 	
-	public BTPeerMessagePiece(int thePieceNumber, int theBlockNumber, int theSize, String theOverlayKey, boolean theData, BTID theSender, BTID theReceiver) {
+	public BTPeerMessagePiece(int thePieceNumber, int theBlockNumber, int theSize, byte[] thePayload,String theOverlayKey, boolean theData, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, theData, 4 + 1 + 4 + 4 + theSize, theSender, theReceiver);
 		this.itsPieceNumber = thePieceNumber;
 		this.itsBlockNumber = theBlockNumber;
 		this.itsOverlayKey = theOverlayKey;
+                this.itsLength =theSize;
+                this.itsPayload = thePayload;
 	}
 	
 	public int getPieceNumber() {
@@ -49,7 +54,15 @@ public class BTPeerMessagePiece extends BTMessage {
 	public int getBlockNumber() {
 		return this.itsBlockNumber;
 	}
+        
+        public int getChunkSize(){
+            return this.itsLength;
+        }
 	
+        public byte[] getRawData(){
+            return this.itsPayload;
+        }
+        
 	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}
