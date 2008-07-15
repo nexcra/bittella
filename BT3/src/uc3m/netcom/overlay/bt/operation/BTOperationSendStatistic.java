@@ -1,7 +1,7 @@
 package uc3m.netcom.overlay.bt.operation;
 
 import java.util.Collection;
-import java.util.Date;
+//import java.util.Date;
 
 //import org.apache.log4j.Logger;
 
@@ -87,13 +87,23 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
             while(!this.isFinished()){
 		if (this.isFinished()) {
                         BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
-			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                        try{
+                            this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                        }catch(Exception e){
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
 			return;
 		}
 		if (this.uploadFinished()) {
 			
                         BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
-			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                        try{
+                            this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                        }catch(Exception e){
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
 			this.operationFinished(true);
                         return;
 		}
@@ -105,12 +115,17 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		}
 		else if ((this.itsLastRequest + (theirRequestPeriod * 0.95)) <= System.currentTimeMillis()) { //Is it (nearly) time for the next message to the tracker?
                         BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
-			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                        try{
+                            this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                        }catch(Exception e){
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
 		}
 
-		if (this.itsOverlayID.toString().equals("0")) { //TODO: Tells the user, what time it is in the simulation.
+//		if (this.itsOverlayID.toString().equals("0")) { //TODO: Tells the user, what time it is in the simulation.
 //			log.info("Simulated Time: " + (System.currentTimeMillis() / (1000*60)) + " Minutes; Real time: " + (new Date()).toString() + ";");
-		}
+//		}
                 
                 try{
                     Thread.sleep(BTOperationSendStatistic.theirCallPeriod);
@@ -159,7 +174,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		assert (this.itsCommunicationID == theCommunicationID);
 		assert (this.itsTorrent.getTrackerAddress().equals(theSenderInfo));
 		if (!(theMessage instanceof BTTrackerToPeerReply)) {
-//			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
+			System.out.println("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
 			return;
 		}
 		Collection<BTContact> theNewPeers = ((BTTrackerToPeerReply)theMessage).getNewPeerSet();

@@ -59,9 +59,9 @@ public class TransReceiver extends Thread{
                 String ip = s.getInetAddress().getHostAddress();
                 short port = (short)s.getPort();
                 TransInfo addr = new TransInfo(ip,port);
-                TransCon tc = this.hub.createConnection(addr, hub.getDefaultListener());
+                TransCon tc = this.hub.createConnection(hub,addr, hub.getDefaultListener());
                 hub.addConnection(addr, tc);
-                tc.start();
+                
             }catch(Exception e){
                 System.out.println(e.getMessage());
                 e.printStackTrace();

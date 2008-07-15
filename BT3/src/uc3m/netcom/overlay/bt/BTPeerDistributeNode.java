@@ -169,7 +169,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		}
 		BTOperationUpload<BTPeerDistributeNode> uploadOperation = new BTOperationUpload<BTPeerDistributeNode>(this.itsDataBus, document, this.itsOwnContact, this, this, connectionManager, this.itsStatistic, this.itsRandomGenerator);
 		this.itsUploadOperations.add(uploadOperation);
-		uploadOperation.scheduleImmediately();
+		//uploadOperation.scheduleImmediately();
 		if (! this.itsCurrentlyUploadedDocuments.containsKey(theString)) {
 			this.itsCurrentlyUploadedDocuments.put(theString, new BTMessageHandler(this.itsDataBus, document, this.itsOwnContact, uploadOperation, this.getTransLayer(), connectionManager));
 		}

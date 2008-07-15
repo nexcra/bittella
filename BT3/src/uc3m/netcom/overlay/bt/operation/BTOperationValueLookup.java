@@ -118,7 +118,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	 */
 	public void receive(BTMessage theMessage, TransInfo theSenderInfo, int theCommunicationID) {
 		if (!(theMessage instanceof BTTrackerToPeerReply)) {
-//			log.warn("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
+			System.out.println("Expected a 'BTTrackerToPeerReply', but got a '" + theMessage.getClass().getSimpleName() + "'!");
 			return;
 		}
 		Collection<BTContact> theNewPeers = ((BTTrackerToPeerReply)theMessage).getNewPeerSet();
@@ -130,7 +130,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	}
 	
 	public String getDocumentKey() {
-		return this.itsTorrent.getFile().info_hash_as_hex;
+		return new String(this.itsTorrent.getFile().info_hash_as_binary);
 	}
 	
 }

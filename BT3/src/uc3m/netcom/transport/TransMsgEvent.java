@@ -30,6 +30,8 @@ public class TransMsgEvent extends EventObject {
 	private int commId;
 
 	private BTMessage payload;
+        
+        private TransCon con;
 
 	/**
 	 * Constructs a TransMsgEvent
@@ -41,12 +43,13 @@ public class TransMsgEvent extends EventObject {
 	 * @param source
 	 *            the source of this event
 	 */
-	public TransMsgEvent(BTMessage msg, TransInfo sender, TransLayer source) {
+	public TransMsgEvent(BTMessage msg, TransInfo sender, TransLayer source,TransCon con) {
 		super(source);
 		this.protocol = BTUtil.TCP;
 		this.commId = sender.hashCode();
 		this.sender = sender;
 		this.payload = msg;
+                this.con = con;
 	}
 
 	/**
