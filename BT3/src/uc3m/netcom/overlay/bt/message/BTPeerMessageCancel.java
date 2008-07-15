@@ -20,6 +20,7 @@ public class BTPeerMessageCancel extends BTMessage {
 	 */
 	private int itsBlockNumber;
 	
+        private int itsLength;
 	/**
 	 * The overlaykey of the document.
 	 */
@@ -29,12 +30,13 @@ public class BTPeerMessageCancel extends BTMessage {
 	
 	private static TransProtocol theirTransportProtocol = BTConstants.MESSAGE_SERVICE_CATEGORY_CANCEL;
 	
-	public BTPeerMessageCancel(int thePieceNumber, int theBlockNumber, String theOverlayKey, BTID theSender, BTID theReceiver) {
+	public BTPeerMessageCancel(int thePieceNumber, int theBlockNumber, int length,String theOverlayKey, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, true, 4 + 1 + 4 + 4, theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsPieceNumber = thePieceNumber;
 		this.itsBlockNumber = theBlockNumber;
 		this.itsOverlayKey = theOverlayKey;
+                this.itsLength = length;
 	}
 	
 	public int getPieceNumber() {
@@ -45,6 +47,9 @@ public class BTPeerMessageCancel extends BTMessage {
 		return this.itsBlockNumber;
 	}
 	
+        public int getChunkSize(){
+            return this.itsLength;
+        }
 	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}

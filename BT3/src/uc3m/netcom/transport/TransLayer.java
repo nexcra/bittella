@@ -343,10 +343,10 @@ public class TransLayer {//extends Component {
                 connections.put(info.hashCode(), connection);
         }
         
-        public TransCon createConnection(BTID local,BTID remote, TransLayer layer, TransInfo info,TransMessageListener listener)throws Exception{
+        public TransCon createConnection(String overlayKey,BTID local,BTID remote, TransLayer layer, TransInfo info,TransMessageListener listener)throws Exception{
             
             Socket s = new Socket(info.getNetId(),info.getPort());
-            TransCon tc = new TransCon(local,remote,layer,info,listener,s);
+            TransCon tc = new TransCon(overlayKey,local,remote,layer,info,listener,s);
             return tc;
         }
         
@@ -373,11 +373,11 @@ public class TransLayer {//extends Component {
             
         }
 
-	public int send(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol)throws Exception{
+	public int send(BTMessage msg, String overlayKey, TransInfo receiverInfo, short senderPort, TransProtocol protocol)throws Exception{
   
             TransCon tc = connections.get(receiverInfo.hashCode());
             if(tc == null){
-                tc = this.createConnection(msg.getSender(),msg.getReceiver(),this,receiverInfo, tml);
+                tc = this.createConnection(overlayKey,msg.getSender(),msg.getReceiver(),this,receiverInfo, tml);
                 this.addConnection(receiverInfo, tc);
             }
             tc.send(msg);
@@ -396,14 +396,14 @@ public class TransLayer {//extends Component {
         }
 
 
-	public int sendReply(BTMessage msg, TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol)throws Exception{
+	public int sendReply(BTMessage msg, String overlayKey,TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol)throws Exception{
 
             TransCon tc = connections.get(receivingEvent.getSenderTransInfo());
             if(tc == null){
-                tc = this.createConnection(msg.getSender(),msg.getReceiver(),this,receivingEvent.getSenderTransInfo(), tml);
+                tc = this.createConnection(overlayKey,msg.getSender(),msg.getReceiver(),this,receivingEvent.getSenderTransInfo(), tml);
                 this.addConnection(receivingEvent.getSenderTransInfo(), tc);
             }
-            tc.send(msg.generate());
+            tc.send(msg);
             this.lastComm = receivingEvent.getSenderTransInfo().hashCode();
             return lastComm;
         }
