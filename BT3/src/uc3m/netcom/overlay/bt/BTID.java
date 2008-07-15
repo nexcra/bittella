@@ -296,6 +296,8 @@
 
 package uc3m.netcom.overlay.bt;
 
+import java.util.Random;
+
 /**
  * OverlayIDs are random unique identifiers assigned to OverlayAgents from a
  * large identifier space.
@@ -310,16 +312,32 @@ public class BTID{
 	 * 
 	 * @return the unique value of an OverlayID
 	 */
-    private String id;
+    private byte[] id;
     
     public BTID(){
         
+        id = new byte[20];
+        Random r = new Random();
+        r.nextBytes(id);
         //Aqui es donde se genera un ID aleatorio.
     }
     
     @Override
 	public String toString(){
-            return id;
+            return new String(id);
         }
+    
+    public byte[] getID(){
+        return id;
+    }
+    
+    public void setID(byte[] nID){
+        this.id = nID;
+    }
+    
+    public void setID(String nID){
+        this.id = nID.getBytes();
+    }
+    
 
 }

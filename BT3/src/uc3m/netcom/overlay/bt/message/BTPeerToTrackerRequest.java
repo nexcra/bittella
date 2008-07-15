@@ -5,6 +5,7 @@ import uc3m.netcom.overlay.bt.BTUtil;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTInternStatistic;
 import uc3m.netcom.transport.TransProtocol;
+import jBittorrentAPI.TorrentFile;
 
 public class BTPeerToTrackerRequest extends BTMessage {
 	
@@ -13,26 +14,40 @@ public class BTPeerToTrackerRequest extends BTMessage {
 	
 	private BTInternStatistic itsStatistic; //no se si lo utilizaremos
 	
-	private Reason event;
+	private String event;
+        private Reason t_event;
 	private String info_hash;
-        private BTContact peer_id;
-        private short port = peer_id.getTransInfo().getPort();
-        private String uploaded = "0";
-        private String downloaded = "0";
-        private String left = "0";
+        private BTID peer_id;;
+        private long uploaded = 0;
+        private long downloaded = 0;
+        private long left = 0;
         private String compact = "1";
-        private String ip = peer_id.getTransInfo().getNetId();
-        private int numwant = 50;
         private BTID tracker_id;
-        private String announceURL;
+        private TorrentFile tf;
 	
-	public BTPeerToTrackerRequest(Reason theReason,String announceURL, BTID tracker_id, String info_hash,BTContact peer_id,short port,int numwant, BTInternStatistic theStatistic){
-            super(BTMessage.Type.TRACKER_REQUEST,BTUtil.TCP,true,0,peer_id.getOverlayID(),tracker_id);
-            this.event = theReason;
-            this.announceURL = announceURL;
+	public BTPeerToTrackerRequest(Reason theReason,TorrentFile tf, BTID tracker_id,BTID peer_id, BTInternStatistic theStatistic){
+            super(BTMessage.Type.TRACKER_REQUEST,BTUtil.TCP,true,0,peer_id,tracker_id);
+            this.tf = tf;
             this.tracker_id = tracker_id;
-            this.info_hash = info_hash;
+            this.peer_id = peer_id;
+            this.info_hash = tf.info_hash_as_url;
             this.itsStatistic = theStatistic;
+            this.t_event = theReason;
+            
+            switch(theReason){
+                case started:
+                    event = "&event=started";
+                    break;
+                case stopped:
+                    event = "&event=stopped";
+                    break;
+                case completed:
+                    event = "&event=completed";
+                    break;
+                case empty:
+                    event = "&event=empty";
+                    break;
+            }
         }
  /*       
 	public BTPeerToTrackerRequest(Reason theReason, int theNumberOfRequestedPeers, OverlayKey theDocument, BTContact theP2PAddress, BTInternStatistic theStatistic, OverlayID theSender, OverlayID theReceiver) {
@@ -78,27 +93,35 @@ public class BTPeerToTrackerRequest extends BTMessage {
 	}
 	
 */	
-	
-	public Reason getReason() {
+	public TorrentFile getDocument(){
+            return this.tf;
+        }
+        
+	public String getReason() {
+            
 		return this.event;
 	}
+        
+        public Reason getTReason(){
+            return this.t_event;
+        }
 	
 	public BTInternStatistic getStatistic() {
 		return this.itsStatistic;
 	}
 	
-	public String getDocument() {
+	public String getDocID() {
 		return this.info_hash;
 	}
 	
-	public BTContact getPeerID() {
+	public BTID getPeerID() {
 		return this.peer_id;
 	}
 	
-	public int getNumberOfWanted() {
-		return this.numwant;
-	}
-	
+	public BTID getTrackerID(){
+            return this.tracker_id;
+        }
+        
 	public static Type getStaticType() {
 		return BTMessage.Type.TRACKER_REQUEST;
 	}
@@ -107,21 +130,27 @@ public class BTPeerToTrackerRequest extends BTMessage {
 		return BTUtil.TCP;
 	}
 	
-        public void setUploaded(String uploaded){
+        public void setUploaded(long uploaded){
             this.uploaded = uploaded;
         }
         
-        public void setDownloaded(String downloaded){
+        public void setDownloaded(long downloaded){
             this.downloaded = downloaded;
         }
-        public void setLeft(String left){
+        public void setLeft(long left){
             this.left = left;
         }
         
-        public String getFormedURL(){
-            
-            String url = "http://"+announceURL+"/?info_hash="+info_hash+"&peer_id="+peer_id+"&port="+port+"&uploaded="+uploaded+"&downloaded="+downloaded+"&left="+left+"&compact=1&numwant="+numwant+"&event="+event+"&ip="+ip;
-            if(tracker_id != null) url += tracker_id;
-            return url;
+        public long getUploaded(){
+            return uploaded;
         }
+        
+        public long getDownloaded(){
+            return downloaded;
+        }
+        
+        public long getLeft(){
+            return left;
+        }
+        
 }

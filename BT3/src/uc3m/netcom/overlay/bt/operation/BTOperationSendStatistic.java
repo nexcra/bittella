@@ -86,15 +86,13 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
             
             while(!this.isFinished()){
 		if (this.isFinished()) {
-                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsTorrent.getTrackerAddress().getPort()+"/";
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
+                        BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
 			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
 			return;
 		}
 		if (this.uploadFinished()) {
 			
-                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsP2PPort+"/";
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
+                        BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
 			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
 			this.operationFinished(true);
                         return;
@@ -102,13 +100,11 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		
 		if (this.requestMorePeers()) {
 //			log.debug("Too less contacts: '" + ((Map<OverlayKey, Map<String, Object>>)this.itsDataBus.get("Torrents")).get(this.itsTorrent.getKey()).get("NumberOfConnections") + "'; requesting more! At: " + this.itsOverlayID);
-                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsP2PPort+"/";
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
-			this.itsCommunicationID = this.itsTransLayer.sendAndWait(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol(), this, theirMessageTimeout);
+                        BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
+			this.itsCommunicationID = this.itsTransLayer.sendAndWait(request, this.itsOverlayID, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol(), this, theirMessageTimeout);
 		}
 		else if ((this.itsLastRequest + (theirRequestPeriod * 0.95)) <= System.currentTimeMillis()) { //Is it (nearly) time for the next message to the tracker?
-                        String announceURL = "http://"+this.itsTorrent.getTrackerAddress().getNetId()+":"+this.itsP2PPort+"/";
-			BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty, announceURL,this.itsTorrent.getTrackerID(),this.itsTorrent.getKey(),new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)),(short)-1,-1,null);
+                        BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
 			this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
 		}
 

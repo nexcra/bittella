@@ -201,7 +201,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 		//A table lookup for the message type would be better than this case statement. But this is much to much overhead in Java, as we don't have first class functions.
 		//TODO: Aufr�umen, so dass man nicht jedes mal das gleiche macht. Am besten nur nachschauen von wem die Nachricht ist, nachschlagen in welchem Torrent dieser Peer ist und fertig.
 		switch (theBTMessage.getType()) {
-			case REQUEST: {
+			case BTMessage.REQUEST: {
 				BTPeerMessageRequest theRequest = (BTPeerMessageRequest) theBTMessage;
 				String theDocument = theRequest.getRequest().getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theDocument)) {
@@ -214,7 +214,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theDocument).handleRequestMessage(theRequest, theOtherPeer, theMessageEvent);
 				return;
 			}
-			case CANCEL: {
+			case BTMessage.CANCEL: {
 				BTPeerMessageCancel theCancelMessage = (BTPeerMessageCancel) theBTMessage;
 				String theDocument = theCancelMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theCancelMessage.getOverlayKey())) {
@@ -227,7 +227,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theCancelMessage.getOverlayKey()).handleCancelMessage(theCancelMessage, theOtherPeer);
 				return;
 			}
-			case HAVE: {
+			case BTMessage.HAVE: {
 				BTPeerMessageHave theHaveMessage = (BTPeerMessageHave) theBTMessage;
 				String theDocument = theHaveMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theHaveMessage.getOverlayKey())) {
@@ -240,7 +240,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theHaveMessage.getOverlayKey()).handleHaveMessage(theHaveMessage, theOtherPeer);
 				return;
 			}
-			case HANDSHAKE: {
+			case BTMessage.HANDSHAKE: {
 				BTPeerMessageHandshake theHandshake = (BTPeerMessageHandshake) theBTMessage;
 				String theDocument = theHandshake.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theHandshake.getOverlayKey())) {
@@ -253,7 +253,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theHandshake.getOverlayKey()).handleHandshakeMessage(theHandshake, theOtherPeer);
 				return;
 			}
-			case BITFIELD: {
+			case BTMessage.BITFIELD: {
 				BTPeerMessageBitField theBitfield = (BTPeerMessageBitField) theBTMessage;
 				String theDocument = theBitfield.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theBitfield.getOverlayKey())) {
@@ -266,7 +266,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theBitfield.getOverlayKey()).handleBitfieldMessage(theBitfield, theOtherPeer);
 				return;
 			}
-			case INTERESTED: {
+			case BTMessage.INTERESTED: {
 				BTPeerMessageInterested theInterestMessage = (BTPeerMessageInterested) theBTMessage;
 				String theDocument = theInterestMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theInterestMessage.getOverlayKey())) {
@@ -279,7 +279,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theInterestMessage.getOverlayKey()).handleInterestMessage(theInterestMessage, theOtherPeer);
 				return;
 			}
-			case UNINTERESTED: {
+			case BTMessage.UNINTERESTED: {
 				BTPeerMessageUninterested theUninterestMessage = (BTPeerMessageUninterested) theBTMessage;
 				String theDocument = theUninterestMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theUninterestMessage.getOverlayKey())) {
@@ -292,7 +292,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theUninterestMessage.getOverlayKey()).handleUninterestMessage(theUninterestMessage, theOtherPeer);
 				return;
 			}
-			case CHOKE: {
+			case BTMessage.CHOKE: {
 				BTPeerMessageChoke theChokeMessage = (BTPeerMessageChoke) theBTMessage;
 				String theDocument = theChokeMessage.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theChokeMessage.getOverlayKey())) {
@@ -305,7 +305,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theChokeMessage.getOverlayKey()).handleChokeMessage(theChokeMessage, theOtherPeer);
 				return;
 			}
-			case UNCHOKE: {
+			case BTMessage.UNCHOKE: {
 				BTPeerMessageUnchoke theUnchokeMessage = (BTPeerMessageUnchoke) theBTMessage;
 				String theDocument = theUnchokeMessage.getString();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theUnchokeMessage.getString())) {
@@ -318,7 +318,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theUnchokeMessage.getString()).handleUnchokeMessage(theUnchokeMessage, theOtherPeer);
 				return;
 			}
-			case KEEPALIVE: {
+			case BTMessage.KEEPALIVE: {
 				BTPeerMessageKeepAlive theKeepAliveMessage = (BTPeerMessageKeepAlive) theBTMessage;
 				String theDocument = theKeepAliveMessage.getString();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theKeepAliveMessage.getString())) {
@@ -331,7 +331,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				this.itsCurrentlyUploadedDocuments.get(theKeepAliveMessage.getString()).handleKeepAliveMessage(theOtherPeer);
 				return;
 			}
-			case PIECE: {
+			case BTMessage.PIECE: {
 //				BTPeerMessagePiece thePieceMessage = (BTPeerMessagePiece) theBTMessage;
 				/*
 				 * I wasn't able to find the reason for these failures:

@@ -2,6 +2,7 @@ package uc3m.netcom.overlay.bt.message;
 
 import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.transport.TransProtocol;
+import jBittorrentAPI.Message_PP;
 
 //import de.tud.kom.p2psim.api.common.Message;
 //import de.tud.kom.p2psim.api.overlay.OverlayID;
@@ -12,7 +13,7 @@ import uc3m.netcom.transport.TransProtocol;
  * This is the abstract super class of all BitTorrent Messages.
  * @author Jan Stolzenburg
  */
-public abstract class BTMessage {//extends AbstractOverlayMessage<OverlayID> {
+public abstract class BTMessage extends Message_PP{//extends AbstractOverlayMessage<OverlayID> {
 	
 	/**
 	 * The BitTorrent type of the message.
@@ -21,6 +22,7 @@ public abstract class BTMessage {//extends AbstractOverlayMessage<OverlayID> {
 	public enum Type {CHOKE, UNCHOKE, INTERESTED, UNINTERESTED, HAVE, BITFIELD, REQUEST, PIECE, CANCEL, KEEPALIVE, HANDSHAKE, TRACKER_REQUEST, TRACKER_REPLY}
 
         public static final int KEEPALIVE = -2;
+        public static final int HANDSHAKE = -3;
         public static final int CHOKE = 0;
         public static final int UNCHOKE = 1;
         public static final int INTERESTED = 2;
@@ -81,12 +83,6 @@ public abstract class BTMessage {//extends AbstractOverlayMessage<OverlayID> {
 //		return this.received;
 //	}
 	
-	/**
-	 * @return the BitTorrent message type.
-	 */
-	public Type getType() {
-		return this.itsType;
-	}
 	
 	public TransProtocol getTransportProtocol() {
 		return this.itsTransportProtocol;

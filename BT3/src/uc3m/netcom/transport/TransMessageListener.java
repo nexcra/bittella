@@ -1,6 +1,6 @@
 package uc3m.netcom.transport;
 
-import de.tud.kom.p2psim.api.common.ComponentEventListener;
+//import de.tud.kom.p2psim.api.common.ComponentEventListener;
 
 /**
  * TransMessageListeners acts as event handlers for incoming TransMsgEvents
@@ -19,7 +19,7 @@ import de.tud.kom.p2psim.api.common.ComponentEventListener;
  * @version 3.0, 03.12.2007
  * 
  */
-public interface TransMessageListener extends ComponentEventListener {
+public interface TransMessageListener {//extends ComponentEventListener {
 
 	/**
 	 * Upon receiving a transport message, the transport layer strips off the
