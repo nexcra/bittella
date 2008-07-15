@@ -3,7 +3,7 @@ package uc3m.netcom.overlay.bt;
 
 
 import uc3m.netcom.transport.TransInfo;
-
+import jBittorrentAPI.TorrentFile;
 
 /**
  * This class represents a '.torrent' file.
@@ -16,33 +16,30 @@ import uc3m.netcom.transport.TransInfo;
 public class BTTorrent {
 	
 	
-	
-	private String itsDocumentKey;
-	
-	private long itsSize;
-	
 	private BTID itsTrackerID;
 	
 	private TransInfo itsTrackerAddress;
 	
+	private TorrentFile tf;
+        
 	
-	
-	public BTTorrent(String theDocumentKey, long theSize, BTID theTrackerID, TransInfo theTrackerAddress) {
-		this.itsDocumentKey = theDocumentKey;
-		this.itsSize = theSize;
+	public BTTorrent(TorrentFile tf, long theSize, BTID theTrackerID, TransInfo theTrackerAddress) {
+
+                this.tf = tf;
 		this.itsTrackerID = theTrackerID;
 		this.itsTrackerAddress = theTrackerAddress;
 	}
 	
 	public String getKey() {
-		return this.itsDocumentKey;
+                return this.tf.info_hash_as_hex;
 	}
 	
 	public long getSize() {
-		return this.itsSize;
+		return this.tf.total_length;
 	}
 	
 	public TransInfo getTrackerAddress() {
+            
 		return this.itsTrackerAddress;
 	}
 	
@@ -50,4 +47,7 @@ public class BTTorrent {
 		return this.itsTrackerID;
 	}
 	
+        public TorrentFile getFile(){
+            return this.tf;
+        }
 }

@@ -9,6 +9,10 @@ import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.IOException;
 import uc3m.netcom.overlay.bt.message.*;
+import jBittorrentAPI.PeerUpdater;
+import jBittorrentAPI.Peer;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 
 public class TransCon extends Thread{
@@ -85,6 +89,10 @@ public class TransCon extends Thread{
         }else{
             
         }
+    }
+    
+    public void sendAndWait()throws IOException{
+                    LinkedHashMap list = pu.processResponse(pu.contactTracker(id, tf,0,0,tf.total_length,"&event=started"));
     }
     
     public void send(byte[] data)throws IOException{

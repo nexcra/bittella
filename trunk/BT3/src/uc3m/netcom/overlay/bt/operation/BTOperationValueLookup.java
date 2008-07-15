@@ -81,8 +81,8 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	 */
 	private void tryIt() {
 		this.attempts += 1;
-		BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.started, -1, this.itsTorrent.getKey(), new BTContact(this.itsOverlayID, this.itsTransLayer.getLocalTransInfo(this.itsP2PPort)), this.itsOverlayID, this.itsTorrent.getTrackerID());
-		this.itsTransLayer.sendAndWait(request, this.itsTorrent.getTrackerAddress(), this.itsTrackerPort, BTPeerToTrackerRequest.getStaticTransportProtocol(), this, theirMessageTimeout);
+		BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.started,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
+		this.itsTransLayer.sendAndWait(request, this.itsOverlayID, this.itsTorrent.getTrackerAddress(), this.itsTrackerPort, BTPeerToTrackerRequest.getStaticTransportProtocol(), this, theirMessageTimeout);
 	}
 	
 	@Override
@@ -130,7 +130,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	}
 	
 	public String getDocumentKey() {
-		return this.itsTorrent.getKey();
+		return this.itsTorrent.getFile().info_hash_as_hex;
 	}
 	
 }

@@ -297,13 +297,10 @@
 package uc3m.netcom.transport;
 
 //import de.tud.kom.p2psim.api.common.Component;
+import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.overlay.bt.message.BTMessage;
 import uc3m.netcom.overlay.bt.message.BTPeerToTrackerRequest;
-import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
 import java.net.*;
-import java.io.LineNumberReader;
-import java.io.InputStreamReader;
-import java.io.IOException;
 import java.util.HashMap;
 
 /**
@@ -328,11 +325,13 @@ public class TransLayer {//extends Component {
  private TransInfo localAddress;
  private int lastComm;
  private TransMessageListener tml;
+ private TransReceiver trv ;
+
  
         public TransLayer(String netID,short port,TransMessageListener tml){
             
-            TransReceiver tr = new TransReceiver(this);
-            Thread t = new Thread(tr);
+            TransReceiver trv = new TransReceiver(this,port);
+            Thread t = new Thread(trv);
             t.start();
             connections = new HashMap<Integer,TransCon>();
             localAddress = new TransInfo(netID,port);
@@ -344,169 +343,64 @@ public class TransLayer {//extends Component {
                 connections.put(info.hashCode(), connection);
         }
         
-        public TransCon createConnection(TransInfo info,TransMessageListener listener){
+        public TransCon createConnection(TransInfo info,TransMessageListener listener)throws Exception{
             
             Socket s = new Socket(info.getNetId(),info.getPort());
             TransCon tc = new TransCon(info,listener,s,true);
+            return tc;
         }
         
-        public TransCon createConnection(TransInfo info,TransMessageCallback listener){
+        public TransCon createConnection(TransInfo info,TransMessageCallback listener)throws Exception{
             
             Socket s = new Socket(info.getNetId(),info.getPort());
             TransCon tc = new TransCon(info,listener,s,false);
+            return tc;
         }
                 
         
-        public void contactTracker(BTPeerToTrackerRequest btr,TransMessageCallback tmc,int timeout){
-            
-            try{
-                
-                URL path = new URL(btr.getFormedURL());
-                HttpURLConnection http = (HttpURLConnection) path.openConnection();
-                http.setConnectTimeout(timeout);
-                http.connect();
-                int l = http.getContentLength();
-                LineNumberReader lnr = new LineNumberReader(new InputStreamReader(http.getInputStream()));
-                // Aqui va el procesado de la respusesta que vienen en el API Java de BT
-                // Se genera un BTTrackerToPeerReply message
-                BTTrackerToPeerReply ttpr = new BTTrackerToPeerReply(null,null,null);
-                tmc.receive(ttpr, null, 0); //Revisar, el TransInfo del Sender falta.
-                
-              }catch(IOException e){
-                  System.out.println(e.getMessage());
-                  e.printStackTrace();
-                  tmc.messageTimeoutOccured(0);
-              }catch(SocketTimeoutException ex){
-                  System.out.println(ex.getMessage());
-                  ex.printStackTrace();
-                  tmc.messageTimeoutOccured(0);
-              }
-                
-        }
-	/**
-	 * Registers a TransMessageListener listening for incoming messages on a
-	 * specific port
-	 * 
-	 * @param receiver
-	 *            the given TransMessageListener
-	 * @param port
-	 *            the port on which to listen for incoming messages
-	 */
 	public void addTransMsgListener(TransMessageListener receiver, short port){
             
         }
 
-	/**
-	 * Removes a TransMessageListener listening for incoming messages on a
-	 * specific port
-	 * 
-	 * @param receiver
-	 *            the receiver to be removed
-	 * @param port
-	 *            the listening port
-	 */
 	public void removeTransMsgListener(TransMessageListener receiver, short port){
             
         }
 
-	/**
-	 * Sends a message to a remote host by using the given
-	 * <code>TransInfo</code> information of the receiver. Further to this, it
-	 * is necessary to specify the port of the sender of the given message in
-	 * order to support future replies or queries iniated by the remote
-	 * receiver. Lastly, the transport protocol has to be chosen such as UDP or
-	 * TCP.
-	 * 
-	 * @param msg
-	 *            the message to be send
-	 * @param receiverInfo
-	 *            the remote receiver which should receive the given message
-	 * @param senderPort
-	 *            the port of the sender
-	 * @param protocol
-	 *            the used transport protocol
-	 */
-	public int send(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol){
+	public int send(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol)throws Exception{
   
             TransCon tc = connections.get(receiverInfo.hashCode());
             if(tc == null){
                 tc = this.createConnection(receiverInfo, tml);
+                this.addConnection(receiverInfo, tc);
                 tc.start();
             }
-            tc.send(msg.getBytes());
+            tc.send(msg.generate());
             this.lastComm = receiverInfo.hashCode();
-            
+            return lastComm;
         }
 
-	/**
-	 * This method is used to implement a request-reply scenario. It sends the
-	 * given message to a remote host by using the given <code>TransInfo</code>
-	 * information of the receiver and calls the given TransMessageCallback when
-	 * a reply for the given message is received by using
-	 * {@link TransMessageCallback#receive(Message, TransInfo, int)} method.
-	 * 
-	 * In particular, the sendAndWait method returns a unique communication
-	 * identifier which can be used to identify the above mentioned reply when
-	 * implementing the TransMessageCallback interface. In addition to this, a
-	 * timeout event occurs at the TransMessageCallback after
-	 * <code>timeout</code> simulation units.
-	 * 
-	 * Note that the timeout interval must be adapted to the time units of the
-	 * simulation framework. For instance, a real time time of two milliseconds
-	 * is speficied by 2 * Simulator.MILLISECOND_UNIT;
-	 * 
-	 * @param msg
-	 *            the message to be send
-	 * @param receiverInfo
-	 *            the remote receiver which should receive the given message
-	 * @param senderPort
-	 *            the port of the sender
-	 * @param protocol
-	 *            the used transport protocol
-	 * @param senderCallback
-	 *            the TransMessageCallback which is called when receiving a
-	 *            reply to the given message
-	 * @param timeout
-	 *            the timeout interval which has to be adapted to the time units
-	 *            of the simulation framework
-	 * @return the unique communication identifier
-	 */
-	public int sendAndWait(BTMessage msg, TransInfo receiverInfo, short senderPort, TransProtocol protocol, TransMessageCallback senderCallback, long timeout){
+        
+	public int sendAndWait(BTMessage msg, BTID id,TransInfo receiverInfo, short port, TransProtocol protocol, TransMessageCallback tmc,long timeout){
             
-            TransCon tc = connections.get(receiverInfo);
-            if(tc == null){
-                tc = this.createConnection(receiverInfo, senderCallback);
-                tc.start();
-            }
-            tc.send(msg.getBytes(),timeout);
+            BTPeerToTrackerRequest pttr = (BTPeerToTrackerRequest) msg;
+            TransTrackerCon ttc = new TransTrackerCon(id,pttr.getDocument(),tmc,this.localAddress.getPort());
+            ttc.sendAndWait((BTPeerToTrackerRequest)msg);
             this.lastComm = receiverInfo.hashCode();
+            return lastComm;
         }
 
-	/**
-	 * Sends a reply to a specific message which has been received within a
-	 * TransMsgEvent. It is recommended to use this method in order to implement
-	 * a request-reply scenario.
-	 * 
-	 * @param msg
-	 *            the given reply message
-	 * @param receivingEvent
-	 *            the message receive event passed from the TransLayer that
-	 *            triggers indirectly the sending of the given reply message
-	 * @param senderPort
-	 *            the port of the sender
-	 * @param protocol
-	 *            the used transport protocol
-	 */
-	public int sendReply(BTMessage msg, TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol){
+
+	public int sendReply(BTMessage msg, TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol)throws Exception{
 
             TransCon tc = connections.get(receivingEvent.getSenderTransInfo());
             if(tc == null){
                 tc = this.createConnection(receivingEvent.getSenderTransInfo(), tml);
+                this.addConnection(receivingEvent.getSenderTransInfo(), tc);
                 tc.start();
             }
-            tc.send(msg.getBytes());
+            tc.send(msg.generate());
             this.lastComm = receivingEvent.getSenderTransInfo().hashCode();
-            
+            return lastComm;
         }
 
 	/**
@@ -525,6 +419,11 @@ public class TransLayer {//extends Component {
 	
 	public int getLastCommunicationId(){
             return this.lastComm;
+        }
+        
+        
+        public TransMessageListener getDefaultListener(){
+            return tml;
         }
         
 	public void cancelTransmission(int commId){

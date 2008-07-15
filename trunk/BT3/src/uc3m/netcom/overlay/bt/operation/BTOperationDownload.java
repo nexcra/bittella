@@ -46,7 +46,7 @@ import uc3m.netcom.overlay.bt.message.BTPeerMessageHave;
 import uc3m.netcom.overlay.bt.message.BTPeerMessagePiece;
 import uc3m.netcom.overlay.bt.message.BTPeerMessageRequest;
 import uc3m.netcom.overlay.bt.message.BTPeerMessageUninterested;
-import uc3m.netcom.overlay.bt.message.BTMessage.Type;
+//import uc3m.netcom.overlay.bt.message.BTMessage.Type;
 
 /**
  * This method controls the download.
@@ -200,7 +200,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             throw new RuntimeException(errorMessage);
         }
         BTMessage theBTMessage = (BTMessage) theMessage;
-        if (theBTMessage.getType() != Type.PIECE) {
+        if (theBTMessage.getType() != BTMessage.PIECE) {
             String errorMessage = "Received an unknown BitTorrent message: '" + theBTMessage.toString() + "'";
             //log.error(errorMessage);
             throw new RuntimeException(errorMessage);
@@ -339,7 +339,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             anInternRequest.setRequestingPeer(this.itsOwnContact);
             BTPeerMessageRequest request = new BTPeerMessageRequest(anInternRequest, this.itsOwnContact.getOverlayID(), anInternRequest.getRequestedPeer().getOverlayID());
 //			this.itsConnectionManager.getConnection(anInternRequest.getRequestedPeer()).addMessage(request);
-            int communicationId = this.itsTransLayer.sendAndWait(request, anInternRequest.getRequestedPeer().getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageRequest.getStaticTransportProtocol(), this, theirReplyTimeout);
+            int communicationId = this.itsTransLayer.sendAndWait(request, this.itsOwnContact.getOverlayID(), anInternRequest.getRequestedPeer().getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageRequest.getStaticTransportProtocol(), this, theirReplyTimeout);
             this.itsRequests.put(communicationId, anInternRequest);
         }
     }

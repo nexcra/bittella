@@ -6,7 +6,7 @@ package uc3m.netcom.transport;
 import java.util.EventObject;
 
 import uc3m.netcom.overlay.bt.message.BTMessage;
-import de.tud.kom.p2psim.impl.transport.AbstractTransMessage;
+import uc3m.netcom.overlay.bt.BTUtil;
 
 /**
  * TransMsgEvent comprises data necessary to implement the virtual communication
@@ -41,12 +41,12 @@ public class TransMsgEvent extends EventObject {
 	 * @param source
 	 *            the source of this event
 	 */
-	public TransMsgEvent(AbstractTransMessage msg, TransInfo sender, TransLayer source) {
+	public TransMsgEvent(BTMessage msg, TransInfo sender, TransLayer source) {
 		super(source);
-		this.protocol = (TransProtocol) msg.getProtocol();
-		this.commId = msg.getCommId();
+		this.protocol = BTUtil.TCP;
+		this.commId = sender.hashCode();
 		this.sender = sender;
-		this.payload = (BTMessage) msg.getPayload();
+		this.payload = msg;
 	}
 
 	/**
