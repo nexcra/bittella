@@ -37,6 +37,7 @@ public class BTPeerMessageCancel extends BTMessage {
 		this.itsBlockNumber = theBlockNumber;
 		this.itsOverlayKey = theOverlayKey;
                 this.itsLength = length;
+                this.type = BTMessage.CANCEL;
 	}
 	
 	public int getPieceNumber() {

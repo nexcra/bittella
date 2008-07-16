@@ -58,6 +58,7 @@ public class TransReceiver extends Thread{
                 Socket s = ss.accept();
                 String ip = s.getInetAddress().getHostAddress();
                 short port = (short)s.getPort();
+                System.out.println("Connection Accepted: "+ip+":"+port);
                 TransInfo addr = new TransInfo(ip,port);
                 TransCon tc = this.hub.createConnection(hub,addr, hub.getDefaultListener());
                 hub.addConnection(addr, tc);

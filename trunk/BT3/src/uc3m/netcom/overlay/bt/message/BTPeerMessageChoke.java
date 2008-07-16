@@ -17,6 +17,7 @@ public class BTPeerMessageChoke extends BTMessage {
 		super(theirType, theirTransportProtocol, true, 4 + 1, theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsOverlayKey = theOverlayKey;
+                this.type = BTMessage.CHOKE;
 	}
 	
 	public String getOverlayKey() {

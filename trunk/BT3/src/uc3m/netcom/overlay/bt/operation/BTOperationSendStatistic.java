@@ -22,7 +22,7 @@ import uc3m.netcom.overlay.bt.BTConstants;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTDataStore;
 import uc3m.netcom.overlay.bt.BTTorrent;
-import uc3m.netcom.overlay.bt.BTPeerDistributeNode;
+import uc3m.netcom.overlay.bt.BTPeerSearchNode;
 import uc3m.netcom.overlay.bt.message.BTMessage;
 import uc3m.netcom.overlay.bt.message.BTPeerToTrackerRequest;
 import uc3m.netcom.overlay.bt.message.BTTrackerToPeerReply;
@@ -71,7 +71,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		this.itsDataBus = theDataBus;
 		this.itsP2PPort = theP2PPort;
 		this.itsTorrent = theTorrent;
-		this.itsTransLayer = ((BTPeerDistributeNode)theOwningComponent).getTransLayer();
+		this.itsTransLayer = ((BTPeerSearchNode)theOwningComponent).getTransLayer();
 		this.itsOverlayID = theOverlayID;
 		this.itsLastRequest = System.currentTimeMillis();
 	}

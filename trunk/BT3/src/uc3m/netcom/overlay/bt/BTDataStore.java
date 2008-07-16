@@ -92,11 +92,14 @@ public class BTDataStore {
 		return this.itsGeneralDataClasses.get(theKey);
 	}
 	
-	public void addTorrent(String theTorrentKey) {
+	public void addTorrent(BTTorrent torrent) {
+            String theTorrentKey = torrent.getKey();
 		if (this.itsPerTorrentData.containsKey(theTorrentKey))
 			throw new RuntimeException("Tried to add an already stored torrent.");
 		this.itsPerTorrentData.put(theTorrentKey, new HashMap<String, Object>());
+                this.itsPerTorrentData.get(theTorrentKey).put("Torrent", torrent);
 		this.itsPerTorrentDataClasses.put(theTorrentKey, new HashMap<String, Class>());
+                this.itsPerTorrentDataClasses.get(theTorrentKey).put("Torrent",torrent.getClass());
 		this.itsPeersPerTorrent.put(theTorrentKey, new HashSet<BTContact>());
 	}
 	
@@ -145,7 +148,9 @@ public class BTDataStore {
 			else
 				throw new RuntimeException("Tried to store a peer for a second torrent.");
 		}
-		this.itsPeersPerTorrent.get(theTorrentKey).add(thePeer);
+                
+                Set h = this.itsPeersPerTorrent.get(theTorrentKey);
+		h.add(thePeer);
 		this.itsTorrentOfAPeer.put(thePeer, theTorrentKey);
 		this.itsPerPeerData.put(thePeer, new HashMap<String, Object>());
 		this.itsPerPeerDataClasses.put(thePeer, new HashMap<String, Class>());

@@ -91,5 +91,8 @@ public class TransMsgEvent extends EventObject {
 	public BTMessage getPayload() {
 		return payload;
 	}
-
+     
+        public TransCon getTransCon(){
+                return con;
+        }
 }

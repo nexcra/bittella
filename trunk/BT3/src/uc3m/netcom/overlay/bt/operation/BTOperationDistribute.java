@@ -100,18 +100,15 @@ public class BTOperationDistribute<OwnerType extends Application>  extends BTOpe
 		//this.itsSendStatisticOperation.scheduleWithDelay(BTOperationSendStatistic.getPeriod());
 		Thread tsso = new Thread(this.itsSendStatisticOperation);
                 tsso.start();
-                
-		//this.itsDistributionNode.downloadDocument(this.itsTorrent.getKey(), null, this); //I don't pass addresses of other peers, as I have the peer managers for this job!
+
                 BTOperationDownload btdo = this.itsDistributionNode.downloadDocument(this.itsTorrent.getKey(), null, this);
                 Thread tdo = new Thread(btdo);
-//		int downloadOperationID = this.itsDistributionNode.downloadDocument(this.itsTorrent.getKey(), null, this); //I don't pass addresses of other peers, as I have the peer managers for this job!
-//		this.itsOperationManager.registerOperationEventHandler(downloadOperationID, this);
-		
-		//this.itsDistributionNode.uploadDocument(this.itsTorrent.getKey(), this);
+                tdo.start();
+
                 BTOperationUpload btuo = this.itsDistributionNode.uploadDocument(this.itsTorrent.getKey(), this);
                 Thread tuo = new Thread(btuo);
-//		int uploadOperationID = this.itsDistributionNode.uploadDocument(this.itsTorrent.getKey(), this);
-//		this.itsOperationManager.registerOperationEventHandler(uploadOperationID, this);
+                tuo.start();
+
 	}
 	
 	@SuppressWarnings("unchecked")

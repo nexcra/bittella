@@ -15,6 +15,7 @@ public class BTPeerMessageKeepAlive extends BTMessage {
 	public BTPeerMessageKeepAlive(String theString, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, true, 4, theSender, theReceiver);
 		this.itsString = theString;
+                this.type = BTMessage.KEEPALIVE;
 	}
 	
 	public String getString() {

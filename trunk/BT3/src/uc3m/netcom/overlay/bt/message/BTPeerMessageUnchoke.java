@@ -16,6 +16,7 @@ public class BTPeerMessageUnchoke extends BTMessage {
 		super(theirType, theirTransportProtocol, true, 4 + 1, theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsString = theString;
+                this.type = BTMessage.UNCHOKE;
 	}
 	
 	public String getString() {

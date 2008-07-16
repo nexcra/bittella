@@ -242,6 +242,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			}
 			case BTMessage.HANDSHAKE: {
 				BTPeerMessageHandshake theHandshake = (BTPeerMessageHandshake) theBTMessage;
+                                theMessageEvent.getTransCon().setLocalID(this.getOverlayID());
 				String theDocument = theHandshake.getOverlayKey();
 				if (! this.itsCurrentlyUploadedDocuments.containsKey(theHandshake.getOverlayKey())) {
 					//We just ignore this message.

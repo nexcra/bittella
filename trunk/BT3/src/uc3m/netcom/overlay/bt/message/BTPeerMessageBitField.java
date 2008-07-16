@@ -26,6 +26,7 @@ public class BTPeerMessageBitField extends BTMessage {
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsOverlayKey = theOverlayKey;
 		this.itsBitset = theBitset;
+                this.type = BTMessage.BITFIELD;
 	}
 	
 	public BitSet getBitset() {
