@@ -313,10 +313,10 @@ package uc3m.netcom.transport;
 
 public class TransInfo {
 
-        private short port;
+        private int port;
         private String netID;
         
-        public TransInfo(String netID,short port){
+        public TransInfo(String netID,int port){
                 this.netID = netID;
                 this.port = port;
         }
@@ -325,7 +325,7 @@ public class TransInfo {
 	 * 
 	 * @return the remote port of a <code>TransMessageListener</code>
 	 */
-	public short getPort(){ return port;}
+	public int getPort(){ return port;}
 
 	/**
 	 * Returns the <code>NetID</code> of a remote

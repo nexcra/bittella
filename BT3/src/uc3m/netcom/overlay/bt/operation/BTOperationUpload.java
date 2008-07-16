@@ -102,6 +102,8 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
         }
         
         public void run(){
+            
+            while(!this.isFinished()){
 		if (this.isFinished()) {
 			this.itsChokingOperation.stop(true);
 			this.itsKeepAliveOperation.stop(true);
@@ -218,6 +220,8 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 			this.itsRequestArrivels.removeFirst();
 			this.itsStatistic.blockSendToPeer(aRequest.getRequestingPeer());
 		}
+                
+                }
 	}
 	
 	/**

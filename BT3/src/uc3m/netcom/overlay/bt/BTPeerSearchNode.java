@@ -60,9 +60,12 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 	 * @param theOverlayKey the key/hash of the torrent.
 	 * @return the operation id of the started <code>BTOperationValueLookup<code>.
 	 */
-	public int valueLookup(String theOverlayKey, OperationCallback theCallback) { //The OperationManager is set as the event handler. This class doesn't care about the events. That's up to the caller.
-		if (! this.itsDataBus.isTorrentKnown(theOverlayKey)) {
-			this.itsDataBus.addTorrent(theOverlayKey);
+	public int valueLookup(BTTorrent torrent, OperationCallback theCallback) { //The OperationManager is set as the event handler. This class doesn't care about the events. That's up to the caller.
+		
+                String theOverlayKey = torrent.getKey();
+                
+                if (! this.itsDataBus.isTorrentKnown(theOverlayKey)) {
+			this.itsDataBus.addTorrent(torrent);
 		}
 		BTOperationValueLookup<BTPeerSearchNode> operation = new BTOperationValueLookup<BTPeerSearchNode>(this.itsDataBus, this.getPort(), this.itsP2PPort, (BTTorrent) this.itsDataBus.getPerTorrentData(theOverlayKey, "Torrent"), this.getOverlayID(), this, theCallback);
 		//operation.scheduleImmediately();
@@ -76,11 +79,13 @@ public class BTPeerSearchNode extends AbstractOverlayNode implements DHTNode {
 	 * @param theTorrent the torrent file of the torrent. We need it to get the tracker address.
 	 * @return the operation id of the started <code>BTOperationValueLookup<code>.
 	 */
-	public int valueLookup(BTTorrent theTorrent, OperationCallback theCallback) {
-		if (! this.itsDataBus.isTorrentKnown(theTorrent.getKey()))
-			this.itsDataBus.addTorrent(theTorrent.getKey());
-		this.itsDataBus.storePerTorrentData(theTorrent.getKey(), "Torrent", theTorrent, theTorrent.getClass());
-		return this.valueLookup(theTorrent.getKey(), theCallback);
+	public int valueLookup(String theTorrent, OperationCallback theCallback) {
+                System.out.println("Calling the wrong method");
+                return -1;
+            //		if (! this.itsDataBus.isTorrentKnown(theTorrent.getKey()))
+//			this.itsDataBus.addTorrent(theTorrent);
+//		this.itsDataBus.storePerTorrentData(theTorrent.getKey(), "Torrent", theTorrent, theTorrent.getClass());
+//		return this.valueLookup(theTorrent, theCallback);
 	}
 	
 	

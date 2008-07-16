@@ -11,6 +11,7 @@ import uc3m.netcom.overlay.bt.message.*;
 import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.overlay.bt.BTContact;
 import uc3m.netcom.overlay.bt.BTInternRequest;
+import uc3m.netcom.overlay.bt.BTConnection;
 import jBittorrentAPI.Message;
 import jBittorrentAPI.Message_HS;
 import jBittorrentAPI.Message_PP;
@@ -63,6 +64,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
     public void send(BTMessage msg)throws IOException{
         //Traducción a Message
         //ms.addMessageToQueue(msg);
+        System.out.println("Sending Message: "+msg.getType());
         if(msg instanceof BTPeerMessageBitField){
             ms.addMessageToQueue(new Message_PP(BTMessage.BITFIELD,toByteArray(((BTPeerMessageBitField)msg).getBitset()) ));
         }else if(msg instanceof BTPeerMessageCancel){
@@ -145,14 +147,19 @@ public class TransCon implements IncomingListener,OutgoingListener{
     public void messageReceived(Message m){
         
         if(m instanceof Message_HS){
+            System.out.println("Handshake Received: "+this.localID);
             Message_HS msh = (Message_HS) m;
             BTID sender = new BTID();
             sender.setID(msh.getPeerID());
-            BTPeerMessageHandshake hs = new BTPeerMessageHandshake(new String(msh.getFileID()),null,sender,null);
+            BTContact remote = new BTContact(sender,this.info);
+            BTContact local = new BTContact(this.localID,this.layer.getLocalTransInfo((short)0));
+            BTConnection connection = new BTConnection(remote,local);
+            BTPeerMessageHandshake hs = new BTPeerMessageHandshake(new String(msh.getFileID()),connection,sender,this.localID);
             this.tml.messageArrived(new TransMsgEvent(hs,this.info,this.layer,this));
         }else if(m instanceof Message_PP){
+            System.out.println("Protocol Received: "+m.getType());
             BTMessage msg = generateBTMessage((Message_PP)m);
-            
+            this.tml.messageArrived(new TransMsgEvent(msg,this.info,this.layer,this));
         }
 
     }
@@ -169,7 +176,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
         switch(tipo){
             
             case BTMessage.BITFIELD:
-                return new BTPeerMessageBitField(this.fromByteArray(payload),this.overlayKey,this.remoteID,this.localID);
+                return new BTPeerMessageBitField(fromByteArray(payload),this.overlayKey,this.remoteID,this.localID);
 
             case BTMessage.CANCEL:
                 ByteArrayInputStream bi = new ByteArrayInputStream(payload);
@@ -201,6 +208,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
                     System.out.println(ioe.getMessage());
                     ioe.printStackTrace();
                 }
+                System.out.println("Piece Received: "+piece_num2+" "+block_num2);
                 return new BTPeerMessagePiece(piece_num2,block_num2,chunk_num2,block2,this.overlayKey,true,this.remoteID,this.localID);
                 
             case BTMessage.REQUEST:
@@ -211,6 +219,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
                 BTContact requesting = new BTContact(this.remoteID,this.info);
                 BTContact requested = new BTContact(this.localID,this.layer.getLocalTransInfo((short)0));
                 BTInternRequest req = new BTInternRequest(requesting,requested,this.overlayKey,piece_num4,block_num4,length4);
+                System.out.println("Request Received: "+piece_num4+" "+block_num4);
                 return new BTPeerMessageRequest(req,this.remoteID,this.localID);
 
             case BTMessage.UNCHOKE:
@@ -242,6 +251,9 @@ public class TransCon implements IncomingListener,OutgoingListener{
         return this.tml;
     }
     
+    public void setLocalID(BTID local){
+        this.localID = local;
+    }
     public void stop(){
         this.mr.stopThread();
         this.ms.stopThread();

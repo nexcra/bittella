@@ -6,8 +6,8 @@
             <name>BT3</name>
             <minimum-ant-version>1.6.5</minimum-ant-version>
             <source-roots>
+                <root id="src.test.dir"/>
                 <root id="src.dir"/>
-                <root id="test.dir"/>
             </source-roots>
             <test-roots/>
         </data>

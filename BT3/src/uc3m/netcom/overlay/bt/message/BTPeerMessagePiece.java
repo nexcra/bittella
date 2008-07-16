@@ -45,6 +45,7 @@ public class BTPeerMessagePiece extends BTMessage {
 		this.itsOverlayKey = theOverlayKey;
                 this.itsLength =theSize;
                 this.itsPayload = thePayload;
+                this.type = BTMessage.PIECE;
 	}
 	
 	public int getPieceNumber() {

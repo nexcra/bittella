@@ -22,6 +22,7 @@ public class BTPeerMessageHave extends BTMessage {
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsPieceNumber = thePieceNumber;
 		this.itsOverlayKey = theOverlayKey;
+                this.type = BTMessage.HAVE;
 	}
 	
 	public int getPieceNumber() {

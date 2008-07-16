@@ -373,7 +373,7 @@ public class TransLayer {//extends Component {
             
         }
 
-	public int send(BTMessage msg, String overlayKey, TransInfo receiverInfo, short senderPort, TransProtocol protocol)throws Exception{
+	public int send(BTMessage msg, String overlayKey, TransInfo receiverInfo, int senderPort, TransProtocol protocol)throws Exception{
   
             TransCon tc = connections.get(receiverInfo.hashCode());
             if(tc == null){
@@ -386,7 +386,7 @@ public class TransLayer {//extends Component {
         }
 
         
-	public int sendAndWait(BTMessage msg, BTID id,TransInfo receiverInfo, short port, TransProtocol protocol, TransMessageCallback tmc,long timeout){
+	public int sendAndWait(BTMessage msg, BTID id,TransInfo receiverInfo, int port, TransProtocol protocol, TransMessageCallback tmc,long timeout){
             
             BTPeerToTrackerRequest pttr = (BTPeerToTrackerRequest) msg;
             TransTrackerCon ttc = new TransTrackerCon(id,pttr.getDocument(),tmc,this.localAddress.getPort());
@@ -396,7 +396,7 @@ public class TransLayer {//extends Component {
         }
 
 
-	public int sendReply(BTMessage msg, String overlayKey,TransMsgEvent receivingEvent, short senderPort, TransProtocol protocol)throws Exception{
+	public int sendReply(BTMessage msg, String overlayKey,TransMsgEvent receivingEvent, int senderPort, TransProtocol protocol)throws Exception{
 
             TransCon tc = connections.get(receivingEvent.getSenderTransInfo());
             if(tc == null){

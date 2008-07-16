@@ -111,7 +111,7 @@ public class BTClientApplication implements Application,OperationCallback{// ext
 		this.itsDocumentStorage.storeDocument(theDocument);
 		if (theDocument.getDocumentState() == 1) { //We are the seed!
 			if (! this.itsDataBus.isTorrentKnown(theDocument.getKey()))
-				this.itsDataBus.addTorrent(theDocument.getKey());
+				//this.itsDataBus.addTorrent(theDocument.getKey()); //This is to seed a document directly
 			this.itsDataBus.storePerTorrentData(theDocument.getKey(), "Seed", true, (new Boolean(true)).getClass());
 		}
 	}

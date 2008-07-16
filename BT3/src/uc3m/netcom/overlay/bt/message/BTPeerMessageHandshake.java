@@ -25,6 +25,7 @@ public class BTPeerMessageHandshake extends BTMessage {
 		//Lok at the BitTorrent specification, if you want to know the reasons for this size.
 		this.itsOverlayKey = theOverlayKey;
 		this.itsSenderConnection = theSenderConnection;
+                this.type = BTMessage.HANDSHAKE;
 	}
 	
 	public String getOverlayKey() {

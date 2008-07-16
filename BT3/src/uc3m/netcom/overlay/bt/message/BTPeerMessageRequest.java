@@ -19,6 +19,7 @@ public class BTPeerMessageRequest extends BTMessage {
 		super(theirType, theirTransportProtocol, true, 4 + 1 + 4 + 4 + 4, theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsRequest = theRequest;
+                this.type = BTMessage.REQUEST;
 	}
 	
 	public BTInternRequest getRequest() {
