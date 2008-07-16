@@ -27,7 +27,7 @@ import uc3m.netcom.overlay.bt.message.BTPeerMessageUnchoke;
  * @param <OwnerType> the class of the component that owns this operation
  * @author Jan Stolzenburg
  */
-public class BTOperationChoking<OwnerType extends DistributionStrategy> extends BTOperation<OwnerType, Void> {
+public class BTOperationChoking<OwnerType extends DistributionStrategy> extends BTOperation<OwnerType, Void> implements Runnable{
 	
 	private BTDocument itsDocument;
 	
@@ -59,15 +59,28 @@ public class BTOperationChoking<OwnerType extends DistributionStrategy> extends 
 	
 	@Override
 	protected void execute() {
-		if (this.isFinished())
-			return;
-		if (this.uploadFinished()) {
-			this.operationFinished(true);
-			return;
-		}
-		this.scheduleWithDelay(theirPeriod);
-		this.recalc();
+            
 	}
+        
+    public void run() {
+
+        while (!this.isFinished()) {
+            if (this.isFinished()) {
+            } else if (this.uploadFinished()) {
+                this.operationFinished(true);
+            } else {
+                this.recalc();
+                try {
+                    Thread.sleep(theirPeriod);
+
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
 	
 	/**
 	 * @return Has the upload finished?
@@ -112,13 +125,23 @@ public class BTOperationChoking<OwnerType extends DistributionStrategy> extends 
 	private void sendChokingMessage(BTContact theOtherPeer) {
 		BTMessage chokeMessage = new BTPeerMessageChoke(this.itsDocument.getKey(), this.itsConnectionManager.getLocalAddress().getOverlayID(), theOtherPeer.getOverlayID());
 //		this.itsConnectionManager.getConnection(theOtherPeer).addMessage(chokeMessage);
-		this.itsTransportLayer.send(chokeMessage, theOtherPeer.getTransInfo(), this.itsConnectionManager.getLocalAddress().getTransInfo().getPort(), BTPeerMessageChoke.getStaticTransportProtocol());
+		try{
+                    this.itsTransportLayer.send(chokeMessage, this.itsDocument.getKey(),theOtherPeer.getTransInfo(), this.itsConnectionManager.getLocalAddress().getTransInfo().getPort(), BTPeerMessageChoke.getStaticTransportProtocol());
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
 	}
 	
 	private void sendUnchokingMessage(BTContact theOtherPeer) {
 		BTMessage chokeMessage = new BTPeerMessageUnchoke(this.itsDocument.getKey(), this.itsConnectionManager.getLocalAddress().getOverlayID(), theOtherPeer.getOverlayID());
 //		this.itsConnectionManager.getConnection(theOtherPeer).addMessage(chokeMessage);
-		this.itsTransportLayer.send(chokeMessage, theOtherPeer.getTransInfo(), this.itsConnectionManager.getLocalAddress().getTransInfo().getPort(), BTPeerMessageUnchoke.getStaticTransportProtocol());
+                try{
+                    this.itsTransportLayer.send(chokeMessage, this.itsDocument.getKey(),theOtherPeer.getTransInfo(), this.itsConnectionManager.getLocalAddress().getTransInfo().getPort(), BTPeerMessageUnchoke.getStaticTransportProtocol());
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
 	}
 	
 	@Override

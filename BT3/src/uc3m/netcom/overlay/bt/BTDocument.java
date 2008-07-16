@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.io.RandomAccessFile;
+import java.io.*;
+import java.io.IOException;
 
 //import org.apache.log4j.Logger;
 
@@ -78,41 +81,18 @@ public class BTDocument{// implements Document {
 	
 	private String itsKey;
 	
-	/**
-	 * Gr��e der Datei in Byte.
-	 */
+        private RandomAccessFile itsFile;
+        
 	private long itsSize;
 	
 	private int itsPopularity;
 	
-	/**
-	 * This value determines the number of bytes per block:
-	 * 2 ^ itsBlockExponent = number of bytes per block.
-	 * Default: 14
-	 */
 	private byte itsBlockExponent;
 	
-	
-	/**
-	 * This value determines the number of bytes per piece.
-	 * 2 ^ itsPieceExponent = number of bytes per piece.
-	 * Default: 19
-	 */
 	private byte itsPieceExponent;
 	
-	/**
-	 * This is a list of all pieces of the document.
-	 * The bits state, if their piece is complete.
-	 * This will be <code>null</code> if the state of the document
-	 * is <code>EMPTY</code> or <code>COMPLETE</code>.
-	 */
-	private BitSet itsPieces; //This will be set when the documents is in partial state. This saves much memory.
+	private BitSet itsPieces;
 	
-	/**
-	 * The list of pieces that are downloaded partially.
-	 * This will be <code>null</code> if the state of the document
-	 * is <code>EMPTY</code> or <code>COMPLETE</code>.
-	 */
 	private Map<Integer, BitSet> itsPartialPieces;
 	
 	private Collection<BTDocumentFinishedListener> itsDocumentFinishedListener;
@@ -125,10 +105,6 @@ public class BTDocument{// implements Document {
 	
 	private static final byte theirDefaultPieceExponent = BTConstants.DOCUMENT_DEFAULT_PIECE_EXPONENT;
 	
-	//static final Logger log = SimLogger.getLogger(BTDocument.class);
-	
-	
-	//Instantiation and initialization
 	
 	public BTDocument(String theKey, long theSize) {
 		if (theSize < 0)
@@ -145,6 +121,16 @@ public class BTDocument{// implements Document {
 	private void initialize(String theKey, long theSize, int thePopularity, byte thePieceExponent, byte theBlockExponent) {
 		this.itsState = State.EMPTY;
 		this.itsKey = theKey;
+                File temp = null;
+                try{
+                    temp = new File(theKey);
+                    temp.createNewFile();
+                    this.itsFile = new RandomAccessFile(temp,"rw");
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+
 		this.itsSize = theSize;
 		this.itsPopularity = thePopularity;
 		this.itsPieceExponent = thePieceExponent;
@@ -261,7 +247,31 @@ public class BTDocument{// implements Document {
 	}
 	
 	
-	
+	public byte[] getRawBytes(int thePieceNumber,int theBlockNumber,int theSize){
+            
+            byte[] chunk = new byte[theSize];
+            long pos = thePieceNumber*this.getNumberOfBytesPerPiece()+theBlockNumber*this.getNumberOfBytesPerPiece();
+            try{
+                this.itsFile.seek(pos);
+                this.itsFile.read(chunk);
+            }catch(IOException e){
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
+            
+            return chunk;
+        }
+        
+        public void saveBlock(byte[] payload,long pos){
+           try{ 
+               this.itsFile.seek(pos);
+               this.itsFile.write(payload);
+           }catch(IOException e){
+               System.out.println(e.getMessage());
+               e.printStackTrace();
+           }
+            
+        }
 	//Finished/Unfinished pieces/blocks getter
 	
 	public BitSet getFinishedPieces() {
@@ -317,24 +327,7 @@ public class BTDocument{// implements Document {
 		result.flip(0, this.getNumberOfBlocksInPiece(thePieceNumber));
 		return result;
 	}
-	/*
-	public int[] getFinishedBlocksIndices(int thePieceNumber) {
-		this.checkPieceBounds(thePieceNumber);
-//		int[] theResultArray = new int[this.itsPieces.cardinality()];
-//		int position = 0;
-//		for(int counter = 0; counter < this.itsPieces.cardinality(); counter++) { //TODO: Is there a smarter way to do this?
-//			position = this.itsPieces.nextSetBit(position);
-//			theResultArray[counter] = position;
-//		}
-//		return theResultArray;
-	}
-	*/
-	/*
-	public int[] getUnfinishedBlocksIndices(int thePieceNumber) {
-		this.checkPieceBounds(thePieceNumber);
-		return null;
-	}
-	*/
+
 	
 	public Map<Integer, BitSet> getPartialPiecesMap() {
 		if (this.itsPartialPieces == null)
@@ -445,10 +438,12 @@ public class BTDocument{// implements Document {
 	 * @param thePieceNumber The number of the piece, in which the downloaded block is located.
 	 * @param theBlockNumber The number of the finished block.
 	 */
-	public void addBlock(int thePieceNumber, int theBlockNumber) {
+	public void addBlock(int thePieceNumber, int theBlockNumber, byte[] payload) {
 		this.checkBlockBounds(thePieceNumber, theBlockNumber);
 		if (this.getBlockState(thePieceNumber, theBlockNumber) == +1)
 			return;
+                long pos = thePieceNumber*this.getNumberOfBytesPerPiece()+theBlockNumber*this.getNumberOfBytesPerBlock();
+                this.saveBlock(payload,pos);
 		this.checkStartPiece(thePieceNumber);
 		this.itsPartialPieces.get(thePieceNumber).set(theBlockNumber);
 		this.checkFinishPiece(thePieceNumber);
@@ -585,7 +580,7 @@ public class BTDocument{// implements Document {
 			if (this.getSize() <= this.getNumberOfBytesPerBlock())
 				throw new RuntimeException("File to small to have the state 'partial'! It only has a single block. This can either be finished or empty, but not partially finished.");
 			this.itsState = State.EMPTY;
-			this.addBlock(0, 0); //this is the most secure way, to make it partial. Just setting "itsState" would cause a inconsistent state.
+			this.addBlock(0, 0, new byte[this.getNumberOfBytesPerBlock()]); //this is the most secure way, to make it partial. Just setting "itsState" would cause a inconsistent state.
 			return;
 		}
 		if (this.itsState == State.PARTIAL) {

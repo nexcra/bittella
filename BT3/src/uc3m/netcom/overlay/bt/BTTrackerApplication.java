@@ -59,14 +59,14 @@ public class BTTrackerApplication implements Application {
 		throw new RuntimeException("Method 'createOperation' in class 'BTTrackerApplication' not yet implemented!");
 		//return null;
 	}
-                @Override
+//                @Override
 	public void calledOperationFailed(Operation op) {
             if(op instanceof BTOperation){
                 //logger.process(this.getClass().toString(),new Object[]{op,new Long(Simulator.getCurrentTime()),new Boolean(false)});
             }
 	}
 
-        @Override
+//        @Override
 	public void calledOperationSucceeded(Operation opd) {
             if(opd instanceof BTOperation){
                 BTOperation op = (BTOperation) opd;

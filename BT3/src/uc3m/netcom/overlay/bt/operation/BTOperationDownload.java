@@ -120,7 +120,6 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
      */
     @Override
     protected void execute() {
-        this.run();
     }
 
     public void run() {
@@ -216,7 +215,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
         if (!this.itsRequests.containsKey(theCommunicationID)) { //First "receivedMessage", then this, as we have to call "receivedMessage" in either case.
             return; //Most probably, we send an cancel message, but it came to late.
         }
-        this.itsDocument.addBlock(theAnswer.getPieceNumber(), theAnswer.getBlockNumber());
+        this.itsDocument.addBlock(theAnswer.getPieceNumber(), theAnswer.getBlockNumber(), theAnswer.getRawData());
         this.itsRequests.remove(theCommunicationID);
         if (this.itsDownloadAlgorithm.sendCancel()) {
             this.doCancel(theAnswer.getPieceNumber(), theAnswer.getBlockNumber());
@@ -237,9 +236,14 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
         }
         for (Integer aRequestID : requestsToCancel) {
             BTContact anOtherPeer = this.itsRequests.get(aRequestID).getRequestedPeer();
-            BTPeerMessageCancel cancelMessage = new BTPeerMessageCancel(this.itsRequests.get(aRequestID).getPieceNumber(), this.itsRequests.get(aRequestID).getBlockNumber(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
+            BTPeerMessageCancel cancelMessage = new BTPeerMessageCancel(this.itsRequests.get(aRequestID).getPieceNumber(), this.itsRequests.get(aRequestID).getBlockNumber(),this.itsRequests.get(aRequestID).getChunkLength(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
 //			this.itsConnectionManager.getConnection(anOtherPeer).addMessage(cancelMessage);
-            this.itsTransLayer.send(cancelMessage, anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageCancel.getStaticTransportProtocol()); //The handshake-reply should not return to the download operation.
+            try{
+                this.itsTransLayer.send(cancelMessage, this.itsDocument.getKey(),anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageCancel.getStaticTransportProtocol()); //The handshake-reply should not return to the download operation.
+             }catch(Exception e){
+                 System.out.println(e.getMessage());
+                 e.printStackTrace();
+             }
             this.itsRequests.remove(aRequestID);
         }
     }
@@ -290,7 +294,12 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             BTPeerMessageHandshake handshakeMessage = new BTPeerMessageHandshake(this.itsDocument.getKey(), this.itsConnectionManager.getConnection(anOtherPeer), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
             this.itsConnectionManager.getConnection(anOtherPeer).handshaking();
 //			this.itsConnectionManager.getConnection(anOtherPeer).addMessage(handshakeMessage);
-            this.itsTransLayer.send(handshakeMessage, anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //The handshake-reply should not return to the download operation. Therefore, we don't specify a receiver.
+            try{
+                this.itsTransLayer.send(handshakeMessage, this.itsDocument.getKey(),anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //The handshake-reply should not return to the download operation. Therefore, we don't specify a receiver.
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
             this.itsRefusedConnections.put(anOtherPeer, System.currentTimeMillis() + theirConnectRetry);
         }
 
@@ -385,8 +394,14 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
         for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
             BTPeerMessageHave haveMessage = new BTPeerMessageHave(thePieceNumber, this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
 //			this.itsConnectionManager.getConnection(anOtherPeer).addMessage(haveMessage);
-            this.itsTransLayer.send(haveMessage, anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageRequest.getStaticTransportProtocol());
+            try{
+                this.itsTransLayer.send(haveMessage, this.itsDocument.getKey(),anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageRequest.getStaticTransportProtocol());
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }                
         }
+        
         for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
             if (!this.itsConnectionManager.getConnection(anOtherPeer).isInterestingForMe()) {
                 continue;
@@ -397,7 +412,12 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             }
             BTMessage interestMessage = new BTPeerMessageUninterested(this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
 //			this.itsConnectionManager.getConnection(anOtherPeer).addMessage(interestMessage);
-            this.itsTransLayer.send(interestMessage, anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageUninterested.getStaticTransportProtocol());
+            try{
+                this.itsTransLayer.send(interestMessage,this.itsDocument.getKey() ,anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageUninterested.getStaticTransportProtocol());
+            }catch(Exception e){
+                System.out.println(e.getMessage());
+                e.printStackTrace();
+            }
             this.itsConnectionManager.getConnection(anOtherPeer).setInteresting(false);
         }
     }

@@ -194,7 +194,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 						this.itsRequestsPerContact.get(anOtherPeer).put(pieceNumber, new BitSet(this.itsDocument.getNumberOfBlocksInPiece(pieceNumber)));
 					int blockNumber = BTBitSetUtil.or(this.itsDocument.getFinishedBlocks(pieceNumber), this.itsRequestsPerContact.get(anOtherPeer).get(pieceNumber)).nextClearBit(0); //Take the first valid block. (neither downloaded nor requested)
 					if ((blockNumber >= this.itsDocument.getNumberOfBlocksInPiece(pieceNumber)) || (blockNumber < 0)) {
-						//log.error("Internal Error: Invalid block number generated: '" + blockNumber + "', but it only has '" + this.itsDocument.getNumberOfBlocksInPiece(pieceNumber) + "' blocks.");
+						System.out.println("Internal Error: Invalid block number generated: '" + blockNumber + "', but it only has '" + this.itsDocument.getNumberOfBlocksInPiece(pieceNumber) + "' blocks.");
 						continue;
 					}
 					
@@ -202,7 +202,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 //					this.checkMultipleRequest(pieceNumber, blockNumber);
 					this.itsRequestsPerContact.get(anOtherPeer).get(pieceNumber).set(blockNumber);
 					this.itsPartialPieces.get(pieceNumber).set(blockNumber);
-					BTInternRequest newRequest = new BTInternRequest(null, anOtherPeer, this.itsDocument.getKey(), pieceNumber, blockNumber);
+					BTInternRequest newRequest = new BTInternRequest(null, anOtherPeer, this.itsDocument.getKey(), pieceNumber, blockNumber,this.itsDocument.getNumberOfBytesPerBlock());
 					result.add(newRequest);
 //					this.checkRequest(newRequest, theOtherPeersPieces.get(newRequest.getRequestedPeer()));
 					success = true;
@@ -262,7 +262,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 //			this.checkMultipleRequest(pieceNumber, blockNumber);
 			this.itsRequestsPerContact.get(anOtherPeer).get(pieceNumber).set(blockNumber);
 			this.itsPartialPieces.get(pieceNumber).set(blockNumber);
-			BTInternRequest newRequest = new BTInternRequest(null, anOtherPeer, this.itsDocument.getKey(), pieceNumber, blockNumber);
+			BTInternRequest newRequest = new BTInternRequest(null, anOtherPeer, this.itsDocument.getKey(), pieceNumber, blockNumber,this.itsDocument.getNumberOfBytesPerBlock());
 			result.add(newRequest);
 //			this.checkRequest(newRequest, theOtherPeersPieces.get(newRequest.getRequestedPeer()));
 		}
@@ -302,7 +302,7 @@ public class BTAlgorithmDownloadSelectionThreePhased implements BTAlgorithmDownl
 //			this.checkMultipleRequest(pieceNumber, blockNumber);
 			this.itsRequestsPerContact.get(anOtherPeer).get(pieceNumber).set(blockNumber);
 			this.itsPartialPieces.get(pieceNumber).set(blockNumber);
-			BTInternRequest newRequest = new BTInternRequest(null, anOtherPeer, this.itsDocument.getKey(), pieceNumber, blockNumber);
+			BTInternRequest newRequest = new BTInternRequest(null, anOtherPeer, this.itsDocument.getKey(), pieceNumber, blockNumber,this.itsDocument.getNumberOfBytesPerBlock());
 			result.add(newRequest);
 //			this.checkRequest(newRequest, theOtherPeersPieces.get(newRequest.getRequestedPeer()));
 		}
