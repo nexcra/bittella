@@ -98,7 +98,7 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 	 */
 	@Override
 	protected void execute() {
-            this.run();
+
         }
         
         public void run(){
@@ -110,8 +110,8 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 			return;
 		}
 		if(this.itsIsFirstTime) {
-			this.itsChokingOperation.execute();
-			this.itsKeepAliveOperation.execute();
+			new Thread(this.itsChokingOperation).start();
+			new Thread(this.itsKeepAliveOperation).start();
 			this.itsIsFirstTime = false;
 			this.itsStatistic.startUpload();
 		}
@@ -120,7 +120,12 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 			this.scheduleOperationTimeout(this.calcDurationOfUploadAfterDownloadFinished());
 		}
 		
-		this.scheduleWithDelay(this.itsPeriod);
+		try{
+                    Thread.sleep(this.itsPeriod);
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
 		
 		if (this.itsRequests.isEmpty())
 			return;
@@ -195,10 +200,19 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 				continue;
 			}
 			
-			BTPeerMessagePiece answer = new BTPeerMessagePiece(aRequest.getPieceNumber(), aRequest.getBlockNumber(), this.itsDocument.getNumberOfBytesInBlock(aRequest.getPieceNumber(), aRequest.getBlockNumber()), this.itsDocument.getKey(), true, this.itsOwnContact.getOverlayID(), aRequest.getRequestingPeer().getOverlayID());
+                        int apiece = aRequest.getPieceNumber();
+                        int ablock = aRequest.getBlockNumber();
+                        int req_size = aRequest.getChunkLength();
+                        int real_size = this.itsDocument.getNumberOfBytesInBlock(aRequest.getPieceNumber(),aRequest.getBlockNumber());
+                        int ans_size = Math.min(req_size, real_size);
+			BTPeerMessagePiece answer = new BTPeerMessagePiece(apiece, ablock,ans_size,this.itsDocument.getRawBytes(apiece,ablock,ans_size), this.itsDocument.getKey(), true, this.itsOwnContact.getOverlayID(), aRequest.getRequestingPeer().getOverlayID());
 //			this.itsConnectionManager.getConnection(aRequest.getRequestingPeer()).addMessage(answer);
-			this.itsTransLayer.sendReply(answer, aMessageEvent, this.itsOwnContact.getTransInfo().getPort(), BTPeerMessagePiece.getStaticTransportProtocol());
-			
+                        try{
+                            this.itsTransLayer.sendReply(answer,this.itsDocument.getKey(), aMessageEvent, this.itsOwnContact.getTransInfo().getPort(), BTPeerMessagePiece.getStaticTransportProtocol());
+			}catch(Exception e){
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
 			this.itsRequests.removeFirst();
 			this.itsRequestEvents.removeFirst();
 			this.itsRequestArrivels.removeFirst();
@@ -272,8 +286,8 @@ public class BTOperationUpload<OwnerType extends DistributionStrategy> extends B
 	 * @param theBlockNumber the number of the data block.
 	 * @param theOtherPeer the peer that canceled the request.
 	 */
-	public void handleCancel(int thePieceNumber, int theBlockNumber, BTContact theOtherPeer) {
-		this.itsCanceledRequests.add(new BTInternRequest(theOtherPeer, this.itsOwnContact, this.itsDocument.getKey(), thePieceNumber, theBlockNumber));
+	public void handleCancel(int thePieceNumber, int theBlockNumber, int theChunkNumber,BTContact theOtherPeer) {
+		this.itsCanceledRequests.add(new BTInternRequest(theOtherPeer, this.itsOwnContact, this.itsDocument.getKey(), thePieceNumber, theBlockNumber,theChunkNumber));
 	}
 
 }

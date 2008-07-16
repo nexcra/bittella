@@ -121,12 +121,12 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 	 * @param theOtherPeers a list of peers start also participate in this torrent. We normaly get this list from the tracker.
 	 * @return the operation id of the started download operation.
 	 */
-	public BTOperationDownload downloadDocument(String theString, List<TransInfo> theOtherPeers, OperationCallback theCallback) {
+	public BTOperationDownload downloadDocument(String theString,List<TransInfo> theOtherPeers, OperationCallback theCallback) {
 		//log.debug("Time: " + Simulator.getCurrentTime() + "; Starting download at '" + this.itsOwnContact + "'.");
 		BTDocument document;
 		BTConnectionManager connectionManager;
 		if (! this.itsContentStorage.containsDocument(theString)) {
-			document = new BTDocument(theString, ((BTTorrent) this.itsDataBus.getPerTorrentData(theString, "Torrent")).getSize());
+			document = new BTDocument(theString,((BTTorrent) this.itsDataBus.getPerTorrentData(theString, "Torrent")).getSize());
 			this.itsContentStorage.storeDocument(document);
 		}
 		else {

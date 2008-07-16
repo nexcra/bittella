@@ -78,7 +78,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 	
         @Override
         protected void execute(){
-            this.run();
+
         }
         
 	
@@ -88,7 +88,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		if (this.isFinished()) {
                         BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
                         try{
-                            this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                            this.itsTransLayer.send(request,this.itsTorrent.getKey(),this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
                         }catch(Exception e){
                             System.out.println(e.getMessage());
                             e.printStackTrace();
@@ -99,7 +99,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 			
                         BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.stopped,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
                         try{
-                            this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                            this.itsTransLayer.send(request,this.itsTorrent.getKey(), this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
                         }catch(Exception e){
                             System.out.println(e.getMessage());
                             e.printStackTrace();
@@ -116,7 +116,7 @@ public class BTOperationSendStatistic<OwnerType extends DHTNode> extends BTOpera
 		else if ((this.itsLastRequest + (theirRequestPeriod * 0.95)) <= System.currentTimeMillis()) { //Is it (nearly) time for the next message to the tracker?
                         BTPeerToTrackerRequest request = new BTPeerToTrackerRequest(BTPeerToTrackerRequest.Reason.empty,this.itsTorrent.getFile(), this.itsTorrent.getTrackerID(), this.itsOverlayID,null);
                         try{
-                            this.itsTransLayer.send(request, this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
+                            this.itsTransLayer.send(request,this.itsTorrent.getKey() ,this.itsTorrent.getTrackerAddress(), this.itsP2PPort, BTPeerToTrackerRequest.getStaticTransportProtocol());
                         }catch(Exception e){
                             System.out.println(e.getMessage());
                             e.printStackTrace();

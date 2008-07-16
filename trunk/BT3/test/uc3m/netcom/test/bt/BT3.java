@@ -23,13 +23,14 @@ public class BT3{
             Random r = new Random();
             r.nextBytes(id);
             PeerUpdater pu = new PeerUpdater(id,tf);
-            LinkedHashMap list = pu.processResponse(pu.contactTracker(id, tf,0,0,tf.total_length,"&event=started"));
+            LinkedHashMap<String,Peer> list = pu.processResponse(pu.contactTracker(id, tf,0,0,tf.total_length,"&event=started"));
             
-            java.util.Iterator it = list.values().iterator();
+            java.util.Iterator<String> ki = list.keySet().iterator();
             
-            while(it.hasNext()){
-                Peer p  = (Peer) it.next();
-                System.out.println(p.getID()+" "+p.getIP()+" "+p.getPort());
+            while(ki.hasNext()){
+                String k = ki.next();
+                Peer p  = (Peer) list.get(k);
+                System.out.println(k+" "+p.getID()+" "+p.getIP()+" "+p.getPort());
             }
             
             }catch(Exception e){

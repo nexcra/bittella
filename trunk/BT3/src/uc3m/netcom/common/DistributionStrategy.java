@@ -298,7 +298,6 @@ package uc3m.netcom.common;
 
 import java.util.List;
 
-import uc3m.netcom.common.OperationCallback;
 import uc3m.netcom.overlay.bt.BTID;
 import uc3m.netcom.overlay.bt.operation.BTOperationDownload;
 import uc3m.netcom.transport.TransInfo;
@@ -325,7 +324,7 @@ public interface DistributionStrategy extends SupportOperations{
 	 * @param callback - callback for this operation
 	 * @return operation id
 	 */
-	public BTOperationDownload downloadDocument(String key, List<TransInfo> peers, OperationCallback callback);
+	public BTOperationDownload downloadDocument(String key,List<TransInfo> peers, OperationCallback callback);
 
 	/**
 	 * The address at which this strategy waits for incoming download requests.

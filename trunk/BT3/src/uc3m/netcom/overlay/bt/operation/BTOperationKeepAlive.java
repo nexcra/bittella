@@ -21,7 +21,7 @@ import uc3m.netcom.overlay.bt.message.BTPeerMessageKeepAlive;
  * @param <OwnerType> the class of the component that owns this operation
  * @author Jan Stolzenburg
  */
-public class BTOperationKeepAlive<OwnerType extends DistributionStrategy> extends BTOperation<OwnerType, Void> {
+public class BTOperationKeepAlive<OwnerType extends DistributionStrategy> extends BTOperation<OwnerType, Void> implements Runnable {
 	
 	private BTDocument itsDocument;
 	
@@ -54,40 +54,58 @@ public class BTOperationKeepAlive<OwnerType extends DistributionStrategy> extend
 	
 	@Override
 	protected void execute() {
-		if (this.uploadFinished()) {
-			this.operationFinished(true);
-		}
-		if (this.isFinished()) {
-			//We stopped uploading. This only happens after stopping the download.
-			//This means, we don't need any connects. We go offline!
-			for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
-				this.itsConnectionManager.getConnection(anOtherPeer).closeConnection();
-			}
-			return;
-		}
-		
-		//Send 'keep alive' messages to interesting peers:
-		for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
-			if (this.itsConnectionManager.getConnection(anOtherPeer).isInterestingForMe()) {
-				BTPeerMessageKeepAlive keepAlive = new BTPeerMessageKeepAlive(this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
+        }
+        
+    public void run() {
+
+        while (!this.isFinished()) {
+
+
+            if (this.uploadFinished()) {
+                this.operationFinished(true);
+            } else if (this.isFinished()) {
+                //We stopped uploading. This only happens after stopping the download.
+                //This means, we don't need any connects. We go offline!
+                for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
+                    this.itsConnectionManager.getConnection(anOtherPeer).closeConnection();
+                }
+            } else {
+
+                //Send 'keep alive' messages to interesting peers:
+                for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
+                    if (this.itsConnectionManager.getConnection(anOtherPeer).isInterestingForMe()) {
+                        BTPeerMessageKeepAlive keepAlive = new BTPeerMessageKeepAlive(this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
 //				this.itsConnectionManager.getConnection(anOtherPeer).addMessage(keepAlive);
-				this.itsTransLayer.send(keepAlive, anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageKeepAlive.getStaticTransportProtocol());
-			}
-		}
-		
-		if (this.itsDataBus.getListOfPeersForTorrent(this.itsDocument.getKey()).size() >= this.itsMaximumNumberOfContacts) { //If we can have connections to all known peers at the same time, we don't need to close any connections: There is no new peer that could be contacted, after some connections had been closed.
-			//Close unneccessary connections:
-			for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
-				if (this.itsConnectionManager.getConnection(anOtherPeer).isInterestingForMe())
-						continue; //It would be stupid, to close a connection that is interesting for me.
-				if ((this.itsConnectionManager.getConnection(anOtherPeer).getTimeOfLastKeepAlive() + this.itsConnectionTimeout) < System.currentTimeMillis()) {
-					this.itsConnectionManager.getConnection(anOtherPeer).closeConnection();
-				}
-			}
-		}
-		
-		this.scheduleWithDelay(this.itsPeriod);
-	}
+                        try {
+                            this.itsTransLayer.send(keepAlive, this.itsDocument.getKey(), anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageKeepAlive.getStaticTransportProtocol());
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                if (this.itsDataBus.getListOfPeersForTorrent(this.itsDocument.getKey()).size() >= this.itsMaximumNumberOfContacts) { //If we can have connections to all known peers at the same time, we don't need to close any connections: There is no new peer that could be contacted, after some connections had been closed.
+                    //Close unneccessary connections:
+                    for (BTContact anOtherPeer : this.itsConnectionManager.getConnectedContacts()) {
+                        if (this.itsConnectionManager.getConnection(anOtherPeer).isInterestingForMe()) {
+                            continue;
+                        } //It would be stupid, to close a connection that is interesting for me.
+                        if ((this.itsConnectionManager.getConnection(anOtherPeer).getTimeOfLastKeepAlive() + this.itsConnectionTimeout) < System.currentTimeMillis()) {
+                            this.itsConnectionManager.getConnection(anOtherPeer).closeConnection();
+                        }
+                    }
+                }
+
+                try {
+                    Thread.sleep(this.itsPeriod);
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 	
 	private boolean uploadFinished() {
 		if (! this.itsDataBus.isPerTorrentDataStored(this.itsDocument.getKey(), "Upload Stopped"))

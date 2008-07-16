@@ -83,7 +83,12 @@ public class BTMessageHandler {
 			return;
 		BTMessage interestMessage = new BTPeerMessageInterested(this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //		this.itsConnectionManager.getConnection(theOtherPeer).addMessage(interestMessage);
-		this.itsTransLayer.send(interestMessage, theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageInterested.getStaticTransportProtocol());
+                try{
+                    this.itsTransLayer.send(interestMessage,this.itsDocument.getKey() ,theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageInterested.getStaticTransportProtocol());
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
 		this.itsConnectionManager.getConnection(theOtherPeer).setInteresting(true);
 	}
 	
@@ -164,7 +169,12 @@ public class BTMessageHandler {
 			}
 			BTPeerMessageHandshake handshake = new BTPeerMessageHandshake(this.itsDocument.getKey(), connection, this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(handshake);
-			this.itsTransLayer.send(handshake, theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //We don't use "sendReply", as this would cause the handshake message to return to the DownloadOperation, and not to the DistributionNode.
+                        try{
+                            this.itsTransLayer.send(handshake, this.itsDocument.getKey(),theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //We don't use "sendReply", as this would cause the handshake message to return to the DownloadOperation, and not to the DistributionNode.
+                        }catch(Exception e){
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }    
 		}
 		connection.connected(); //I received its handshake and checked it. For me, this connection is okay.
 		if (! this.itsDataBus.isPerPeerDataStored(theOtherPeer, "BitSet"))
@@ -173,7 +183,12 @@ public class BTMessageHandler {
 		if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
 			BTPeerMessageBitField bitfield = new BTPeerMessageBitField(this.itsDocument.getFinishedPieces(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(bitfield);
-			this.itsTransLayer.send(bitfield, theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageBitField.getStaticTransportProtocol()); //look some lines above
+                        try{
+                            this.itsTransLayer.send(bitfield, this.itsDocument.getKey(),theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageBitField.getStaticTransportProtocol()); //look some lines above
+                        }catch(Exception e){
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
 		}
 		this.itsConnectionManager.getConnection(theOtherPeer).keepAliveReceived();
 	}
@@ -195,7 +210,12 @@ public class BTMessageHandler {
 		}
 		BTMessage interestMessage = new BTPeerMessageInterested(this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //		this.itsConnectionManager.getConnection(theOtherPeer).addMessage(interestMessage);
-		this.itsTransLayer.send(interestMessage, theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageInterested.getStaticTransportProtocol());
+                try{
+                    this.itsTransLayer.send(interestMessage, this.itsDocument.getKey(), theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageInterested.getStaticTransportProtocol());
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    e.printStackTrace();
+                }
 		this.itsConnectionManager.getConnection(theOtherPeer).setInteresting(true);
 	}
 	
@@ -220,7 +240,7 @@ public class BTMessageHandler {
 			//log.debug("Received an unexpected cancel from '" + theOtherPeer + "' for '" + theCancelMessage.getOverlayKey() + "'!");
 			return;
 		}
-		this.itsUploadOperation.handleCancel(theCancelMessage.getPieceNumber(), theCancelMessage.getBlockNumber(), theOtherPeer);
+		this.itsUploadOperation.handleCancel(theCancelMessage.getPieceNumber(), theCancelMessage.getBlockNumber(), theCancelMessage.getChunkSize(),theOtherPeer);
 	}
 	
 }
