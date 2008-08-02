@@ -241,6 +241,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				return;
 			}
 			case BTMessage.HANDSHAKE: {
+                                System.out.println("Handshake read");
 				BTPeerMessageHandshake theHandshake = (BTPeerMessageHandshake) theBTMessage;
                                 theMessageEvent.getTransCon().setLocalID(this.getOverlayID());
 				String theDocument = theHandshake.getOverlayKey();

@@ -169,6 +169,7 @@ public class BTMessageHandler {
 			}
 			BTPeerMessageHandshake handshake = new BTPeerMessageHandshake(this.itsDocument.getKey(), connection, this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(handshake);
+                        System.out.println("Response to incoming handshake from ");
                         try{
                             this.itsTransLayer.send(handshake, this.itsDocument.getKey(),theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //We don't use "sendReply", as this would cause the handshake message to return to the DownloadOperation, and not to the DistributionNode.
                         }catch(Exception e){
@@ -183,6 +184,7 @@ public class BTMessageHandler {
 		if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
 			BTPeerMessageBitField bitfield = new BTPeerMessageBitField(this.itsDocument.getFinishedPieces(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(bitfield);
+                        System.out.println("Sending Bitfield to the Other side");
                         try{
                             this.itsTransLayer.send(bitfield, this.itsDocument.getKey(),theOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageBitField.getStaticTransportProtocol()); //look some lines above
                         }catch(Exception e){

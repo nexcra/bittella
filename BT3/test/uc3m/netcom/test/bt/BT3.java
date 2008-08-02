@@ -26,19 +26,20 @@ public class BT3{
             BTDataStore dataBus = new BTDataStore();
             BTInternStatistic theStatistic = new BTInternStatistic();
             ContentStorage cs = new ContentStorage();
-            BTDocument doc = new BTDocument(new String(tf.info_hash_as_hex),tf.total_length);
+            BTDocument doc = new BTDocument(tf.info_hash_as_hex,tf.total_length);
             dataBus.storeGeneralData("Statistic", theStatistic, theStatistic.getClass());
-//            dataBus.addTorrent(new String(tf.info_hash_as_binary));
+            BTTorrent btt = new BTTorrent(tf,tf.total_length,new BTID(),BT3.getTrackerInfo(tf.announceURL));
+            dataBus.addTorrent(btt);
             BTPeerDistributeNode peerDistributeNode = new BTPeerDistributeNode(dataBus, id, (short)6881, theStatistic, new JDKRandomGenerator());
             BTPeerSearchNode peerSearchNode = new BTPeerSearchNode(dataBus, id,(short) 6882, (short)6881);
             TransLayer transLayer = new TransLayer(addr.getHostAddress(),(short)6881,peerDistributeNode);
             peerDistributeNode.setTransLayer(transLayer);
-            peerDistributeNode.connect(cs);
             peerSearchNode.setTransLayer(transLayer);
+            peerDistributeNode.connect(cs);
             peerSearchNode.connect();
             BTClientApplication clientApplication = new BTClientApplication(dataBus, peerSearchNode, peerDistributeNode);
             clientApplication.connect(cs);
-            clientApplication.downloadDocument(new BTTorrent(tf,tf.total_length,new BTID(),BT3.getTrackerInfo(tf.announceURL)));
+            clientApplication.downloadDocument(btt);
             
             }catch(Exception e){
                 System.out.println(e.getMessage());

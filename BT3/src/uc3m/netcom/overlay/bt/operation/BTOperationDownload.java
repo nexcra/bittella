@@ -257,7 +257,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
         if (this.itsConnectionManager.getNumberOfConnectedContacts() >= BTConstants.PEER_MIN_NEIGHBOURS) {
             return;
         } //In this case, we already have enough connected contacts.
-        if ((this.itsLastHandshakeTime + (20 * 1000)) > System.currentTimeMillis()) //TODO: Konstante
+        if ((this.itsLastHandshakeTime + (5 * 1000)) > System.currentTimeMillis()) //TODO: Konstante
         {
             return;
         }
@@ -294,6 +294,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             BTPeerMessageHandshake handshakeMessage = new BTPeerMessageHandshake(this.itsDocument.getKey(), this.itsConnectionManager.getConnection(anOtherPeer), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
             this.itsConnectionManager.getConnection(anOtherPeer).handshaking();
 //			this.itsConnectionManager.getConnection(anOtherPeer).addMessage(handshakeMessage);
+            System.out.println("Sending Handshake to "+anOtherPeer.getTransInfo().getNetId()+":"+anOtherPeer.getTransInfo().getPort());
             try{
                 this.itsTransLayer.send(handshakeMessage, this.itsDocument.getKey(),anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //The handshake-reply should not return to the download operation. Therefore, we don't specify a receiver.
             }catch(Exception e){
@@ -319,7 +320,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
      * Take care of handshakes that have timed out.
      */
     private void doHandshakeTimeout() {
-        if ((this.itsLastHandshakeTimeoutTime + (20000)) > System.currentTimeMillis()) //TODO: Konstante
+        if ((this.itsLastHandshakeTimeoutTime + (5000)) > System.currentTimeMillis()) //TODO: Konstante
         {
             return;
         }
@@ -348,6 +349,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             anInternRequest.setRequestingPeer(this.itsOwnContact);
             BTPeerMessageRequest request = new BTPeerMessageRequest(anInternRequest, this.itsOwnContact.getOverlayID(), anInternRequest.getRequestedPeer().getOverlayID());
 //			this.itsConnectionManager.getConnection(anInternRequest.getRequestedPeer()).addMessage(request);
+            System.out.println("Sending Request to "+anInternRequest.getRequestedPeer().getTransInfo().getNetId()+":"+anInternRequest.getRequestedPeer().getTransInfo().getPort());
             int communicationId = this.itsTransLayer.sendAndWait(request, this.itsOwnContact.getOverlayID(), anInternRequest.getRequestedPeer().getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageRequest.getStaticTransportProtocol(), this, theirReplyTimeout);
             this.itsRequests.put(communicationId, anInternRequest);
         }

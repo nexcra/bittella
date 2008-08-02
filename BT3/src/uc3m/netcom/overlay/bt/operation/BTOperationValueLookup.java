@@ -130,7 +130,7 @@ public class BTOperationValueLookup<OwnerType extends BTPeerSearchNode> extends 
 	}
 	
 	public String getDocumentKey() {
-		return new String(this.itsTorrent.getFile().info_hash_as_binary);
+		return this.itsTorrent.getFile().info_hash_as_hex;
 	}
 	
 }
