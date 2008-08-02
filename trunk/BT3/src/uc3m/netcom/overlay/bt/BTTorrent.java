@@ -31,7 +31,7 @@ public class BTTorrent {
 	}
 	
 	public String getKey() {
-                return new String(this.tf.info_hash_as_binary);
+                return this.tf.info_hash_as_hex;
 	}
 	
 	public long getSize() {
