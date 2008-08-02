@@ -80,7 +80,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
         }else if(msg instanceof BTPeerMessageHandshake){
             BTPeerMessageHandshake msh = (BTPeerMessageHandshake)msg;
             byte[] peer_id = msh.getSender().getID();
-            byte[] key = msh.getOverlayKey().getBytes();
+            byte[] key = new java.math.BigInteger(msh.getOverlayKey(), 16).toByteArray();
             ms.addMessageToQueue(new Message_HS(key,peer_id));
         }else if(msg instanceof BTPeerMessageHave){
             BTPeerMessageHave have = (BTPeerMessageHave) msg;
