@@ -26,7 +26,7 @@ public class BT3{
             BTDataStore dataBus = new BTDataStore();
             BTInternStatistic theStatistic = new BTInternStatistic();
             ContentStorage cs = new ContentStorage();
-            BTDocument doc = new BTDocument(new String(tf.info_hash_as_binary),tf.total_length);
+            BTDocument doc = new BTDocument(new String(tf.info_hash_as_hex),tf.total_length);
             dataBus.storeGeneralData("Statistic", theStatistic, theStatistic.getClass());
 //            dataBus.addTorrent(new String(tf.info_hash_as_binary));
             BTPeerDistributeNode peerDistributeNode = new BTPeerDistributeNode(dataBus, id, (short)6881, theStatistic, new JDKRandomGenerator());
