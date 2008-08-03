@@ -293,7 +293,7 @@ public class BTOperationDownload<OwnerType extends DistributionStrategy> extends
             this.itsConnectionManager.addConnection(anOtherPeer);
             BTPeerMessageHandshake handshakeMessage = new BTPeerMessageHandshake(this.itsDocument.getKey(), this.itsConnectionManager.getConnection(anOtherPeer), this.itsOwnContact.getOverlayID(), anOtherPeer.getOverlayID());
             this.itsConnectionManager.getConnection(anOtherPeer).handshaking();
-//			this.itsConnectionManager.getConnection(anOtherPeer).addMessage(handshakeMessage);
+            this.itsConnectionManager.getConnection(anOtherPeer).addMessage(handshakeMessage);
             System.out.println("Sending Handshake to "+anOtherPeer.getTransInfo().getNetId()+":"+anOtherPeer.getTransInfo().getPort());
             try{
                 this.itsTransLayer.send(handshakeMessage, this.itsDocument.getKey(),anOtherPeer.getTransInfo(), this.itsOwnContact.getTransInfo().getPort(), BTPeerMessageHandshake.getStaticTransportProtocol()); //The handshake-reply should not return to the download operation. Therefore, we don't specify a receiver.

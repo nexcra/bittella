@@ -102,12 +102,13 @@ public class BTOperationDistribute<OwnerType extends Application>  extends BTOpe
                 tsso.start();
 
                 BTOperationDownload btdo = this.itsDistributionNode.downloadDocument(this.itsTorrent.getKey(), null, this);
+                BTOperationUpload btuo = this.itsDistributionNode.uploadDocument(this.itsTorrent.getKey(), this);
+
+                Thread tuo = new Thread(btuo);
+                tuo.start();
                 Thread tdo = new Thread(btdo);
                 tdo.start();
 
-                BTOperationUpload btuo = this.itsDistributionNode.uploadDocument(this.itsTorrent.getKey(), this);
-                Thread tuo = new Thread(btuo);
-                tuo.start();
 
 	}
 	

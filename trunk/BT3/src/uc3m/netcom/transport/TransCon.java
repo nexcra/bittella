@@ -147,14 +147,18 @@ public class TransCon implements IncomingListener,OutgoingListener{
     public void messageReceived(Message m){
         
         if(m instanceof Message_HS){
-            System.out.println("Handshake Received: "+this.localID);
+
             Message_HS msh = (Message_HS) m;
+            String peer_id = new java.math.BigInteger(msh.getPeerID()).toString();
+            System.out.println("Handshake Received: "+this.info.getNetId()+" "+peer_id);
             BTID sender = new BTID();
-            sender.setID(msh.getPeerID());
+            String s = this.info.getNetId()+":"+this.info.getPort();
+            sender.setID(s);
             BTContact remote = new BTContact(sender,this.info);
             BTContact local = new BTContact(this.localID,this.layer.getLocalTransInfo((short)0));
             BTConnection connection = new BTConnection(remote,local);
-            BTPeerMessageHandshake hs = new BTPeerMessageHandshake(new String(msh.getFileID()),connection,sender,this.localID);
+            String key = new java.math.BigInteger(msh.getFileID()).toString(16).toUpperCase();
+            BTPeerMessageHandshake hs = new BTPeerMessageHandshake(key,connection,sender,this.localID);
             this.tml.messageArrived(new TransMsgEvent(hs,this.info,this.layer,this));
         }else if(m instanceof Message_PP){
             System.out.println("Protocol Received: "+m.getType());
