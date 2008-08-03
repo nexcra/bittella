@@ -277,6 +277,7 @@ public class BTConnection {
 	public void receivedMessage(BTMessage theMessage) {
 //		log.debug("ID: " + this.itsOwnContact.getOverlayID() + "; Message: " + theMessage);
 		if (this.itsOtherSideConnection != null) {
+                        System.out.println("Initiating Message Removed");
 			this.itsOtherSideConnection.receiveMessageIntern(theMessage);
 		}
 	}

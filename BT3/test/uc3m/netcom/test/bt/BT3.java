@@ -27,6 +27,7 @@ public class BT3{
             BTInternStatistic theStatistic = new BTInternStatistic();
             ContentStorage cs = new ContentStorage();
             BTDocument doc = new BTDocument(tf.info_hash_as_hex,tf.total_length);
+            cs.storeDocument(doc);
             dataBus.storeGeneralData("Statistic", theStatistic, theStatistic.getClass());
             BTTorrent btt = new BTTorrent(tf,tf.total_length,new BTID(),BT3.getTrackerInfo(tf.announceURL));
             dataBus.addTorrent(btt);

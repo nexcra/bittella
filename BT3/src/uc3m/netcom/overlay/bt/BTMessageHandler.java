@@ -144,13 +144,18 @@ public class BTMessageHandler {
 	}
 	
 	public void handleHandshakeMessage(BTPeerMessageHandshake theHandshakeMessage, BTContact theOtherPeer) {
+            System.out.println("MessageHandler processing handshake");
 		if (this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer) && this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
 			//log.debug("Received an unexpected handshake at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theHandshakeMessage.getOverlayKey() + "'!");
+                        System.out.println("Connection already handshaked");
 			return;
 		}
-		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer))
+                System.out.println(theOtherPeer.getOverlayID().toString()+" "+theOtherPeer.getTransInfo().getNetId()+":"+theOtherPeer.getTransInfo().getPort());
+		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)){
 			this.itsConnectionManager.addConnection(theOtherPeer);
+                        System.out.println("Connection was not created");
+                        }
 		BTConnection connection = this.itsConnectionManager.getConnection(theOtherPeer);
 		connection.registerOtherSideConnection(theHandshakeMessage.getSenderConnection()); //Now the two connection sides can inform each other when they get disconnected.
 		
@@ -159,8 +164,9 @@ public class BTMessageHandler {
 			connection.closeConnection();
 			return;
 		}
-		
+		System.out.println("AKI");
 		if (! connection.isHandshaking()) { //In diesem Fall, geht die Initiative vom Anderen aus, und wir m�ssen noch unser Handshake schicken.
+                        System.out.println("Connection was not handshaking");
 			this.itsDataBus.storePeer(this.itsDocument.getKey(), theOtherPeer);
 			if (BTConstants.PEER_MAX_NEIGHBOURS <= this.itsConnectionManager.getNumberOfConnectedContacts()) {
 				//We reject it, as we already have more than enough neighours.
