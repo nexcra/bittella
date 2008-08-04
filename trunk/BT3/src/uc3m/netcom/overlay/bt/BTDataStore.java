@@ -45,17 +45,18 @@ public class BTDataStore {
 	/**
 	 * Lists for every peer, which torrent it is associated with.
 	 */
-	private Map<BTContact, String> itsTorrentOfAPeer;
+	private Map<String, String> itsTorrentOfAPeer;
 	
+        private Map<String,BTContact> itsTorrentOfAPeerBackup;
 	/**
 	 * Stores data that belong to a certain torrent.
 	 */
-	private Map<BTContact, Map<String, Object>> itsPerPeerData;
+	private Map<String, Map<String, Object>> itsPerPeerData;
 	
 	/**
 	 * Stores the classes of the objects saved in <code>itsPerTorrentData</code>.
 	 */
-	private Map<BTContact, Map<String, Class>> itsPerPeerDataClasses;
+	private Map<String, Map<String, Class>> itsPerPeerDataClasses;
 	
 	public BTDataStore() {
 		this.itsGeneralData = new HashMap<String, Object>();
@@ -63,9 +64,10 @@ public class BTDataStore {
 		this.itsPerTorrentData = new HashMap<String, Map<String, Object>>();
 		this.itsPerTorrentDataClasses = new HashMap<String, Map<String, Class>>();
 		this.itsPeersPerTorrent = new HashMap<String, Set<BTContact>>();
-		this.itsTorrentOfAPeer = new HashMap<BTContact, String>();
-		this.itsPerPeerData = new HashMap<BTContact, Map<String, Object>>();
-		this.itsPerPeerDataClasses = new HashMap<BTContact, Map<String, Class>>();
+		this.itsTorrentOfAPeer = new HashMap<String, String>();
+                this.itsTorrentOfAPeerBackup = new HashMap<String,BTContact>();
+		this.itsPerPeerData = new HashMap<String, Map<String, Object>>();
+		this.itsPerPeerDataClasses = new HashMap<String, Map<String, Class>>();
 	}
 	
 	public void storeGeneralData(String theKey, Object theData, Class theDataClass) {
@@ -141,7 +143,9 @@ public class BTDataStore {
 		return this.itsPerTorrentDataClasses.get(theTorrentKey).get(theKey);
 	}
 	
-	public void storePeer(String theTorrentKey, BTContact thePeer) {
+	public void storePeer(String theTorrentKey, BTContact thePeerC) {
+            
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		if (this.itsTorrentOfAPeer.containsKey(thePeer)) {
 			if (this.itsTorrentOfAPeer.get(thePeer).equals(theTorrentKey))
 				return;
@@ -150,26 +154,34 @@ public class BTDataStore {
 		}
                 
                 Set h = this.itsPeersPerTorrent.get(theTorrentKey);
-		h.add(thePeer);
+		h.add(thePeerC);
 		this.itsTorrentOfAPeer.put(thePeer, theTorrentKey);
+                this.itsTorrentOfAPeerBackup.put(thePeer, thePeerC);
 		this.itsPerPeerData.put(thePeer, new HashMap<String, Object>());
 		this.itsPerPeerDataClasses.put(thePeer, new HashMap<String, Class>());
 	}
 	
-	public void removePeer(String theTorrentKey, BTContact thePeer) {
+	public void removePeer(String theTorrentKey, BTContact thePeerC) {
+            
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
+            
 		if (! this.itsTorrentOfAPeer.get(thePeer).equals(theTorrentKey))
 			throw new RuntimeException("Tried to remove a peer for a false torrent.");
-		this.itsPeersPerTorrent.get(theTorrentKey).remove(thePeer);
+		this.itsPeersPerTorrent.get(theTorrentKey).remove(thePeerC);
 		this.itsTorrentOfAPeer.remove(thePeer);
+                this.itsTorrentOfAPeerBackup.remove(thePeer);
 		this.itsPerPeerData.remove(thePeer);
 		this.itsPerPeerDataClasses.remove(thePeer);
 	}
 	
-	public boolean isPeerKnown(BTContact thePeer) {
+	public boolean isPeerKnown(BTContact thePeerC) {
+            
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		return this.itsTorrentOfAPeer.containsKey(thePeer);
 	}
 	
-	public String getTorrentOfPeer(BTContact thePeer) {
+	public String getTorrentOfPeer(BTContact thePeerC) {
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		return this.itsTorrentOfAPeer.get(thePeer);
 	}
 	
@@ -178,30 +190,35 @@ public class BTDataStore {
 	}
 	
 	public List<BTContact> getListOfAllPeer() {
-		return new LinkedList<BTContact>(this.itsTorrentOfAPeer.keySet());
+		return new LinkedList<BTContact>(this.itsTorrentOfAPeerBackup.values());
 	}
 	
-	public void storePerPeerData(BTContact thePeer, String theKey, Object theData, Class theDataClass) {
+	public void storePerPeerData(BTContact thePeerC, String theKey, Object theData, Class theDataClass) {
 		if (! theDataClass.isInstance(theData))
 			throw new RuntimeException("Tried to store a false type information!");
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		this.itsPerPeerData.get(thePeer).put(theKey, theData);
 		this.itsPerPeerDataClasses.get(thePeer).put(theKey, theDataClass);
 	}
 	
-	public void removePerPeerData(BTContact thePeer, String theKey) {
+	public void removePerPeerData(BTContact thePeerC, String theKey) {
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		this.itsPerPeerData.get(thePeer).remove(theKey);
 		this.itsPerPeerDataClasses.get(thePeer).remove(theKey);
 	}
 	
-	public boolean isPerPeerDataStored(BTContact thePeer, String theKey) {
+	public boolean isPerPeerDataStored(BTContact thePeerC, String theKey) {
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		return this.itsPerPeerData.get(thePeer).containsKey(theKey);
 	}
 	
-	public Object getPerPeerData(BTContact thePeer, String theKey) {
+	public Object getPerPeerData(BTContact thePeerC, String theKey) {
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		return this.itsPerPeerData.get(thePeer).get(theKey);
 	}
 	
-	public Class getPerPeerDataClass(BTContact thePeer, String theKey) {
+	public Class getPerPeerDataClass(BTContact thePeerC, String theKey) {
+                String thePeer = new java.math.BigInteger(thePeerC.getOverlayID().getID()).toString(16);
 		return this.itsPerPeerDataClasses.get(thePeer).get(theKey);
 	}
 	

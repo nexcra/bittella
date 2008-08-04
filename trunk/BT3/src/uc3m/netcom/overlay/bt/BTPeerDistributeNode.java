@@ -254,9 +254,12 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
                                         System.out.println("WRONG DOC KEY");
 					return;
 				}
+                                theOtherPeer = theHandshake.getSenderConnection().getThisSide();
                                 System.out.println("TEST1");
-				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null)
+				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null){
 					this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer).receivedMessage(theHandshake);
+                                        System.out.println("Existing connection");
+                                }
 				this.itsCurrentlyUploadedDocuments.get(theHandshake.getOverlayKey()).handleHandshakeMessage(theHandshake, theOtherPeer);
 				return;
 			}

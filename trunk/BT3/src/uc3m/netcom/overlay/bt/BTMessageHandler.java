@@ -152,6 +152,7 @@ public class BTMessageHandler {
 			return;
 		}
                 System.out.println(theOtherPeer.getOverlayID().toString()+" "+theOtherPeer.getTransInfo().getNetId()+":"+theOtherPeer.getTransInfo().getPort());
+
 		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)){
 			this.itsConnectionManager.addConnection(theOtherPeer);
                         System.out.println("Connection was not created");
@@ -184,10 +185,12 @@ public class BTMessageHandler {
                         }    
 		}
 		connection.connected(); //I received its handshake and checked it. For me, this connection is okay.
-		if (! this.itsDataBus.isPerPeerDataStored(theOtherPeer, "BitSet"))
+                System.out.println("AKI1");
+		if (! this.itsDataBus.isPerPeerDataStored(theOtherPeer, "BitSet")){
 			//TODO
+                        System.out.println("AKI2 "+BTBitSetUtil.getEmptyBitset(this.itsDocument.getNumberOfPieces()).size()+" "+this.itsDocument.getNumberOfPieces());
 			this.itsDataBus.storePerPeerData(theOtherPeer, "BitSet", BTBitSetUtil.getEmptyBitset(this.itsDocument.getNumberOfPieces()), (new BitSet()).getClass());
-		if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
+		}//if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
 			BTPeerMessageBitField bitfield = new BTPeerMessageBitField(this.itsDocument.getFinishedPieces(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(bitfield);
                         System.out.println("Sending Bitfield to the Other side");
@@ -197,7 +200,8 @@ public class BTMessageHandler {
                             System.out.println(e.getMessage());
                             e.printStackTrace();
                         }
-		}
+		//}
+                System.out.println("AKI3");
 		this.itsConnectionManager.getConnection(theOtherPeer).keepAliveReceived();
 	}
 	

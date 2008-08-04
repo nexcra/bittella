@@ -7,16 +7,18 @@ import java.util.Map;
 
 import uc3m.netcom.overlay.bt.BTConnection;
 import uc3m.netcom.overlay.bt.BTContact;
+import uc3m.netcom.overlay.bt.BTID;
+import uc3m.netcom.transport.TransInfo;
 
 public class BTConnectionManager {
 	
-	private Map<BTContact, BTConnection> itsConnections;
+	private Map<String, BTConnection> itsConnections;
 	
 	private BTContact itsOwnContact;
 	
 	public BTConnectionManager(BTContact theLocalAddress) {
 		this.itsOwnContact = theLocalAddress;
-		this.itsConnections = new HashMap<BTContact, BTConnection>(50);
+		this.itsConnections = new HashMap<String, BTConnection>(50);
 	}
 	
 	public BTContact getLocalAddress() {
@@ -24,20 +26,27 @@ public class BTConnectionManager {
 	}
 	
 	public void addConnection(BTContact theOtherSide) {
-		if (this.itsConnections.containsKey(theOtherSide))
+            
+                String key = theOtherSide.getTransInfo().getNetId()+":"+theOtherSide.getTransInfo().getPort();
+		if (this.itsConnections.containsKey(key))
 			return;
 		BTConnection newConnection = new BTConnection(this.itsOwnContact, theOtherSide);
-		this.itsConnections.put(theOtherSide, newConnection);
+		this.itsConnections.put(key, newConnection);
+                System.out.println("Connection: "+newConnection);
 	}
 	
 	public BTConnection getConnection(BTContact theOtherSide) {
-		if (! this.itsConnections.containsKey(theOtherSide))
+            
+            String key = theOtherSide.getTransInfo().getNetId()+":"+theOtherSide.getTransInfo().getPort();
+		if (! this.itsConnections.containsKey(key))
 			return null;
-		return this.itsConnections.get(theOtherSide);
+		return this.itsConnections.get(key);
 	}
 	
 	public boolean isConnectionRegisteredTo(BTContact theOtherSide) {
-		return this.itsConnections.containsKey(theOtherSide);
+            
+            String key = theOtherSide.getTransInfo().getNetId()+":"+theOtherSide.getTransInfo().getPort();
+		return this.itsConnections.containsKey(key);
 	}
 	
 //	public void handshakingWith(BTContact theOtherSide) {
@@ -72,16 +81,22 @@ public class BTConnectionManager {
 	
 	public Collection<BTContact> getConnectedContacts() {
 		Collection<BTContact> result = new LinkedList<BTContact>();
-		for (BTContact aContact : this.itsConnections.keySet()) {
-			if (this.itsConnections.get(aContact).isConnected())
-				result.add(aContact);
+		for (String aContact : this.itsConnections.keySet()) {
+			if (this.itsConnections.get(aContact).isConnected()){
+                            String addr = aContact.substring(0,aContact.indexOf(":"));
+                            String port = aContact.substring(aContact.indexOf(":")+1);
+                            BTID id = new BTID();
+                            id.setID(aContact);
+                            BTContact bc = new BTContact(id,new TransInfo(addr,Integer.parseInt(port)));
+                            result.add(bc);
+                       }
 		}
 		return result;
 	}
 	
 	public int getNumberOfConnectedContacts() {
 		int result = 0;
-		for (BTContact aContact : this.itsConnections.keySet()) {
+		for (String aContact : this.itsConnections.keySet()) {
 			if (this.itsConnections.get(aContact).isConnected())
 				result += 1;
 		}
@@ -90,9 +105,16 @@ public class BTConnectionManager {
 	
 	public Collection<BTContact> getHandshakingContacts() {
 		Collection<BTContact> result = new LinkedList<BTContact>();
-		for (BTContact aContact : this.itsConnections.keySet()) {
-			if (this.itsConnections.get(aContact).isHandshaking())
-				result.add(aContact);
+		for (String aContact : this.itsConnections.keySet()) {
+			if (this.itsConnections.get(aContact).isHandshaking()){
+                            String addr = aContact.substring(0,aContact.indexOf(":"));
+                            String port = aContact.substring(aContact.indexOf(":")+1);
+                            BTID id = new BTID();
+                            id.setID(aContact);
+                            BTContact bc = new BTContact(id,new TransInfo(addr,Integer.parseInt(port)));
+                            result.add(bc);                            
+                        }
+			
 		}
 		return result;
 	}

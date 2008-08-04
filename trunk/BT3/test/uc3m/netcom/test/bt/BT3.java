@@ -26,14 +26,14 @@ public class BT3{
             BTDataStore dataBus = new BTDataStore();
             BTInternStatistic theStatistic = new BTInternStatistic();
             ContentStorage cs = new ContentStorage();
-            BTDocument doc = new BTDocument(tf.info_hash_as_hex,tf.total_length);
+            BTDocument doc = new BTDocument(tf.info_hash_as_hex,tf.total_length,(byte)19,(byte)8);
             cs.storeDocument(doc);
             dataBus.storeGeneralData("Statistic", theStatistic, theStatistic.getClass());
             BTTorrent btt = new BTTorrent(tf,tf.total_length,new BTID(),BT3.getTrackerInfo(tf.announceURL));
             dataBus.addTorrent(btt);
             BTPeerDistributeNode peerDistributeNode = new BTPeerDistributeNode(dataBus, id, (short)6881, theStatistic, new JDKRandomGenerator());
             BTPeerSearchNode peerSearchNode = new BTPeerSearchNode(dataBus, id,(short) 6882, (short)6881);
-            TransLayer transLayer = new TransLayer(addr.getHostAddress(),(short)6881,peerDistributeNode);
+            TransLayer transLayer = new TransLayer(addr.getHostAddress(),(short)6881,id,peerDistributeNode);
             peerDistributeNode.setTransLayer(transLayer);
             peerSearchNode.setTransLayer(transLayer);
             peerDistributeNode.connect(cs);
