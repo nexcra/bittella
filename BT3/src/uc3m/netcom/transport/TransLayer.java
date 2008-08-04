@@ -326,9 +326,10 @@ public class TransLayer {//extends Component {
  private int lastComm;
  private TransMessageListener tml;
  private TransReceiver trv ;
+ private BTID localID;
 
  
-        public TransLayer(String netID,short port,TransMessageListener tml){
+        public TransLayer(String netID,short port,BTID localID,TransMessageListener tml){
             
             trv = new TransReceiver(this,port);
             Thread t = new Thread(trv);
@@ -336,7 +337,7 @@ public class TransLayer {//extends Component {
             connections = new HashMap<Integer,TransCon>();
             localAddress = new TransInfo(netID,port);
             this.tml = tml;
-            
+            this.localID = localID;
         }
    
         public void addConnection(TransInfo info,  TransCon connection){
@@ -354,6 +355,7 @@ public class TransLayer {//extends Component {
             
             Socket s = new Socket(info.getNetId(),info.getPort());
             TransCon tc = new TransCon(layer,info,listener,s);
+            tc.setLocalID(this.localID);
             return tc;
         }
         

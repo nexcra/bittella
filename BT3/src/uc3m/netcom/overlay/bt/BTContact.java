@@ -34,7 +34,18 @@ public class BTContact {
 		if (! (theOther instanceof BTContact))
 			return false;
 		BTContact aOther = (BTContact) theOther;
-		return (this.getOverlayID().equals(aOther.getOverlayID()) && (this.getTransInfo().getNetId().equals(aOther.getTransInfo().getNetId()) && this.getTransInfo().getPort() == aOther.getTransInfo().getPort()));
+                String id1 = new java.math.BigInteger(this.getOverlayID().getID()).toString(16);
+                String id2 = new java.math.BigInteger(aOther.getOverlayID().getID()).toString(16);
+                
+                if(id1.equalsIgnoreCase(id2)){
+                    if(this.getTransInfo().getNetId().equals(aOther.getTransInfo().getNetId())){
+                        if(this.getTransInfo().getPort() == aOther.getTransInfo().getPort()) return true;
+                        else System.out.println("Different Port");
+                    }else System.out.println("Differentt IPs");
+                }else{
+                    System.out.println("Different IDs");
+                }
+		return false;
 	}
 	
 	@Override

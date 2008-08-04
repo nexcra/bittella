@@ -86,6 +86,9 @@ public class BTConnection {
 		return this.itsOtherSideContact;
 	}
 	
+        public BTContact getThisSide(){
+            return this.itsOwnContact;
+        }
 	/**
 	 * @return the connection object of the peer at the other side. It's  version of "this".
 	 */
@@ -102,9 +105,10 @@ public class BTConnection {
 			throw new RuntimeException("Tried to register 'null' as a counter-connection.");
 		}
 		if (! this.itsOwnContact.equals(theOtherSide.itsOtherSideContact)) {
-			throw new RuntimeException("Tried to register false connections as counter-connection.");
+			throw new RuntimeException("Tried to register false connections as counter-connection.A");
 		}
 		if (! this.itsOtherSideContact.equals(theOtherSide.itsOwnContact)) {
+                        System.out.println(itsOtherSideContact+" "+theOtherSide.itsOwnContact);
 			throw new RuntimeException("Tried to register false connections as counter-connection.");
 		}
 		this.registerOtherSideConnectionIntern(theOtherSide);
