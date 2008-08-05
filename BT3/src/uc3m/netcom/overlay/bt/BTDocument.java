@@ -135,7 +135,8 @@ public class BTDocument{// implements Document {
 		this.itsPopularity = thePopularity;
 		this.itsPieceExponent = thePieceExponent;
 		this.itsBlockExponent = theBlockExponent;
-		this.itsPieces = null;
+//		this.itsPieces = null;
+                this.itsPieces = new BitSet(this.getNumberOfPieces());
 		this.itsPartialPieces = null;
 		this.itsDocumentFinishedListener = new LinkedList<BTDocumentFinishedListener>();
 		this.itsPieceFinishedListener = new LinkedList<BTPieceFinishedListener>();

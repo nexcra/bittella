@@ -68,8 +68,6 @@ public class TransCon implements IncomingListener,OutgoingListener{
         System.out.println("Sending Message: "+msg.getType());
         if(msg instanceof BTPeerMessageBitField){
             ms.addMessageToQueue(new Message_PP(BTMessage.BITFIELD,toByteArray(((BTPeerMessageBitField)msg).getBitset()) ));
-            System.out.println("Length "+((BTPeerMessageBitField)msg).getBitset().size());
-            System.out.println("BitField"+" "+(toByteArray(((BTPeerMessageBitField)msg).getBitset())).length);
         }else if(msg instanceof BTPeerMessageCancel){
             BTPeerMessageCancel cancel = ((BTPeerMessageCancel)msg);
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
@@ -138,14 +136,14 @@ public class TransCon implements IncomingListener,OutgoingListener{
     // The byte-ordering of the result is big-endian which means the most significant bit is in element 0.
     // The bit at index 0 of the bit set is assumed to be the least significant bit.
     private static byte[] toByteArray(BitSet bits) {
-        return Utils.toByteArray(bits);
-//        byte[] bytes = new byte[bits.length()/8+1];
-//        for (int i=0; i<bits.length(); i++) {
-//            if (bits.get(i)) {
-//                bytes[bytes.length-i/8-1] |= 1<<(i%8);
-//            }
-//        }
-//        return bytes;
+//        return Utils.toByteArray(bits);
+        byte[] bytes = new byte[bits.length()/8+1];
+        for (int i=0; i<bits.length(); i++) {
+            if (bits.get(i)) {
+                bytes[bytes.length-i/8-1] |= 1<<(i%8);
+            }
+        }
+        return bytes;
     }
 
     public void messageReceived(Message m){
