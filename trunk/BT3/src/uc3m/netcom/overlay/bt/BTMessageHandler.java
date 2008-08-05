@@ -185,12 +185,11 @@ public class BTMessageHandler {
                         }    
 		}
 		connection.connected(); //I received its handshake and checked it. For me, this connection is okay.
-                System.out.println("AKI1");
+
 		if (! this.itsDataBus.isPerPeerDataStored(theOtherPeer, "BitSet")){
 			//TODO
-                        System.out.println("AKI2 "+BTBitSetUtil.getEmptyBitset(this.itsDocument.getNumberOfPieces()).size()+" "+this.itsDocument.getNumberOfPieces());
 			this.itsDataBus.storePerPeerData(theOtherPeer, "BitSet", BTBitSetUtil.getEmptyBitset(this.itsDocument.getNumberOfPieces()), (new BitSet()).getClass());
-		}//if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
+		}if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
 			BTPeerMessageBitField bitfield = new BTPeerMessageBitField(this.itsDocument.getFinishedPieces(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(bitfield);
                         System.out.println("Sending Bitfield to the Other side");
@@ -200,18 +199,18 @@ public class BTMessageHandler {
                             System.out.println(e.getMessage());
                             e.printStackTrace();
                         }
-		//}
+		}
                 System.out.println("AKI3");
 		this.itsConnectionManager.getConnection(theOtherPeer).keepAliveReceived();
 	}
 	
 	public void handleBitfieldMessage(BTPeerMessageBitField theBitfieldMessage, BTContact theOtherPeer) {
 		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)) {
-			//log.debug("Received an unexpected bitfield at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
+			System.out.println("Received an unexpected bitfield at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
 			return;
 		}
 		if (this.itsDocument.getFinishedPieces().size() != theBitfieldMessage.getBitset().size()) { //Checking against the number of pieces is impossible, as BitSets don't have any method for getting the size correctly.
-			//log.debug("Received an wrong-sized bitfield from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
+			System.out.println("Received an wrong-sized bitfield from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
 			return;
 		}
 		this.itsDataBus.storePerPeerData(theOtherPeer, "BitSet", theBitfieldMessage.getBitset(), (new BitSet()).getClass());

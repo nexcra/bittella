@@ -45,6 +45,7 @@ public class BTBitSetUtil {
 	 */
 	public static BitSet getEmptyBitset(int size) {
 		BitSet result = new BitSet(size);
+                System.out.println("BitSet created "+result.length()+" "+result.size());
 		return result;
 	}
 	
