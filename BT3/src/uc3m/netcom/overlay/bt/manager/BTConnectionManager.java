@@ -32,7 +32,6 @@ public class BTConnectionManager {
 			return;
 		BTConnection newConnection = new BTConnection(this.itsOwnContact, theOtherSide);
 		this.itsConnections.put(key, newConnection);
-                System.out.println("Connection: "+newConnection);
 	}
 	
 	public BTConnection getConnection(BTContact theOtherSide) {

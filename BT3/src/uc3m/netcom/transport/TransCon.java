@@ -15,11 +15,12 @@ import uc3m.netcom.overlay.bt.BTConnection;
 import jBittorrentAPI.Message;
 import jBittorrentAPI.Message_HS;
 import jBittorrentAPI.Message_PP;
-import jBittorrentAPI.MessageReceiver;
+//import jBittorrentAPI.MessageReceiver;
+import uc3m.netcom.common.MessageReceiver;
 import jBittorrentAPI.MessageSender;
 import jBittorrentAPI.IncomingListener;
 import jBittorrentAPI.OutgoingListener;
-import jBittorrentAPI.Utils;
+//import jBittorrentAPI.Utils;
 
 public class TransCon implements IncomingListener,OutgoingListener{
     
@@ -67,7 +68,8 @@ public class TransCon implements IncomingListener,OutgoingListener{
         //ms.addMessageToQueue(msg);
         System.out.println("Sending Message: "+msg.getType());
         if(msg instanceof BTPeerMessageBitField){
-            ms.addMessageToQueue(new Message_PP(BTMessage.BITFIELD,toByteArray(((BTPeerMessageBitField)msg).getBitset()) ));
+            BTPeerMessageBitField bitf = (BTPeerMessageBitField) msg;
+            ms.addMessageToQueue(new Message_PP(BTMessage.BITFIELD,toByteArray(bitf.getBitset(),bitf.getBFLength())));
         }else if(msg instanceof BTPeerMessageCancel){
             BTPeerMessageCancel cancel = ((BTPeerMessageCancel)msg);
             ByteArrayOutputStream ba = new ByteArrayOutputStream();
@@ -120,7 +122,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
     
     // Returns a bitset containing the values in bytes.
     // The byte-ordering of bytes must be big-endian which means the most significant bit is in element 0.
-    private static BitSet fromByteArray(byte[] bytes) {
+    public static BitSet fromByteArray(byte[] bytes) {
         BitSet bits = new BitSet();
         for (int i=0; i<bytes.length*8; i++) {
             if ((bytes[bytes.length-i/8-1]&(1<<(i%8))) > 0) {
@@ -135,15 +137,22 @@ public class TransCon implements IncomingListener,OutgoingListener{
     // (since BitSet does not support sign extension).
     // The byte-ordering of the result is big-endian which means the most significant bit is in element 0.
     // The bit at index 0 of the bit set is assumed to be the least significant bit.
-    private static byte[] toByteArray(BitSet bits) {
-//        return Utils.toByteArray(bits);
-        byte[] bytes = new byte[bits.length()/8+1];
-        for (int i=0; i<bits.length(); i++) {
+    public static byte[] toByteArray(BitSet bits,int numOfPieces) {
+        
+        char[] bitArray = new char[numOfPieces];
+//        byte[] bytes = new byte[bits.length()/8+1];
+        for (int i=0; i<numOfPieces; i++) {
             if (bits.get(i)) {
-                bytes[bytes.length-i/8-1] |= 1<<(i%8);
-            }
+//                bytes[bytes.length-i/8-1] |= 1<<(i%8);
+                bitArray[i] = '1';
+            }else bitArray[i] = '0';
         }
-        return bytes;
+        
+        String aux = new String(bitArray);
+        System.out.println(aux);
+        java.math.BigInteger bi = new java.math.BigInteger(aux,2);
+        return bi.toByteArray();
+//        return bytes;
     }
 
     public void messageReceived(Message m){
@@ -152,7 +161,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
 
             Message_HS msh = (Message_HS) m;
             String peer_id = new java.math.BigInteger(msh.getPeerID()).toString();
-            System.out.println("Handshake Received: "+this.info.getNetId()+" "+peer_id);
+            System.out.println("Handshake Received: "+this.info.getNetId());
             BTID sender = new BTID();
             String s = this.info.getNetId()+":"+this.info.getPort();
             sender.setID(s);
@@ -163,7 +172,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
             BTPeerMessageHandshake hs = new BTPeerMessageHandshake(key,connection,sender,this.localID);
             this.tml.messageArrived(new TransMsgEvent(hs,this.info,this.layer,this));
         }else if(m instanceof Message_PP){
-            System.out.println("Protocol Received: "+m.getType());
+
             BTMessage msg = generateBTMessage((Message_PP)m);
             this.tml.messageArrived(new TransMsgEvent(msg,this.info,this.layer,this));
         }
@@ -175,6 +184,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
         
         int tipo = m.getType();
         byte[] length = m.getLength();
+        int l = jBittorrentAPI.Utils.byteArrayToInt(length);
         byte[] payload = m.getPayload();
         if(length.equals(new byte[length.length])) return new BTPeerMessageKeepAlive("0000",this.remoteID,this.localID);
 
@@ -182,7 +192,9 @@ public class TransCon implements IncomingListener,OutgoingListener{
         switch(tipo){
             
             case BTMessage.BITFIELD:
-                return new BTPeerMessageBitField(fromByteArray(payload),this.overlayKey,this.remoteID,this.localID);
+                System.out.println("Bitfield Length: "+(new java.math.BigInteger(length)).toString(16));
+                System.out.println("Payload Length: "+(new java.math.BigInteger(payload)).toString(16));
+                return new BTPeerMessageBitField(fromByteArray(payload),payload.length*8,this.overlayKey,this.remoteID,this.localID);
 
             case BTMessage.CANCEL:
                 ByteArrayInputStream bi = new ByteArrayInputStream(payload);
@@ -195,6 +207,7 @@ public class TransCon implements IncomingListener,OutgoingListener{
                 return new BTPeerMessageChoke(this.overlayKey,this.remoteID,this.localID);
 
             case BTMessage.HAVE:
+                System.out.println("HAVE message received");
                 ByteArrayInputStream bi2 = new ByteArrayInputStream(payload);
                 int piece_num = bi2.read();
                 return new BTPeerMessageHave(piece_num,this.overlayKey,this.remoteID,this.localID);

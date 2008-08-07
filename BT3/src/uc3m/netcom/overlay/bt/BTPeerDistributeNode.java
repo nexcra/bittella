@@ -165,13 +165,12 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 			this.itsConnectionManagers.put(theString, connectionManager);
 		}
 		else {
-                        System.out.println("TEST3");
 			connectionManager = this.itsConnectionManagers.get(theString);
 		}
 		BTOperationUpload<BTPeerDistributeNode> uploadOperation = new BTOperationUpload<BTPeerDistributeNode>(this.itsDataBus, document, this.itsOwnContact, this, this, connectionManager, this.itsStatistic, this.itsRandomGenerator);
 		this.itsUploadOperations.add(uploadOperation);
 		//uploadOperation.scheduleImmediately();
-                System.out.println("TEST2 "+theString);
+
 		if (! this.itsCurrentlyUploadedDocuments.containsKey(theString)) {
 			this.itsCurrentlyUploadedDocuments.put(theString, new BTMessageHandler(this.itsDataBus, document, this.itsOwnContact, uploadOperation, this.getTransLayer(), connectionManager));
 		}
@@ -243,7 +242,7 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 				return;
 			}
 			case BTMessage.HANDSHAKE: {
-                                System.out.println("Handshake read");
+
 				BTPeerMessageHandshake theHandshake = (BTPeerMessageHandshake) theBTMessage;
                                 theMessageEvent.getTransCon().setLocalID(this.getOverlayID());
 				String theDocument = theHandshake.getOverlayKey();
@@ -255,10 +254,9 @@ public class BTPeerDistributeNode extends AbstractOverlayNode implements TransMe
 					return;
 				}
                                 theOtherPeer = theHandshake.getSenderConnection().getThisSide();
-                                System.out.println("TEST1");
+
 				if (this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer) != null){
 					this.itsConnectionManagers.get(theDocument).getConnection(theOtherPeer).receivedMessage(theHandshake);
-                                        System.out.println("Existing connection");
                                 }
 				this.itsCurrentlyUploadedDocuments.get(theHandshake.getOverlayKey()).handleHandshakeMessage(theHandshake, theOtherPeer);
 				return;
