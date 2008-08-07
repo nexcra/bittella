@@ -11,6 +11,7 @@ public class BTPeerMessageBitField extends BTMessage {
 	
 	private BitSet itsBitset;
 	
+        private int BFLength;
 	/**
 	 * The overlaykey of the document.
 	 * Just for debugging. BitTorrent doesn't send this information.
@@ -21,18 +22,23 @@ public class BTPeerMessageBitField extends BTMessage {
 	
 	private static TransProtocol theirTransportProtocol = BTConstants.MESSAGE_SERVICE_CATEGORY_BITFIELD;
 	
-	public BTPeerMessageBitField(BitSet theBitset, String theOverlayKey, BTID theSender, BTID theReceiver) {
+	public BTPeerMessageBitField(BitSet theBitset,int numOfPieces, String theOverlayKey, BTID theSender, BTID theReceiver) {
 		super(theirType, theirTransportProtocol, true, 4 + 1 + (theBitset.size() / 8), theSender, theReceiver);
 //		super(true, 0, theSender, theSenderPort, theDestination, theirMessageCategory);
 		this.itsOverlayKey = theOverlayKey;
 		this.itsBitset = theBitset;
                 this.type = BTMessage.BITFIELD;
+                this.BFLength = numOfPieces;
 	}
 	
 	public BitSet getBitset() {
 		return this.itsBitset;
 	}
 	
+        public int getBFLength(){
+            return this.BFLength;
+        }
+        
 	public String getOverlayKey() {
 		return this.itsOverlayKey;
 	}

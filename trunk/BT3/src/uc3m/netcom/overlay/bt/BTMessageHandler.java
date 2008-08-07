@@ -144,14 +144,14 @@ public class BTMessageHandler {
 	}
 	
 	public void handleHandshakeMessage(BTPeerMessageHandshake theHandshakeMessage, BTContact theOtherPeer) {
-            System.out.println("MessageHandler processing handshake");
+
 		if (this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer) && this.itsConnectionManager.getConnection(theOtherPeer).isConnected()) {
 			//We just ignore this odd message.
 			//log.debug("Received an unexpected handshake at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theHandshakeMessage.getOverlayKey() + "'!");
                         System.out.println("Connection already handshaked");
 			return;
 		}
-                System.out.println(theOtherPeer.getOverlayID().toString()+" "+theOtherPeer.getTransInfo().getNetId()+":"+theOtherPeer.getTransInfo().getPort());
+                System.out.println("Handshake from "+theOtherPeer.getOverlayID().toString());
 
 		if (! this.itsConnectionManager.isConnectionRegisteredTo(theOtherPeer)){
 			this.itsConnectionManager.addConnection(theOtherPeer);
@@ -165,7 +165,7 @@ public class BTMessageHandler {
 			connection.closeConnection();
 			return;
 		}
-		System.out.println("AKI");
+
 		if (! connection.isHandshaking()) { //In diesem Fall, geht die Initiative vom Anderen aus, und wir m�ssen noch unser Handshake schicken.
                         System.out.println("Connection was not handshaking");
 			this.itsDataBus.storePeer(this.itsDocument.getKey(), theOtherPeer);
@@ -190,7 +190,7 @@ public class BTMessageHandler {
 			//TODO
 			this.itsDataBus.storePerPeerData(theOtherPeer, "BitSet", BTBitSetUtil.getEmptyBitset(this.itsDocument.getNumberOfPieces()), (new BitSet()).getClass());
 		}if (this.itsDocument.getState() != BTDocument.State.EMPTY) {
-			BTPeerMessageBitField bitfield = new BTPeerMessageBitField(this.itsDocument.getFinishedPieces(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
+			BTPeerMessageBitField bitfield = new BTPeerMessageBitField(this.itsDocument.getFinishedPieces(), this.itsDocument.getNumberOfPieces(), this.itsDocument.getKey(), this.itsOwnContact.getOverlayID(), theOtherPeer.getOverlayID());
 //			connection.addMessage(bitfield);
                         System.out.println("Sending Bitfield to the Other side");
                         try{
@@ -200,7 +200,7 @@ public class BTMessageHandler {
                             e.printStackTrace();
                         }
 		}
-                System.out.println("AKI3");
+
 		this.itsConnectionManager.getConnection(theOtherPeer).keepAliveReceived();
 	}
 	
@@ -209,8 +209,14 @@ public class BTMessageHandler {
 			System.out.println("Received an unexpected bitfield at '" + this.itsOwnContact + "' from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
 			return;
 		}
-		if (this.itsDocument.getFinishedPieces().size() != theBitfieldMessage.getBitset().size()) { //Checking against the number of pieces is impossible, as BitSets don't have any method for getting the size correctly.
+                
+                int extra = 0;
+                
+                if(this.itsDocument.getNumberOfPieces()%8 != 0) extra = 1;
+                
+		if (this.itsDocument.getNumberOfPieces()+extra != theBitfieldMessage.getBFLength()) { //Checking against the number of pieces is impossible, as BitSets don't have any method for getting the size correctly.
 			System.out.println("Received an wrong-sized bitfield from '" + theOtherPeer + "' for '" + theBitfieldMessage.getOverlayKey() + "'!");
+                        System.out.println("Required="+(this.itsDocument.getNumberOfPieces()+extra)+" Found="+theBitfieldMessage.getBFLength());
 			return;
 		}
 		this.itsDataBus.storePerPeerData(theOtherPeer, "BitSet", theBitfieldMessage.getBitset(), (new BitSet()).getClass());
@@ -228,6 +234,7 @@ public class BTMessageHandler {
                     e.printStackTrace();
                 }
 		this.itsConnectionManager.getConnection(theOtherPeer).setInteresting(true);
+                System.out.println("Bitfiel Message Processed");
 	}
 	
 	public void handleRequestMessage(BTPeerMessageRequest theRequestMessage, BTContact theOtherPeer, TransMsgEvent theMessageEvent) {

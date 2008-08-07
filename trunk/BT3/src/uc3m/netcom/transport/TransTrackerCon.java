@@ -39,7 +39,6 @@ public class TransTrackerCon{
                     Peer p = list.get(key);
                     BTID id = new BTID();
                     id.setID(key);
-                    System.out.println("Peer RCV: "+key+" "+p.getIP()+" "+p.getPort());
                     BTContact c = new BTContact(id,new TransInfo(p.getIP(),p.getPort()));
                     t_list.add(c);
                 }
