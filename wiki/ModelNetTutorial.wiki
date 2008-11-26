@@ -14,10 +14,21 @@ The tutorial begins with a detailed description of emulators setup with FreeBSD 
 
 == FreeBSD Installation ==
 
-ModelNet was written to run over FreeBSD 4.x kernels that are officially supported no longuer. When it comes to deploy the testbed there are only two main choices, either install 4.x or 6.x releases. By the time this tutorial is written, FreeBSD 6.3 and 7.0 are the _current_ releases of this OS. Unfortunately, as the time passes, these releases are likely to be considered as _old_ releases. ISO images for CDs can be found at [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/ FreeBSD-Archive] website.
+ModelNet was written to run over FreeBSD 4.x kernels that are officially supported no longuer. When it comes to deploy the testbed there are only two main choices, either install 4.x or 6.x releases. By the time this tutorial is written, FreeBSD 6.3 and 7.0 are the _current_ releases of this OS. Unfortunately, as the time passes, these releases are likely to be considered as _old_ releases. ISO images for CDs can be found at [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/ FreeBSD-Archive] website, choose your platform and scroll down to the bottom to find the [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/i386/ISO-IMAGES/ ISO-IMAGES] link, then choose your desired release number.
 
 
-  * FreeBSD 4.x: This is a priori the best choice because the software was originally developed for this platform. 
+  * FreeBSD 4.x: This is a priori the best choice because the software was originally developed for this platform. Download the ISO image, install you OS bearing in mind that:
+    # Kern-Developer configuration is enough for our goals.
+    # It must work as a Gateway.
+    # NFS partitions are interesting since you are likely to share info among PCs.
+    # Linux compatibility should be disabled to avoid compilation mistakes.
+    # SSH utilities are a handful of intereing tools as well.
+  Once the system is running, since 4.x is and old-release, the repository environment variable must be modified to point to the release repository, otherwise system will try to install packages from the _current_ release leading to version conflicts. This can be done by executing as root 'setenv PACKAGESITE ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/ports/*arch*/packages-4.8-release/Latest/' where _arch_ is the PC architecture (i.e. i386, sparc, etc.). Now we can install packages via repository for this release.
+
+
+
+
+
 
 
 Add your content here.  Format your content with:
