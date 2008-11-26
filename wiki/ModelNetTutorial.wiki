@@ -23,15 +23,101 @@ ModelNet was written to run over FreeBSD 4.x kernels that are officially support
     # NFS partitions are interesting since you are likely to share info among PCs.
     # Linux compatibility should be disabled to avoid compilation mistakes.
     # SSH utilities are a handful of intereing tools as well.
-  Once the system is running, since 4.x is and old-release, the repository environment variable must be modified to point to the release repository, otherwise system will try to install packages from the _current_ release leading to version conflicts. This can be done by executing as root 'setenv PACKAGESITE ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/ports/*arch*/packages-4.8-release/Latest/' where _arch_ is the PC architecture (i.e. i386, sparc, etc.). Now we can install packages via repository for this release.
+  However, using this release you are likely to need some technical support with you Gigabit Ethernet NIC because more recent devices are not recognized directly during the installation.
+
+  * FreeBSD 6.x: Installing this kernel needs that you bear in mind the same considerations as for the 4.x release. Support for Ethernet interfaces is more extense however your ModelNet code requires certain modificaitons that are explained in following sections.
+
+===Kernel Compilation===
+
+A modifcation of the kernel is recommended by ModelNet authors. After modifying the source files you need to recompile the kernel. This modification is not so complicated and can be carried out easily following these steps,
+----
+  # Go to the folder '/sys/i386/conf/'
+  # Using an editor like _vi_ add the 'options  HZ=10000' line to the 'GENERIC' file.
+  # Save your changes and exit the editor. Type as root 'config GENERIC'.
+  # Move to the folder '../../compile/GENERIC'
+  # Type as root 'make'. When the process finishes type 'cp kernel /' to deploy the new compiled kernel.
+  # Reboot your system to make the changes available.
+----
+
+You can check that your changes has made effect by typing,
+{{{
+sysctl kern.clockrate
+}}}
+
+===Required Software===
+
+ModelNet requires some additional packages to run properly. Most of this packages can be fetched from the FreeBSD-Archive repository, some other need to be compiled and installed from source code. 
+
+Once the system is running, since 4.x is and old-release (so is likely to be 6.x in a few months), the repository environment variable must be modified to point to the release repository, otherwise system will try to install packages from the _current_ release leading to version conflicts. This can be done by executing as root,
+{{{
+setenv PACKAGESITE ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/ports/i386/packages-4.8-release/Latest/
+}}}
+
+Where _i386_ can be replaced by your PC architecture (i.e. amd64, sparc, etc.) and digits _4.8_ can be replace by another release, for instance _6.2_. Now we can install packages via repository for the chosen release. Type the following commands in your terminal (Note: if you get a weird _command not found_ message try to _whereis_ your command, sometimes FreeBSD fails to set the PATH variable).
+{{{
+pkg_add -r wget gmake bash
+pkg_add -r perl sudo
+pkg_add -r p5-XML-Simple linuxthreads libgnugetopt boost xerces-c2
+cpan install XML::Simple
+}}}
+
+Now, if you chose release _4.x_ you can install the _perl Graph_ library from the repository using the following command (Note: It is advisable that you compile it from source code)
+{{{
+pkg_add -r Graph
+}}}
+
+Nevertheless, if your choice was _6.x_ or you are keen on compiling your libraries from source, you need the _Graph-0.20105.tar.gz_ and _Heap-0.80.tar.gz_ tarballs. They can be fetched from the local copy hosted at this project site under the tab _Downloads_ or you can look them up through the [http://www.cpan.org// CPAN site] or the perl packages [http://search.cpan.org searcher]. ATTENTION: Newer releases of the packages higher than 0.20105 will not work with ModelNet. Install the packages by typing,
+{{{
+tar -xvzf Graph-0.20105.tar.gz
+tar -xvzf Heap-0.80.tar.gz
+cd Heap-0.80
+perl Makefile.PL
+gmake
+gmake install
+cd ../Graph-0.20105
+perl Makefile.PL
+gmake
+gmake install
+}}}
+
+So far we have seen how to install the required packages to run ModelNet. Addition tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command). The _'libe'_ package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively.
+
+===Installing ModelNet in 4.x releases===
+
+Download the source code either from the _Downloads_ tab of this project or from authors repository by typing,
+{{{
+wget http://sysnet.ucsd.edu/modelnet/modelnet-0.99.tar.gz
+}}}
+
+Compile and install the code folling these instructions,
+{{{
+tar -xvzf modelnet-0.99.tar.gz
+cd modelnet-0.99
+mkdir freebsd
+cd freebsd
+../configure -with-fbsdsys=/sys/
+gmake
+gmake install
+}}}
+
+Depending on your OS installation additional packages such as _gcc_ might be required by the _configure_ command. The option _-with-fbsdsys_ is used in case that you want to compile _modelnet.ko_ kernel module with your current kernel sources, but you can skip it and use the already built module.
+
+===Installing ModelNet in 6.x releases===
+
+
+=Hosts=
+
+==Ubuntu Installation==
+
+=Setting Up the Cluster=
+
+=Running a Simple Example: Testing your Setup=
+
+=Running a More Complex Example=
+
+=Running Java Applications on ModelNet=
+
+=Virtual Clustering using VMWare=
 
 
 
-
-
-
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
