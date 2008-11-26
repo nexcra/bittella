@@ -82,7 +82,7 @@ gmake install
 
 So far we have seen how to install the required packages to run ModelNet. Addition tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command). The _'libe'_ package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively.
 
-===Installing ModelNet in 4.x releases===
+==Installing ModelNet in 4.x releases==
 
 Download the source code either from the _Downloads_ tab of this project or from authors repository by typing,
 {{{
@@ -102,7 +102,7 @@ gmake install
 
 Depending on your OS installation additional packages such as _gcc_ might be required by the _configure_ command. The option _-with-fbsdsys_ is used in case that you want to compile _modelnet.ko_ kernel module with your current kernel sources, but you can skip it and use the already built module.
 
-===Installing ModelNet in 6.x releases===
+==Installing ModelNet in 6.x releases==
 
 
 =Hosts=
@@ -118,6 +118,4 @@ Depending on your OS installation additional packages such as _gcc_ might be req
 =Running Java Applications on ModelNet=
 
 =Virtual Clustering using VMWare=
-
-
 
