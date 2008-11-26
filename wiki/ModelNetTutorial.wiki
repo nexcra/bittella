@@ -1,0 +1,26 @@
+#summary How-To set up a ModelNet environment and use it with Java Apps
+#labels Phase-Deploy
+
+= Introduction =
+
+This is a brief tutorial on ModelNet deployment in a PCs cluster and its use to emulate P2P applications developed in Java. 
+
+The ModelNet's emulation software runs on hosts with FreeBSD OS, hereafter we will refer to this hosts as *emulators*. Emulators support the core of the network, so to speak, routing nodes and their interconnections. Issues related with topology network generation are covered later on. On the other hand, this core is meant to interconnect edge nodes. P2P applications have their application logic fully distributed in those edge nodes and therefore no applications parties such as servers are assumed to be in the core. This _virtual_ edge nodes are refered as *virtual nodes* and the hosts were they are emulated are called *application hosts* or simply *hosts*.
+
+The tutorial begins with a detailed description of emulators setup with FreeBSD and ModelNet. Afterwards, hosts will be configured using a Linux Ubuntu distribution and downloading ModelNet package from author's repository. Finally, some considerations about ModelNet usage involving Java and VMWare are discussed and some hints are provided in order to avoid troubles in experiments to be carried out.
+
+
+= Emulators =
+
+== FreeBSD Installation ==
+
+ModelNet was written to run over FreeBSD 4.x kernels that are officially supported no longuer. When it comes to deploy the testbed there are only two main choices, either install 4.x or 6.x releases. By the time this tutorial is written, FreeBSD 6.3 and 7.0 are the _current_ releases of this OS. Unfortunately, as the time passes, these releases are likely to be considered as _old_ releases. ISO images for CDs can be found at [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/ FreeBSD-Archive] website.
+
+
+  * FreeBSD 4.x: This is a priori the best choice because the software was originally developed for this platform. 
+
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
