@@ -22,11 +22,11 @@ public class Crawler {
      */
     public static long count = 0;
     public static int open_con = 0;
+    public static Boolean lock = new Boolean(false);
             
     public static void main(String[] args) {
 
 
-        TorrentProcessor tp = new TorrentProcessor();
         
         if (args.length < 3 || args.length > 4) {
             System.err.println(
@@ -49,21 +49,23 @@ public class Crawler {
             if (q != null) {
 
                 try {
+                    TorrentProcessor tp = new TorrentProcessor();
                     TorrentFile t = tp.getTorrentFile(tp.parseTorrent(q.getAbsolutePath()));
                     q.delete();
                     byte[] id = Utils.generateID();
                     if(t != null){
-                        Connection c = new Connection(id, t, args[0] + "/" + init_file + ".dat", args[2]);
+                        Connection c = new Connection(id, t, args[0] + "/" + init_file +"_"+t.total_length+".dat", args[2]);
                         c.start();
-                        synchronized(Crawler.class){
+                        synchronized(Crawler.lock){
                             Crawler.open_con++;
                             System.out.println("Cons= "+Crawler.open_con);                       
-                            while(Crawler.open_con >= 5) Crawler.class.wait(10000);
+                            while(Crawler.open_con >= 10) Crawler.lock.wait(10000);
                         }
                     }
                 } catch (Exception e) {
                     System.out.println("Error while processing torrent file. Please restart the client");
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    System.gc();
                 }
             }
             
