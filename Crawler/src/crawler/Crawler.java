@@ -28,22 +28,27 @@ public class Crawler {
 
 
         
-        if (args.length < 3 || args.length > 4) {
+        if (args.length < 3 || args.length > 5) {
             System.err.println(
                     "Usage:\r\n" +
-                    "java -jar Crawler.jar <save_path> <init_file> <local_ip_addr> [<max_files>]");
+                    "java -jar Crawler.jar <save_path> <init_file> <local_ip_addr> [<max_files>] [<last_file>]");
 
             System.exit(1);
         }
 
         long init_file = Long.parseLong(args[1]);
         long max_files = 100000;
-        if (args.length == 4) {
+        long last_file = 0;
+        
+        if (args.length >= 4) {
             max_files = Long.parseLong(args[3]);
+        }
+        if (args.length == 5){
+            last_file = Long.parseLong(args[4]);
         }
 
 
-        while (Crawler.count <= max_files) {
+        while (Crawler.count <= max_files && init_file>last_file) {
 
             File q = Crawler.fetchTorrent(init_file);
             if (q != null) {
