@@ -177,11 +177,11 @@ public class Connection extends Thread {// extends PeerUpdater{
                 this.end = true;
                 return null;
             } else {
+              try {
                 if (((Long) m.get("interval")).intValue() < this.interval) {
                     this.interval = ((Long) m.get("interval")).intValue();
                 }
                 
-                try {
                     this.num_want = ((Long) m.get("complete")) + ((Long) m.get("incomplete"));
                     if (this.num_want == 1) {
                         return null;
