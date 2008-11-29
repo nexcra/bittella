@@ -9,10 +9,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.File;
 import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.FileWriter;
-import java.io.BufferedWriter;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+
 
 
 public class Crawler {
@@ -22,7 +22,7 @@ public class Crawler {
      */
     public static long count = 0;
     public static int open_con = 0;
-    public static Boolean lock = new Boolean(false);
+    public static final Boolean lock = new Boolean(false);
             
     public static void main(String[] args) {
 
@@ -86,8 +86,8 @@ public class Crawler {
     private static File fetchTorrent(long o){
         
         String path = "http://www.mininova.org/get/"+o;
-        BufferedReader br = null;
-        BufferedWriter bw = null;
+        BufferedInputStream br = null;
+        BufferedOutputStream bw = null;
         File temp = null;
         
         try{
@@ -99,12 +99,12 @@ public class Crawler {
                     return null;
             }
 
-            br = new BufferedReader(new InputStreamReader(http.getInputStream()));
+            br = new BufferedInputStream(http.getInputStream());
             String name = String.valueOf(o);
             System.out.println(name);
             temp = File.createTempFile(name, ".tmp");
             temp.deleteOnExit();
-            bw = new BufferedWriter(new FileWriter(temp));
+            bw = new BufferedOutputStream(new FileOutputStream(temp));
             int c = 0;
             
             while(c != -1){
