@@ -34,11 +34,11 @@ ModelNet was written to run over FreeBSD 4.x kernels that are officially support
 
 A modifcation of the kernel is recommended by ModelNet authors. After modifying the source files you need to recompile the kernel. This modification is not so complicated and can be carried out easily following these steps,
 ----
-  # Go to the folder '/sys/i386/conf/'
-  # Using an editor like _vi_ add the 'options  HZ=10000' line to the 'GENERIC' file.
-  # Save your changes and exit the editor. Type as root 'config GENERIC'.
-  # Move to the folder '../../compile/GENERIC'
-  # Type as root 'make'. When the process finishes type as root 'cp kernel /' to deploy the new compiled kernel.
+  # Go to the folder {{{/sys/i386/conf/}}}
+  # Using an editor like _vi_ add the {{{options  HZ=10000}}} line to the {{{GENERIC}}} file.
+  # Save your changes and exit the editor. Type as root {{{config GENERIC}}}.
+  # Move to the folder {{{../../compile/GENERIC}}}
+  # Type as root {{{make}}}. When the process finishes type as root {{{cp kernel /}}} to deploy the new compiled kernel.
   # Reboot your system to make the changes available.
 ----
 
@@ -56,7 +56,7 @@ Once the system is running, since 4.x is and old-release (so is likely to be 6.x
 setenv PACKAGESITE ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/ports/i386/packages-4.8-release/Latest/
 }}}
 
-Where _i386_ can be replaced by your PC architecture (i.e. amd64, sparc, etc.) and digits _4.8_ can be replace by another release, for instance _6.2_. Now we can install packages via repository for the chosen release. Type the following commands in your terminal (Note: if you get a weird _command not found_ message try to _whereis_ your command, sometimes FreeBSD fails to set the PATH variable).
+Where _i386_ can be replaced by your PC architecture (i.e. amd64, sparc, etc.) and digits _4.8_ can be replace by another release, for instance _6.2_. Now we can install packages via repository for the chosen release. Type the following commands in your terminal (Note: if you get a weird {{{command not found}}} message try to {{{whereis}}} your command, sometimes FreeBSD fails to set the PATH variable).
 {{{
 pkg_add -r wget gmake bash
 pkg_add -r perl sudo
@@ -69,7 +69,7 @@ Now, if you chose release _4.x_ you can install the _perl Graph_ library from th
 pkg_add -r Graph
 }}}
 
-Nevertheless, if your choice was _6.x_ or you are keen on compiling your libraries from source, you need the _Graph-0.20105.tar.gz_ and _Heap-0.80.tar.gz_ tarballs. They can be fetched from the local copy hosted at this project site under the tab _Downloads_ or you can look them up through the [http://www.cpan.org// CPAN site] or the perl packages [http://search.cpan.org searcher]. ATTENTION: Newer releases of the packages higher than 0.20105 will not work with ModelNet. Install the packages by typing,
+Nevertheless, if your choice was _6.x_ or you are keen on compiling your libraries from source, you need the {{{Graph-0.20105.tar.gz}}} and {{{Heap-0.80.tar.gz}}} tarballs. They can be fetched from the local copy hosted at this project site under the tab _Downloads_ or you can look them up through the [http://www.cpan.org// CPAN site] or the perl packages [http://search.cpan.org searcher]. ATTENTION: Newer releases of the packages higher than 0.20105 will not work with ModelNet. Install the packages by typing,
 {{{
 tar -xvzf Graph-0.20105.tar.gz
 tar -xvzf Heap-0.80.tar.gz
@@ -83,7 +83,7 @@ gmake
 gmake install
 }}}
 
-So far we have seen how to install the required packages to run ModelNet. Additional tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administrators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command from a single computer). The _'libe'_ package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively. Do not forget to run the Audthd and Gexec deamons at the host you choose as a server.
+So far we have seen how to install the required packages to run ModelNet. Additional tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administrators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command from a single computer). The {{{libe}}} package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively. Do not forget to run the Audthd and Gexec deamons at the host you choose as a server.
 
 ==Installing using 4.x releases==
 
@@ -103,13 +103,13 @@ gmake
 gmake install
 }}}
 
-Depending on your OS installation additional packages such as _gcc_ might be required by the _configure_ command. The option _-with-fbsdsys_ is used in case that you want to compile _modelnet.ko_ kernel module with your current kernel sources, but you can skip it and use the already built module.
+Depending on your OS installation additional packages such as _gcc_ might be required by the _configure_ command. The option {{{-with-fbsdsys=}}} is used in case that you want to compile {{{modelnet.ko}}} kernel module with your current kernel sources, but you can skip it and use the already built module.
 
 ==Installing using 6.x releases==
 
 Two patches can be found along the web to compile and run ModelNet on 6.x releases. At ModelNet site you can find easily a patch file and apply it to the source code, then compile the sources as depicted in the previous section.
 
-A valuable alternative to this patch is the source modification that can be found at the _EVERGROW_ project web site. There you can download the file _src.tar.gz_ (also available through the Downloads tab). Apply the patch as follows,
+A valuable alternative to this patch is the source modification that can be found at the _EVERGROW_ project web site. There you can download the file {{{src.tar.gz}}} (also available through the Downloads tab). Apply the patch as follows,
 {{{
 tar -xvzf modelnet-0.99.tar.gz
 tar -xvzf src.tar.gz
@@ -124,13 +124,13 @@ gmake
 gmake install
 }}}
 
-Depending on your OS installation you may get two compilation error at the '_libipaddr.c_' file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. _libipaddr.c_ library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator, so has to be at the host to avoid packets to go through the local loop. Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
-  # Go to the folder ./modelnet-0.99/src/, there is you libipaddr.c file.
-  # Backup you libipaddr.c file (i.e. copy it to libipaddr.c.backup).
-  # Go to line 960 and change the first argument of the _gethostbyaddr()_ function type from _char1!*_ to _void!*_
-  # Go to line 1012 and comment the whole _gethostbyaddr()_ function.
+Depending on your OS installation you may get two compilation error at the {{{libipaddr.c}}} file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. {{{libipaddr.c}}} library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator, so has to be at the host to avoid packets to go through the local loop. Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
+  # Go to the folder {{{./modelnet-0.99/src/}}}, there is you {{{libipaddr.c}}} file.
+  # Backup you {{{libipaddr.c}}} file (i.e. copy it to {{{libipaddr.c.backup}}}).
+  # Go to line 960 and change the first argument of the {{{gethostbyaddr()}}} function type from {{{char*}}} to {{{void*}}}
+  # Go to line 1012 and comment the whole {{{gethostbyaddr()}}} function.
   # Save your changes
-  # Run again the _configure, gmake_ and _gmake install_ instructions.
+  # Run again the {{{configure}}}, {{{gmake}}} and {{{gmake install}}} instructions.
 
 
 
