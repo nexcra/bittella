@@ -345,7 +345,7 @@ VMWare is a useful software to run serveral virtual machines with different oper
 
 Creating a VMWare machine is not so different from installing an OS in a real machine. You can run through the steps described in the previous sections to deploy your ModelNet testbed. So far, VMWare seems a cheap and valuable solution for our purposes, however I must warn you about some pitfalls.
 
- # Although VMWare is extremely optimized to run your OS and obtain nearly the same response as if you were running it natively, when deploying large-scale networks using several VMWare virtual machines to run several ModelNet _emulators_ and _hosts_, performace might slow down depending on you physical machine resources leading to measurement mistakes (e.g. higher end-to-end delays due to processes blocked while attempting to access the CPU at the emulator).
+  # Although VMWare is extremely optimized to run your OS and obtain nearly the same response as if you were running it natively, when deploying large-scale networks using several VMWare virtual machines to run several ModelNet _emulators_ and _hosts_, performace might slow down depending on you physical machine resources leading to measurement mistakes (e.g. higher end-to-end delays due to processes blocked while attempting to access the CPU at the emulator).
 
   # ModelNet patches somehow the TCP/IP stack of your OS and create several virtual NIC and routing tables. Libraries required to launch an execution using ModelNet may have been compiled using information from the NIC driver, which in this case it is not a real driver. The hardware presented to you OS during the installation is _virtual hardware_ and not a physical hardware. Therefore, the modifications carried out by ModelNet during deployment phase may not cause any effect on your virtual machine.
 
@@ -357,8 +357,6 @@ Or you're receiving stale VN traffic.
 }}}
 
 Successful virtual clustering has been reported using VMWare Workstation and Server Versions 5.0 and 1.5 respectively. I cannot provide details or advice yet, but I will try to deploy the simple example using those deprecated versions.
-
-
 
 
 
