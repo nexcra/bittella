@@ -1,6 +1,8 @@
 #summary How-To set up a ModelNet environment and use it with Java Apps
 #labels Phase-Deploy
 
+<wiki:toc max_depth="3" />
+
 = Introduction =
 
 This is a brief tutorial on ModelNet deployment in a PCs cluster and its use to emulate P2P applications developed in Java. 
@@ -83,7 +85,7 @@ gmake install
 
 So far we have seen how to install the required packages to run ModelNet. Additional tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administrators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command from a single computer). The _'libe'_ package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively. Do not forget to run the Audthd and Gexec deamons at the host you choose as a server.
 
-==Installing ModelNet in 4.x releases==
+==Installing using 4.x releases==
 
 Download the source code either from the _Downloads_ tab of this project or from authors repository by typing,
 {{{
@@ -103,7 +105,7 @@ gmake install
 
 Depending on your OS installation additional packages such as _gcc_ might be required by the _configure_ command. The option _-with-fbsdsys_ is used in case that you want to compile _modelnet.ko_ kernel module with your current kernel sources, but you can skip it and use the already built module.
 
-==Installing ModelNet in 6.x releases==
+==Installing using 6.x releases==
 
 Two patches can be found along the web to compile and run ModelNet on 6.x releases. At ModelNet site you can find easily a patch file and apply it to the source code, then compile the sources as depicted in the previous section.
 
@@ -116,17 +118,19 @@ cp ./src/* ./modelnet-0.99/module/
 cd modelnet-0.99
 mkdir freebsd
 cd freebsd
+
 ../configure [-with-fbsdsys=/sys/]
 gmake
 gmake install
 }}}
 
 Depending on your OS installation you may get two compilation error at the '_libipaddr.c_' file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. _libipaddr.c_ library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator, so has to be at the host to avoid packets to go through the local loop. Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
-  #Backup you libipaddr.c file (i.e. copy it to libipaddr.c.backup).
-  #Go to line 960 and change the first argument of the _gethostbyaddr()_ function type from _char*_ to _void*_
-  #Go to line 1012 and comment the whole _gethostbyaddr()_ function.
-  #Save your changes
-  #Run again the _configure, gmake_ and _gmake install_ instructions.
+  # Go to the folder ./modelnet-0.99/src/, there is you libipaddr.c file.
+  # Backup you libipaddr.c file (i.e. copy it to libipaddr.c.backup).
+  # Go to line 960 and change the first argument of the _gethostbyaddr()_ function type from _char1!*_ to _void!*_
+  # Go to line 1012 and comment the whole _gethostbyaddr()_ function.
+  # Save your changes
+  # Run again the _configure, gmake_ and _gmake install_ instructions.
 
 
 
