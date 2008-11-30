@@ -14,18 +14,19 @@ The tutorial begins with a detailed description of emulators setup with FreeBSD 
 
 == FreeBSD Installation ==
 
-ModelNet was written to run over FreeBSD 4.x kernels that are officially supported no longuer. When it comes to deploy the testbed there are only two main choices, either install 4.x or 6.x releases. By the time this tutorial is written, FreeBSD 6.3 and 7.0 are the _current_ releases of this OS. Unfortunately, as the time passes, these releases are likely to be considered as _old_ releases. ISO images for CDs can be found at [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/ FreeBSD-Archive] website, choose your platform and scroll down to the bottom to find the [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/i386/ISO-IMAGES/ ISO-IMAGES] link, then choose your desired release number.
+ModelNet was written to run over FreeBSD 4.x kernels that are officially supported no longer. When it comes to deploy the testbed there are only two main choices, either installing 4.x or 6.x releases. By the time this tutorial is written, FreeBSD 6.3 and 7.0 are the _current_ releases of this OS. Unfortunately, as the time passes, these releases are likely to be considered as _old_ releases. ISO images for CDs of _old_ releases can be found at [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/ FreeBSD-Archive] website, choose your platform and scroll down to the bottom to find the [ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/i386/ISO-IMAGES/ ISO-IMAGES] link, then choose your desired release number.
 
 
   * FreeBSD 4.x: This is a priori the best choice because the software was originally developed for this platform. Download the ISO image, install you OS bearing in mind that:
-    # Kern-Developer configuration is enough for our goals.
+    # Kern-Developer configuration is enough to liven up our goals.
     # It must work as a Gateway.
     # NFS partitions are interesting since you are likely to share info among PCs.
     # Linux compatibility should be disabled to avoid compilation mistakes.
-    # SSH utilities are a handful of intereing tools as well.
+    # SSH utilities are a handful of interesting tools as well.
+    # Root account is enough.
   However, using this release you are likely to need some technical support with you Gigabit Ethernet NIC because more recent devices are not recognized directly during the installation.
 
-  * FreeBSD 6.x: Installing this kernel needs that you bear in mind the same considerations as for the 4.x release. Support for Ethernet interfaces is more extense however your ModelNet code requires certain modificaitons that are explained in following sections.
+  * FreeBSD 6.x: Installing this kernel needs that you bear in mind the same considerations as for the 4.x release. Support for Ethernet interfaces is more extense however your ModelNet code requires certain modificaitons that are explained in Section XXXX.
 
 ===Kernel Compilation===
 
@@ -35,18 +36,18 @@ A modifcation of the kernel is recommended by ModelNet authors. After modifying 
   # Using an editor like _vi_ add the 'options  HZ=10000' line to the 'GENERIC' file.
   # Save your changes and exit the editor. Type as root 'config GENERIC'.
   # Move to the folder '../../compile/GENERIC'
-  # Type as root 'make'. When the process finishes type 'cp kernel /' to deploy the new compiled kernel.
+  # Type as root 'make'. When the process finishes type as root 'cp kernel /' to deploy the new compiled kernel.
   # Reboot your system to make the changes available.
 ----
 
-You can check that your changes has made effect by typing,
+You can check that your changes have made effect by typing,
 {{{
 sysctl kern.clockrate
 }}}
 
 ===Required Software===
 
-ModelNet requires some additional packages to run properly. Most of this packages can be fetched from the FreeBSD-Archive repository, some other need to be compiled and installed from source code. 
+ModelNet requires some additional packages to run properly. Most of these packages can be fetched from the FreeBSD-Archive repository, some other need to be compiled and installed from source code. 
 
 Once the system is running, since 4.x is and old-release (so is likely to be 6.x in a few months), the repository environment variable must be modified to point to the release repository, otherwise system will try to install packages from the _current_ release leading to version conflicts. This can be done by executing as root,
 {{{
@@ -80,7 +81,7 @@ gmake
 gmake install
 }}}
 
-So far we have seen how to install the required packages to run ModelNet. Addition tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command). The _'libe'_ package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively.
+So far we have seen how to install the required packages to run ModelNet. Additional tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administrators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command from a single computer). The _'libe'_ package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [http://www.theether.org/authd/ AUTHD site] and [http://www.theether.org/gexec/ GEXEC site] respectively. Do not forget to run the Audthd and Gexec deamons at the host you choose as a server.
 
 ==Installing ModelNet in 4.x releases==
 
@@ -104,6 +105,30 @@ Depending on your OS installation additional packages such as _gcc_ might be req
 
 ==Installing ModelNet in 6.x releases==
 
+Two patches can be found along the web to compile and run ModelNet on 6.x releases. At ModelNet site you can find easily a patch file and apply it to the source code, then compile the sources as depicted in the previous section.
+
+A valuable alternative to this patch is the source modification that can be found at the _EVERGROW_ project web site. There you can download the file _src.tar.gz_ (also available through the Downloads tab). Apply the patch as follows,
+{{{
+tar -xvzf modelnet-0.99.tar.gz
+tar -xvzf src.tar.gz
+rm -rf ./modelnet-0.99/module/*
+cp ./src/* ./modelnet-0.99/module/
+cd modelnet-0.99
+mkdir freebsd
+cd freebsd
+../configure [-with-fbsdsys=/sys/]
+gmake
+gmake install
+}}}
+
+Depending on your OS installation you may get two compilation error at the '_libipaddr.c_' file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. _libipaddr.c_ library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator, so has to be at the host to avoid packets to go through the local loop. Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
+  #Backup you libipaddr.c file (i.e. copy it to libipaddr.c.backup).
+  #Go to line 960 and change the first argument of the _gethostbyaddr()_ function type from _char*_ to _void*_
+  #Go to line 1012 and comment the whole _gethostbyaddr()_ function.
+  #Save your changes
+  #Run again the _configure, gmake_ and _gmake install_ instructions.
+
+
 
 =Hosts=
 
@@ -118,4 +143,3 @@ Depending on your OS installation additional packages such as _gcc_ might be req
 =Running Java Applications on ModelNet=
 
 =Virtual Clustering using VMWare=
-
