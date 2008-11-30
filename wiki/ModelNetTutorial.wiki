@@ -271,7 +271,7 @@ Optionally, some link features can be defined here. Those characteristics define
 
 The virtual topology has two virtual nodes (0 and 2) connected to a gateway node (int_idx=0) which in turn is connected to a second gateway node (int_idx=1), allowing traffic between virtual nodes 0 and 2 and virtual node 1.
 
-As in a real network, routing tables must be set up in the virtual nodes and gateways to carry out proper packages routing. That routing tables are calculated with the {{{allpairs}} tool, as a result a file is generated (e.g. sample.route). Finally, we need a forth file, the _model_ file (e.g. sample.model). This file is generated automatically using the {{{mkmodel}} tool. This file contains the required information to modify the real routing tables at emulators and hosts machines, create virtual NIC interfaces which correspond to the virtual nodes interfaces and establish the routing tables at the core nodes. Here are the steps to obtain the deployment files.(Note: Remember to modify the {{{sample.hosts}}} file in such a way that your hostsname replace the {{{pandora}}},{{{host1}}} and {{{host2}}} names).
+As in a real network, routing tables must be set up in the virtual nodes and gateways to carry out proper packages routing. That routing tables are calculated with the {{{allpairs}}} tool, as a result a file is generated (e.g. sample.route). Finally, we need a forth file, the _model_ file (e.g. sample.model). This file is generated automatically using the {{{mkmodel}}} tool. This file contains the required information to modify the real routing tables at emulators and hosts machines, create virtual NIC interfaces which correspond to the virtual nodes interfaces and establish the routing tables at the core nodes. Here are the steps to obtain the deployment files.(Note: Remember to modify the {{{sample.hosts}}} file in such a way that your hostsname replace the {{{pandora}}},{{{host1}}} and {{{host2}}} names).
 {{{
 allpairs sample.graph > sample.route
 mkmodel sample.graph sample.hosts > sample.model
@@ -300,17 +300,43 @@ Finally, we need to perform some checkouts to be sure that everything went right
       * {{{00200 pipe 1 udp from any to me port 5347}}}
     * Check that {{{sysctl -a -N|grep modelnet}}} has modelnet entries
     * Check for routes to edge nodes, for example:
-     {{{10/30              172.16.21.11       UGS         0       37    em0}}}
-     {{{10.0.0.4/30        172.16.21.12       UGS         0       24    em0}}}
+      * {{{10/30              172.16.21.11       UGS         0       37    em0}}}
+      * {{{10.0.0.4/30        172.16.21.12       UGS         0       24    em0}}}
 
   * Run connectivity test with vnhostrun.  On VN 0 run something like:
-    {{{vnrunhost 0 sample.model ssh 10.0.0.5 date}}} or,
-    {{{vnrunhost 1 sample.model iperf -s}}} at _host2_ and,
-    {{{vnrunhost 0 sample.model iperf -c 10.0.0.5}}} at _host1_
+    * {{{vnrunhost 0 sample.model ssh 10.0.0.5 date}}} or,
+    * {{{vnrunhost 1 sample.model iperf -s}}} at _host2_ and {{{vnrunhost 0 sample.model iperf -c 10.0.0.5}}} at _host1_
   * During test, {{{tcpdump}}} on forwarder (i.e. emulator) should see packets for {{{10.0.0.1}}}, and counters in {{{modelstat}}} should go up.
 
 =Running a More Complex Example=
 
+If your testing was successful in the previous section, what is described in this section is a simple way to generate a much larger network topology using an automatic topology generator. Because there is a script available which converts from a Inet topology generated file to a XML ModelNet graph file, Inet is preferred as a network generator. 
+
+The network that we need is an autonomous system randomly distributed which counts for 4000 inner nodes and 100 client/edge nodes. Client nodes are gathered in two stubs to connect to the core network, and links between client nodes and the core network have a bandwidth of 64 kbps with a null losses probability. 
+Also, the real topology does not change in this example, so that the sample.hosts file does not have to be changed. Type the following line in your terminal to generate the topology (Note: be sure that {{{inet}}} and {{{inet2xml}}} executables are in your path).
+{{{
+inet -n 4000| inet2xml -p 100 among 2 stub client-stub 64 100 0 > sample.graph
+}}}
+
+Now you can follow the same procedure as for the simple example to deploy the virtual network. In the end of the deployment, virtual IP addresses ranging from 10.0.0.0/26 must point to host1 real IP address in your routing table. Virtual IP addresses within the range 10.0.0.64/26 must point to host2.
+
+
 =Running Java Applications on ModelNet=
+
+Recent versions of the Java Virtual Machine and Java Editions keep up with the latest changes in networking standards such as IPv6. Unfortunately, ModelNet does not support IPv6, probably because we have available the whole IPv4 range of addresses, which seems more than enough to emulate network protocols.
+
+ModelNet modifies the normal path of a SDU at the sending node. For instance, when a new TCP segment has to be sent from the virtual node with IP 10.0.0.1 to the virtual node with IP 10.0.0.2. Let's suppose that both virtual nodes are running at the real host {{{host1}}}, thus the normal routing procedure would identify that the destination node is also in the local host and it would have routed the packet through the local loop, such that the packet would have never reached the emulator {{{pandora}}} and emulated delays, packet queuing, packet dropping would not have been suffered by the TCP segment.
+
+ModelNet uses a modify kernel library to route packets, the {{{libipaddr.so}} library on sending changes the 23rd-bit of the destination IP address. By doing so, the routing procedure will not identify the destination address as local to the sending host and it will forward the packet to the _emulator_ host.
+On arrival, the emulator will flip the 23rd-bit of both, source and destination virtual IP addresses and it will route the packet through the virtual core network to the border router connected to the destination virtual host. Note that in this case, the packet will be forwarded from the emulator to the same real host from which it was received firstly, because that real host is running at the same time the source and the destination virtual nodes. With this mechanishm ModelNet ensures that every packet is routed through the emulated core network and none is sent through the local loop not passing through the emulator.
+
+If the model was deployed appropriately, any application that opens a socket should pass its TCP segments (or UDP datagrams) towards the modified IP level. As mentioned, Java implementation can deal with both network layers, IPv4 and IPv6 and an interesting behaviour of recent versions is that IPv6 layer is default as a network layer. Hence, if your kernel supports IPv6, their libraries are used by Java applications instead of IPv4 libraries. Due to {{{libipaddr.so}} module replaces only the standard IPv4 libraries but it is not a substitute for the IPv6 ones, Java does not make use of {{{libipaddr.so}}}!
+
+There are two workarounds to fix this issue and to allow Java applications to run on top of ModelNet. The fist one and maybe the less attractive for most users is to remove the IPv6 support from the kernel. If you have already install you OS you are likely to dismiss this option. On the other hand, if you have not installed your OS yet, you can always disable this feature during the installation process.
+
+The second workaround is much more elegant, you just have to add the following option tag when you invoke the JVM,
+{{{
+java -Djava.net.preferIPv4Stack=true YourMainClass 
+}}}
 
 =Virtual Clustering using VMWare=
