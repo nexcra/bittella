@@ -170,12 +170,41 @@ You can install the packages listed before. At least I have managed to do this i
 {{{
 sudo apt-get install modelnet
 }}}
-Automatically, ModelNet and all its dependencies are a installed.
+Automatically, ModelNet and all its dependencies are installed. That is why it is highly recommendable to use this option to install ModelNet on your host machines.
 
+Depensing on your OS installation two additional symbolic links may be required. (Note: in Ubuntu this is not necessary).
+{{{
+sudo ln -s /usr/bin/deployhost /usr/local/bin 
+sudo ln -s /usr/bin/vnrunhost /usr/local/bin
+}}}
 
 =Setting Up the Cluster=
 
+Once you have the ModelNet software install in your cluster machines, there are still some tasks to carry out before we can use to test your applications and obtain results.
+
+Modify your _sudoers_ file by means of {{{sudo visudo}}} command and include the following lines in your file,
+{{{
+root ALL=(ALL) ALL
+Host_Alias MODELHOSTS = modelnet101, modelnet102, modelnet103, modelnet104, modelnet105, modelnet106, mickey.csee.usf.edu
+User_Alias MODELERS = username 1, username 2, ...., username n
+Cmnd_Alias MODELCMDS = /sbin/ifconfig, /sbin/route, \
+/usr/bin/vnrun, /usr/bin/vnrunhost, /usr/bin/gexec \
+/sbin/kldload, /sbin/kldunload, /sbin/ipfw, /sbin/sysctl, \
+/usr/local/bin/modelload, /usr/local/bin/ipfwload
+MODELERS MODELHOSTS = NOPASSWD: MODELCMDS
+}}}
+
+Replace modelnetXXX and mickey.csee.usf.edu with the hostname of your cluster computers, username X with your usernames declared in the cluster machines. Reboot the system after modify your configuratio file. This modification might save you some precious time when remote invoking some commands from one cluster machine to another. If you have just a few machines this is not strictly necessary.
+
+Add the hostnames of your cluster machines to the {{{/etc/hosts}}} file. For each machine add the LAN IP address and the hostname. Those host names must be the same as those used in the ModelNet host file that will be described in the following section.
+
+It is more than advisable that you enable your SSH Deamon (sshd) in your machines in order to copy the configuration files from one machine to another. However, if you successfully set up the Authd and Gexec services this might not be necessary since you can run commands and copy files using those services.
+
+
 =Running a Simple Example: Testing your Setup=
+
+The more effective way to test your cluster is to deploy in it a simple scenario. This example is reproduced here but it is extracted from the {{{Modelnet_Report_2006.pdf}}} that can be found at Patrik Bless website and it is also listed under the _Downloads_ tab. For the sake of clarity, some details are omited here such as the snapshot of the routing tables, therefore I encourage you to read carefully the cited document.
+
 
 =Running a More Complex Example=
 
