@@ -271,11 +271,44 @@ Optionally, some link features can be defined here. Those characteristics define
 
 The virtual topology has two virtual nodes (0 and 2) connected to a gateway node (int_idx=0) which in turn is connected to a second gateway node (int_idx=1), allowing traffic between virtual nodes 0 and 2 and virtual node 1.
 
-As in a real network, routing tables must be set up in the virtual nodes and gateways to carry out proper packages routing. That routing tables are calculated with the {{{allpairs}} tool, as a result a file is generated (e.g. sample.route). Finally, we need a forth file, the _model_ file (e.g. sample.model). This file is generated automatically using the {{{mkmodel}} tool. This file contains the required information to modify the real routing tables at emulators and hosts machines, create virtual NIC interfaces which correspond to the virtual nodes interfaces and establish the routing tables at the core nodes. Here are the steps to obtain the deployment files.
+As in a real network, routing tables must be set up in the virtual nodes and gateways to carry out proper packages routing. That routing tables are calculated with the {{{allpairs}} tool, as a result a file is generated (e.g. sample.route). Finally, we need a forth file, the _model_ file (e.g. sample.model). This file is generated automatically using the {{{mkmodel}} tool. This file contains the required information to modify the real routing tables at emulators and hosts machines, create virtual NIC interfaces which correspond to the virtual nodes interfaces and establish the routing tables at the core nodes. Here are the steps to obtain the deployment files.(Note: Remember to modify the {{{sample.hosts}}} file in such a way that your hostsname replace the {{{pandora}}},{{{host1}}} and {{{host2}}} names).
 {{{
-
-
+allpairs sample.graph > sample.route
+mkmodel sample.graph sample.hosts > sample.model
 }}}
+
+If you managed to run Authd and Gexec, you can deploy this model in the entire cluster by running the following command,
+{{{
+deploy sample.model sample.route
+}}}
+
+If you have just a few machines in your cluster and you want to deploy and run ModelNet in your machines one by one, type on each machine the following command,
+{{{
+deployhost sample.model sample.route
+}}}
+
+Finally, we need to perform some checkouts to be sure that everything went right.
+  * Things to check on virtual node (ie. edge host):
+    * Check ifconfig for the IPs of the virtnodes listed in the sample.model file
+    * Check the route to the forwarded is set for 10.0.0.0/8
+
+  * Things to check on the forwarder:
+    * {{{kldstat}}} says module is loaded.
+    * {{{modelstat}}} says module has hops.
+    * Check {{{ipfw list}}} for modelnet rules
+      * {{{00100 pipe 1 ip from any to 10.0.0.0/8 in}}}
+      * {{{00200 pipe 1 udp from any to me port 5347}}}
+    * Check that {{{sysctl -a -N|grep modelnet}}} has modelnet entries
+    * Check for routes to edge nodes, for example:
+     {{{10/30              172.16.21.11       UGS         0       37    em0}}}
+     {{{10.0.0.4/30        172.16.21.12       UGS         0       24    em0}}}
+
+  * Run connectivity test with vnhostrun.  On VN 0 run something like:
+    {{{vnrunhost 0 sample.model ssh 10.0.0.5 date}}} or,
+    {{{vnrunhost 1 sample.model iperf -s}}} at _host2_ and,
+    {{{vnrunhost 0 sample.model iperf -c 10.0.0.5}}} at _host1_
+  * During test, {{{tcpdump}}} on forwarder (i.e. emulator) should see packets for {{{10.0.0.1}}}, and counters in {{{modelstat}}} should go up.
+
 =Running a More Complex Example=
 
 =Running Java Applications on ModelNet=
