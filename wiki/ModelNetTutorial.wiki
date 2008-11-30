@@ -170,9 +170,21 @@ You can install the packages listed before. At least I have managed to do this i
 {{{
 sudo apt-get install modelnet
 }}}
-Automatically, ModelNet and all its dependencies are installed. That is why it is highly recommendable to use this option to install ModelNet on your host machines.
+Automatically, ModelNet and all its dependencies are installed. That is why it is highly recommendable to use this option to install ModelNet on your host machines. If your are going to generate the .model and .route file, you need to compile from source to additional packages, the Graph and Heap packages described above. You should already have the tarballs from you emulator installation, therefore you just need to perform these steps to compile the sources.
+{{{
+tar -xvzf Graph-0.20105.tar.gz
+tar -xvzf Heap-0.80.tar.gz
+cd Heap-0.80
+perl Makefile.PL
+make
+make install
+cd ../Graph-0.20105
+perl Makefile.PL
+make
+make install
+}}}
 
-Depensing on your OS installation two additional symbolic links may be required. (Note: in Ubuntu this is not necessary).
+Depending on your OS installation two additional symbolic links may be required. (Note: in Ubuntu this is not necessary).
 {{{
 sudo ln -s /usr/bin/deployhost /usr/local/bin 
 sudo ln -s /usr/bin/vnrunhost /usr/local/bin
