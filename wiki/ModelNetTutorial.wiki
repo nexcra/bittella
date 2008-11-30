@@ -217,7 +217,65 @@ It is more than advisable that you enable your SSH Deamon (sshd) in your machine
 
 The more effective way to test your cluster is to deploy in it a simple scenario. This example is reproduced here but it is extracted from the {{{Modelnet_Report_2006.pdf}}} that can be found at Patrik Bless website and it is also listed under the _Downloads_ tab. For the sake of clarity, some details are omited here such as the snapshot of the routing tables, therefore I encourage you to read carefully the cited document.
 
+Our cluster is formed by three machines. {{{pandora}}} is the machine running ModelNet on FreeBSD and it is going to be used as _emulator_. Other two hosts ({{{host1}}} and {{{host2}}}) are going to be the _hosts_ running the virtual nodes. All of them are connected in a LAN segment using Gigabit NIC and a hub. First of all, we need to reflect this _real_ topology in an XML file (e.g. {{{sample.hosts}}}). The file must be formated as follows to indicate ModelNet the cluster's topology.
+{{{
+<?xml version="1.0" encoding="ISO-8859-1"?> 
+<hardware> 
+<emul hostname="pandora"/> 
+<host hostname="host1"/> 
+<host hostname="host2"/> 
+</hardware>
+}}}
 
+A second file with the _virtual_ topology must be created. You can write this file manually, since is another XML file or you can use a handy topology generator such as Inet or BRITE. ModelNet software provides a script called {{{inet2xml}}} that translate an entire topology generated with Inet to a graph. This file is called the _graph_ file (e.g. {{{sample.graph}}}). In this file you can specify _vertices_ (i.e. graph's nodes) and _edges_. 
+
+Each vertex can be defined as a virtual node (edge node) or as a gateway (router inside the core network). Each vertex has an identifier (attribute int_idx) and additionally, those vertex defined as virtual nodes has a _virtual node identifier_ (attribute int_vn). 
+
+Edges are virtual links between vertex. Source, destionation and transmission sense are specified along with the {{{specs}}} attribute. Latter can be one out of those link types defined in the GT-IMT nomenclature:
+
+  * client-stub
+  * stub-stub
+  * stub-transit
+  * transit-transit
+
+Optionally, some link features can be defined here. Those characteristics defined in each edge element affect to that element. Use the {{{specs}}} elements to define characteristics for a set of edges. Following XML code depicts the virtual network specification.
+{{{
+<?xml version="1.0" encoding="ISO-8859-1"?> 
+  <topology> 
+    <vertices> 
+      <vertex int_idx="0" role="gateway" /> 
+      <vertex int_idx="1" role="gateway" /> 
+      <vertex int_idx="2" role="virtnode" int_vn="0" /> 
+      <vertex int_idx="3" role="virtnode" int_vn="1" /> 
+      <vertex int_idx="4" role="virtnode" int_vn="2" /> 
+    </vertices> 
+    <edges> 
+      <edge int_dst="1" int_src="2" int_idx="0" specs="client-stub" 
+        int_delayms="1" /> 
+      <edge int_dst="2" int_src="1" int_idx="1" specs="client-stub" 
+        dbl_kbps="768" /> 
+      <edge int_dst="1" int_src="3" int_idx="2" specs="client-stub" 
+        dbl_kbps="768" /> 
+      <edge int_dst="3" int_src="1" int_idx="3" specs="client-stub" /> 
+      <edge int_dst="0" int_src="4" int_idx="4" specs="client-stub" /> 
+      <edge int_dst="4" int_src="0" int_idx="5" specs="client-stub" /> 
+      <edge int_dst="1" dbl_len="1" int_src="0" int_idx="0" specs="stub-stub" /> 
+      <edge int_dst="0" dbl_len="1" int_src="1" int_idx="1" specs="stub-stub" /> 
+    </edges> 
+    <specs > 
+      <client-stub dbl_plr="0" dbl_kbps="64" int_delayms="100" int_qlen="10" /> 
+      <stub-stub dbl_plr="0" dbl_kbps="1000" int_delayms="20" int_qlen="10" /> 
+    </specs> 
+  </topology> 
+}}}
+
+The virtual topology has two virtual nodes (0 and 2) connected to a gateway node (int_idx=0) which in turn is connected to a second gateway node (int_idx=1), allowing traffic between virtual nodes 0 and 2 and virtual node 1.
+
+As in a real network, routing tables must be set up in the virtual nodes and gateways to carry out proper packages routing. That routing tables are calculated with the {{{allpairs}} tool, as a result a file is generated (e.g. sample.route). Finally, we need a forth file, the _model_ file (e.g. sample.model). This file is generated automatically using the {{{mkmodel}} tool. This file contains the required information to modify the real routing tables at emulators and hosts machines, create virtual NIC interfaces which correspond to the virtual nodes interfaces and establish the routing tables at the core nodes. Here are the steps to obtain the deployment files.
+{{{
+
+
+}}}
 =Running a More Complex Example=
 
 =Running Java Applications on ModelNet=
