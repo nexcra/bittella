@@ -124,7 +124,7 @@ gmake
 gmake install
 }}}
 
-Depending on your OS installation you may get two compilation error at the {{{libipaddr.c}}} file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. {{{libipaddr.c}}} library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator, so has to be at the host to avoid packets to go through the local loop. Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
+Depending on your OS installation you may get two compilation error at the {{{libipaddr.c}}} file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. {{{libipaddr.c}}} library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator (so has to be at the host to avoid packets to go through the local loop, see Section X.X for further details). Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
   # Go to the folder {{{./modelnet-0.99/src/}}}, there is you {{{libipaddr.c}}} file.
   # Backup you {{{libipaddr.c}}} file (i.e. copy it to {{{libipaddr.c.backup}}}).
   # Go to line 960 and change the first argument of the {{{gethostbyaddr()}}} function type from {{{char*}}} to {{{void*}}}
