@@ -61,7 +61,6 @@ Where _i386_ can be replaced by your PC architecture (i.e. amd64, sparc, etc.) a
 pkg_add -r wget gmake bash
 pkg_add -r perl sudo
 pkg_add -r p5-XML-Simple linuxthreads libgnugetopt boost xerces-c2
-cpan install XML::Simple
 }}}
 
 Now, if you chose release _4.x_ you can install the _perl Graph_ library from the repository using the following command (Note: It is advisable that you compile it from source code)
@@ -115,10 +114,11 @@ tar -xvzf modelnet-0.99.tar.gz
 tar -xvzf src.tar.gz
 rm -rf ./modelnet-0.99/module/*
 cp ./src/* ./modelnet-0.99/module/
+}}}
+{{{
 cd modelnet-0.99
 mkdir freebsd
 cd freebsd
-
 ../configure [-with-fbsdsys=/sys/]
 gmake
 gmake install
@@ -138,14 +138,14 @@ Depending on your OS installation you may get two compilation error at the {{{li
 
 ==Installing ModelNet on Debian/Ubuntu==
 
-The fastest way to get your hosts machines running ModelNet is to install a [http://www.debian.org/ debian] or debian-based Linux distribution such as [http://www.ubuntu.com/ ubuntu]. As with FreeBSD you have to take into account some considerations prior to your OS installation,
+The fastest way to get your hosts machines running ModelNet is to install a [http://www.debian.org/ debian] or debian-based Linux distribution such as [http://www.ubuntu.com/ ubuntu]. I have managed to install ModelNet successfully on Debian 3.1 _Sarge_ and Ubuntu 7.1 _Feisty Fawn_.  As with FreeBSD you have to take into account some considerations prior to your OS installation,
   * Unless you application or testbench needs graphical interface, you do not need to install a X system.
   * If you are planning to install ModelNet from built packages you do not need the kernel sources either.
   * Some extra packages can be useful for you (e.g. ssh, open-ssl, make, gcc, etc.).
 
 Authors tested ModelNet hosts using a Debian 3.1 'Sarge' distribution. This version has already been deprecated and replaced by the 4.0 version. This has some considerations to bear in mind. {{{libxerces21-dev}}} for _stable_ release and {{{libxerces23-dev}}} for _testing_ releases of Debian are no longer available and are replaced by a new library. Unfortunately these libraries are used by ModelNet and they must be installed at the time ModelNet sources want to be compiled.
 
-Hence, I you fancy building ModelNet from sources you can install Debian 3.1 Stable release via an ISO image and either download _.deb_ package or build from source code the following libraries,
+Hence, I you fancy building ModelNet from sources you can install Debian 3.1 Sarge release via an ISO image and either download _.deb_ package or build from source code the following libraries,
   * libxerces21-dev
   * libboost-graph-dev
   * libxml-simple-perl
@@ -155,9 +155,17 @@ Hence, I you fancy building ModelNet from sources you can install Debian 3.1 Sta
   * ModelNet
   * Optional, Authd and Gexec
 
-A more friendly and faster way to install ModelNet is to install it from pre-built or built packages (typically .deb or .pkg). If you want to follow this way then you need to add the following lines to you {{{/etc/apt/source.list}}} config file, 
-(Note: location of this file might be different, if so, have a look to you Aptitude or similar package manager documentation to find how to add a new repository entry).
+Because listed packages have more dependencies, downloading every source code package manually can be a pain. A more friendly and faster way to install ModelNet is to install it from pre-built or built packages (typically .deb or .pkg) available through repositories. If you plan to use this approach, a few lines must be added to your {{{/etc/apt/source.list}}} file. This can be done during the installation of the OS or later on. 
+(Note: location of {{{source.list}}} file might be different, if so, have a look to you Aptitude or similar package manager documentation to find how to add a new repository entry).
 {{{
+# Debian Archive package repository. Here packages for old stable distributions are available
+deb http://archive.debian.org/debian Debian-3.1 main
+deb-src http://archive.debian.org/debian Debian-3.1 main
+
+# Optional, here security updates can be found for Sarge.
+# deb http://security.debian.org/ oldstable/updates main
+
+# ModelNet package and required software from third parties
 deb http://issg.cs.duke.edu/modelnet/debian stable main
 deb-src http://issg.cs.duke.edu/modelnet/debian stable main
 }}}
@@ -166,25 +174,14 @@ Once you update your repository list with something like
 {{{
 sudo apt-get update
 }}}
-You can install the packages listed before. At least I have managed to do this in Ubuntu 7.10 without throubles. Actually, if you run the following command in your terminal as root,
+You can install the packages listed before. At least I have managed to do this in Ubuntu 7.10 without troubles. Actually, if you run the following command in your terminal as root,
 {{{
 sudo apt-get install modelnet
 }}}
-Automatically, ModelNet and all its dependencies are installed. That is why it is highly recommendable to use this option to install ModelNet on your host machines. If your are going to generate the .model and .route file, you need to compile from source to additional packages, the Graph and Heap packages described above. You should already have the tarballs from you emulator installation, therefore you just need to perform these steps to compile the sources.
-{{{
-tar -xvzf Graph-0.20105.tar.gz
-tar -xvzf Heap-0.80.tar.gz
-cd Heap-0.80
-perl Makefile.PL
-make
-make install
-cd ../Graph-0.20105
-perl Makefile.PL
-make
-make install
-}}}
+Automatically, ModelNet and all its dependencies are installed. That is why it is highly recommendable to use this option to install ModelNet on your host machines. If your are going to generate the .model and .route file, you need the Heap and Graph packages mentioned in the FreeBSD section. If your using Debian 3.1 Sarge they are installed along with ModelNet. However if you are using Ubuntu or any other Linux distribution you will have to compile them as described in the FreeBSD installation section. (Note: this time use {{{make}}} instead of {{{gmake}}} command).
 
-Depending on your OS installation two additional symbolic links may be required. (Note: in Ubuntu this is not necessary).
+
+Depending on your OS installation two additional symbolic links may be required. (Note: in Debian 3.1 Sarge and Ubuntu 7.10 Feisty this is not necessary).
 {{{
 sudo ln -s /usr/bin/deployhost /usr/local/bin 
 sudo ln -s /usr/bin/vnrunhost /usr/local/bin
@@ -194,7 +191,7 @@ sudo ln -s /usr/bin/vnrunhost /usr/local/bin
 
 Once you have the ModelNet software install in your cluster machines, there are still some tasks to carry out before we can use to test your applications and obtain results.
 
-Modify your _sudoers_ file by means of {{{sudo visudo}}} command and include the following lines in your file,
+ * Modify your _sudoers_ file by means of {{{sudo visudo}}} command and include the following lines in your file,
 {{{
 root ALL=(ALL) ALL
 Host_Alias MODELHOSTS = modelnet101, modelnet102, modelnet103, modelnet104, modelnet105, modelnet106, mickey.csee.usf.edu
@@ -208,9 +205,27 @@ MODELERS MODELHOSTS = NOPASSWD: MODELCMDS
 
 Replace modelnetXXX and mickey.csee.usf.edu with the hostname of your cluster computers, username X with your usernames declared in the cluster machines. Reboot the system after modify your configuratio file. This modification might save you some precious time when remote invoking some commands from one cluster machine to another. If you have just a few machines this is not strictly necessary.
 
-Add the hostnames of your cluster machines to the {{{/etc/hosts}}} file. For each machine add the LAN IP address and the hostname. Those host names must be the same as those used in the ModelNet host file that will be described in the following section.
+  * Add the hostnames of your cluster machines to the {{{/etc/hosts}}} file. For each machine add the LAN IP address and the hostname. Those host names must be the same as those used in the ModelNet host file that will be described in the following section.
+  * In FreeBSD, you can choose you IP address for you Ethernet NIC at boot time by modifying the {{{/etc/rc.conf}}} file. If there is already a line with,
+{{{
+ifconfig_ZZZZ="DHCP"
+}}}
+where '_ZZZZ_' is you Ethernet interface name (e.g. lnc0, eth0), then remove it, and add this line,
+{{{
+ifconfig_ZZZZ="inet XXX.XXX.XXX.XXX netmask YYY.YYY.YYY.YYY"
+}}}
+where '_ZZZZ_' is again your NIC name, '_XXX.XXX.XXX.XXX_' is your desired IP address for this host and '_YYY.YYY.YYY.YYY_' is the netmask that you choose for this LAN.
 
-It is more than advisable that you enable your SSH Deamon (sshd) in your machines in order to copy the configuration files from one machine to another. However, if you successfully set up the Authd and Gexec services this might not be necessary since you can run commands and copy files using those services.
+  * You can do the same in Linux adding the following lines to your {{{/etc/network/interfaces}}} file.
+{{{
+auto ZZZZ
+iface ZZZZ inet static
+address XXX.XXX.XXX.XXX
+netmask YYY.YYY.YYY.YYY
+}}}
+
+  * It is more than advisable that you enable your SSH Deamon (sshd) in your machines in order to copy the configuration files from one machine to another. 
+  * However, if you successfully set up the Authd and Gexec services this might not be necessary since you can run commands and copy files using those services.
 
 
 =Running a Simple Example: Testing your Setup=
@@ -357,6 +372,4 @@ Or you're receiving stale VN traffic.
 }}}
 
 Successful virtual clustering has been reported using VMWare Workstation and Server Versions 5.0 and 1.5 respectively. I cannot provide details or advice yet, but I will try to deploy the simple example using those deprecated versions.
-
-
 
