@@ -364,12 +364,11 @@ Creating a VMWare machine is not so different from installing an OS in a real ma
 
   # ModelNet patches somehow the TCP/IP stack of your OS and create several virtual NIC and routing tables. Libraries required to launch an execution using ModelNet may have been compiled using information from the NIC driver, which in this case it is not a real driver. The hardware presented to you OS during the installation is _virtual hardware_ and not a physical hardware. Therefore, the modifications carried out by ModelNet during deployment phase may not cause any effect on your virtual machine.
 
-In my particular case, I tried to set up a virtual cluster using VMWare Workstation 6.5 for Linux (Ubuntu) and VMWare Fusion for Mac OSX. Using both platforms, installation and configuration of the virtual cluster was fine, all the checkouts where successful, however when running connectivity tests using {{{iperf}}} or {{{ssh}}} I got a weird message at the emulator machine, which said,
+In my particular case, I tried to set up a virtual cluster using VMWare Workstation 6.5 for Linux (Ubuntu) and VMWare Fusion for Mac OSX. Using both platforms, installation and configuration of the virtual cluster was fine, all the checkouts where successful, however when I tried to test my deployment I got a weird message at the emulator machine, which said,
 {{{
 emulate_nxthop: hop=0, emulator!=NULL, srcip(0x100800a) dstip(0x500000a)
 It is likely that the routing table is corrupt.
 Or you're receiving stale VN traffic.
 }}}
 
-Successful virtual clustering has been reported using VMWare Workstation and Server Versions 5.0 and 1.5 respectively. I cannot provide details or advice yet, but I will try to deploy the simple example using those deprecated versions.
-
+Successful virtual clustering has been reported using VMWare Workstation and Server Versions 5.0 and 1.5 respectively. I have not tried the VMWare Server 1.5, but I managed to setup a small cluster of Virtual Machines using VMWare Workstation 5.5 following the steps described on previous sections.
