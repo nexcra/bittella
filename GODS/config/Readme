@@ -1,0 +1,7 @@
+How to run GODS?
+
+1. To run gods on a  machine, the variables in gods-setup.sh should be modified 
+   accordingly.
+2. To run GODS agent on a cluster each machine should have been configured as
+   in gods-agent-setup.sh.
+

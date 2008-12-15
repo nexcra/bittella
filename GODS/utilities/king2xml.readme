@@ -1,0 +1,34 @@
+/*
+ * Readme File for king2xml
+ * What is its purpose and how to use it
+ * Authors: Ozair Kafray ozair@sics.se AND
+ *          Cosmin Arad  cosmin@sics.se
+ */
+ 
+ WHAT:
+ 
+ king2xml reads data from a king network latency file. A king network latency 
+ file contains only integers arranged in the form of a nxn matrix. An integer or
+ element in the array e.g., node[x,y] depicts latency between nodes x and y. For
+ some nodes -1 is specified as latency which is considered as 'bad' data and is 
+ set as '0' while it is being written onto the standard output.
+ 
+ Initially it was thought that the rows containing a -1 would be considered as 
+ bad data and they would not be considered while selecting desired number of 
+ nodes, but it was observed that each row has at least one -1. 
+ 
+ HOW:
+ 
+ The king2xml utility expects the following arguments
+ 1. A kingdata file as explained in WHAT section.
+ 2. Integer number of nodes to be considered from kingdata. The kingdata file available
+    on website has 1700 nodes. If e.g., 400 is the second command line argument to the 
+    utility, the king2xml utility will then make a graph file considering only the first
+    400 nodes in the kingdata file.
+ *  Since the data is written onto standard output, it should be redirected to the 
+    target 'xml' file.
+    
+ EXAMPLE:
+ 
+ $> king2xml kingdata 400 > kingnet400.graph
+ 

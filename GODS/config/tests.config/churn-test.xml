@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <comment>Churn Tests parameters</comment>
+
+    <!-- DKS ArgumentGenerator  -->
+    <!-- Please note that the name of ArgumentGenerator here is the display name
+         not the class implmenting this ArgumentGenerator. DisplayNames are 
+         mapped to their respective classes in gods.churn.arggens.xml  -->
+    <entry key="dks.arggen">DksUniformlyDistributedIds</entry>
+    
+    <!-- DKS ArgumentGenerator  parameters or config file (path should be relative to gods.home)-->
+    <entry key="dks.arggen.params">config/arggens.config/dks.uniformlydist.idparams.xml</entry>
+ 
+    <!-- DKS Nodes  -->
+    <entry key="dks.nodes">100</entry>
+
+</properties>

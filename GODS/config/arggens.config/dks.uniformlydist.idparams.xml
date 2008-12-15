@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    
+    <comment>DKS Argument Generator parameters</comment>
+    
+    <!-- DKS Arity  -->
+    <entry key="dks.arity">4</entry>
+    
+    <!-- DKS Levels  -->
+    <entry key="dks.levels">5</entry>
+    
+    <!-- DKS Port  -->
+    <entry key="dks.port">12345</entry>
+  
+</properties>

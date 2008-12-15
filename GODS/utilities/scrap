@@ -1,0 +1,143 @@
+#!/bin/bash
+#GODS: Script for setting up agents on hosts
+#This script will be executed from the ControlCenter, 
+#and the hosts file passed to it as argument
+
+#The script will first copy all agent related code to each host
+#--All code should be placed in a folder and the path must be set for LOCAL_DIR variable
+
+#Error Codes should be documented in a separate Java XML Properties file, which
+#is required by the GODS Bootstrapper to inform problems in script execution
+
+###################################################################################################
+####################### VARIABLES TO BE MODEIFIED AS REQUIRED #####################################
+###################################################################################################
+
+#######################        DEPLOYMENT VARIABLES           #####################################
+
+LOCAL_DIR="/home/ozair/workspace/gods-www/codebase/gods/"
+REMOTE_DIR="/home/gods/gods-bin/"
+REMOTE_USER="gods"
+
+###################################################################################################
+
+#######################     REMOTE EXECUTION VARIABLES        #####################################
+
+REMOTE_JAVA_PATH="jre1.5.0_08/bin"
+REMOTE_CLASSPATH="gods-bin/"
+CODEBASE="http://snusmumrik.sics.se/codebase/"
+REMOTE_POLICY="gods-bin/policies/java.policy4"
+HOSTNAME="snusmumrik.sics.se"
+
+###################################################################################################
+###################################################################################################
+
+
+#### Performs command provided as first argument ####
+#and if the command exits with a non-zero value then it exits with 
+#value provided as second argument
+function command() {
+    $1
+    if [ $? -ne 0 ]; then exit $2; fi
+} 
+
+
+#### Function for reading hosts from hosts file ####
+function readhosts() {
+    
+    n=0
+    #Read hosts from HOSTSFILE one by one separated by \n
+    for host in $(awk 'BEGIN{FS="\n"}{print $1}' < "$HOSTSFILE" )
+    do
+	HOSTS[$n]=$host
+	let "n += 1"
+    done  
+    
+    #NOOFHOSTS is equal to value of n at this point
+    let NOOFHOSTS=n
+    echo "No of hosts are: " $NOOFHOSTS
+
+    #Display output
+    for((i=0; i<$NOOFHOSTS; i++))
+    do
+	echo ${HOSTS[$i]}
+    done
+}
+
+
+#### Function to deploy agent code from Local to all remote folders ####
+#It copies LOCAL_DIR to REMOTE_DIR using scp
+function deployagents() {
+
+    for ((i=0; i<NOOFHOSTS; i++))
+    do
+	command "echo scp -r $LOCAL_DIR $REMOTE_USER@${HOSTS[i]}:$REMOTE_DIR" $1
+	command "scp -r $LOCAL_DIR $REMOTE_USER@${HOSTS[i]}:$REMOTE_DIR" $1
+    done
+
+}
+
+###################################################################################################
+###################################### THE ACTUAL SCRIPT ##########################################
+###################################################################################################
+
+#Check if there is exactly one command line argument
+if [ ${#*} -ne 1 ]; then
+    echo "usage: $0 [hostsFile]";
+    exit 1;
+fi
+
+#Check if specified host file exists
+if [ ! -e "$1" ]
+  then
+    echo "$1 does not exist."; 
+    exit 2;
+fi
+
+#Declaring and initializing variables
+#These variables are modified programatically
+HOSTSFILE=$1
+HOSTS=""
+NOOFHOSTS=0
+
+readhosts 3
+deployagents 4
+
+exit 0
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Function to start rmiregistry on hosts ####
+#It first starts rmiregistry on each host and then Agent classes.
+#function startrmiregistry() {
+
+#   for ((i=0; i<NOOFHOSTS; i++))
+#   do
+#	command "echo ssh $REMOTE_USER@${HOSTS[i]} \"$REMOTE_JAVA_PATH/rmiregistry &\"" $1
+#	command "ssh $REMOTE_USER@${HOSTS[i]} $REMOTE_JAVA_PATH/rmiregistry &" $1
+#   done
+    
+#}
+
+
+#### Function to run agents on hosts ####
+#It starts Agent on each host using the variables specified for remote execution.
+#function execagents() {
+
+#    for ((i=0; i<NOOFHOSTS; i++))
+#    do
+#        command "echo ssh $REMOTE_USER@${HOSTS[i]} \"$REMOTE_JAVA_PATH/java -Djava.rmi.server.codebase=$CODEBASE -Djava.security.policy=$REMOTE_POLICY -classpath $REMOTE_CLASSPATH gods.agent.Agent $HOSTNAME\"" $1
+#	command "ssh $REMOTE_USER@${HOSTS[i]} \"$REMOTE_JAVA_PATH/java -Djava.rmi.server.codebase=$CODEBASE -Djava.security.policy=$REMOTE_POLICY -classpath $REMOTE_CLASSPATH gods.agent.Agent $HOSTNAME\"" $1
+#    done
+    
+#}

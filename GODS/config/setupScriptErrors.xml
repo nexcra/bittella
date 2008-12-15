@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <comment>Error Messages from GODS experiment setup script</comment>
+
+    <entry key="1">usage: run-agent.sh &lt;gods-agent-startup.sh&gt;
+        &lt;HOSTNAME&gt; must be specified correctly in gods-startup file"</entry>
+    <entry key="2">Error Starting rmiregistry</entry>
+    <entry key="3">Error Executing Agents</entry>
+
+</properties>

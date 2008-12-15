@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    
+    <comment>Error Messages from GODS deploy agents script</comment>
+    
+    <entry key="1">HOSTNAME not specified for deploy script</entry>
+    <entry key="2">Error while updating AGENT code to remote host</entry>
+    <entry key="3">Error while updating LIB to remote host</entry>
+    <entry key="4">Error while updating POLICIES to remote host</entry>
+    <entry key="5">Error while updating CONFIG to remote host</entry>
+        
+</properties>

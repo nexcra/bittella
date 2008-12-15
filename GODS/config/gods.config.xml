@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <comment>Startup parameters for GODS</comment>
+    
+    <!-- All paths are relative to the gods.home folder specified as System property in gods-setup.sh  -->
+
+    <!-- Experiment Setup Properties  -->
+    <entry key="gods.slots">3</entry>
+    <entry key="gods.net.model.dir">models/sample.model</entry>
+    <entry key="syncclocks.script">scripts/syncclocks.sh</entry>
+    <entry key="combinelogs.script">scripts/combinelog.sh</entry>
+    <entry key="net.deploy.script">scripts/deployemunet.sh</entry>
+    <entry key="gods.event.types">config/eventTypes</entry>
+    
+    <!-- Agent Deployment Variables  -->
+    <entry key="gods.agent.deploy.script">scripts/deploy-agent.sh</entry>
+    <entry key="gods.agent.deploy.errors">config/deployScriptErrors.xml</entry>
+    
+    <!-- Agent Execution Variables -->
+    <entry key="gods.agent.launch.script">scripts/run-agent.sh</entry>
+    <entry key="gods.agent.setup.script">scripts/agent-setup-snusmumrik.sh</entry>
+    <entry key="gods.agent.setup.errors">config/setupScriptErrors.xml</entry>
+    
+    <!-- Churn Configurations -->
+    <entry key="gods.churn.argumentgenerators.file">config/arggens.config/gods.churn.arggens.xml</entry>
+    
+    <!-- Experiment End Properties  -->
+    <entry key="gods.agent.quit.script">scripts/kill-agent.sh</entry>
+
+</properties>
