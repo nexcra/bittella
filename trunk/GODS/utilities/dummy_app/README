@@ -1,0 +1,17 @@
+Dummy application that logs the time when it is launched/stopped/killed.
+Usage: dummy_app <nodeid> <logfilename> <stopsigno> <killsigno>
+	<nodeid> is the application node id used to distinguish nodes in the log file
+	<logfilename> is the path to a file where the application logs churn events
+	<stopsigno> signal number used to stop the application
+	<killsigno> signal number used to kill the application
+
+When launched, the application logs the current time, its id and the symbol 'J'
+in the <logfile>. It also outputs its PID on stdout. If signal <stopsigno> is
+sent to the process, it logs the current time, its id and the symbol 'L' in the
+<logfile>. If signal <killsigno> is sent to the process, it logs the current
+time, its id and the symbol 'F' in the <logfile>.
+
+Multiple dummy application node running on the same machine can share the same
+log file.
+
+The current time format is: seconds.microseconds

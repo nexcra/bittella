@@ -1,0 +1,97 @@
+<project name="GODS" default="build" basedir=".">
+	<description>
+        GODS build and deploy file
+    </description>
+	<!-- set global properties for this build -->
+	<property name="src.dir" location="src" />
+	<property name="build.dir" location="classes" />
+	<property name="deploy.dir" location="/var/www/gods" />
+	<property name="dist.dir" location="${deploy.dir}" />
+	<property name="doc.dir" location="javadoc" />
+
+	<property name="javadoc.core.linkexternal" value="http://java.sun.com/j2se/1.5.0/docs/api/" />
+	<property name="javadoc.core.packagelist" value="${java.home}/../docs/api/" />
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="build" depends="init" description="compile the source ">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac classpath="utilities/log4j.jar:utilities/junit-4.0.jar" srcdir="${src.dir}"  destdir="${build.dir}" />
+
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<target name="rebuild" depends="clean,init" description="compile the source ">
+		<!-- Clean and build -->
+		<javac srcdir="${src.dir}" destdir="${build.dir}" />
+	</target>
+
+	<target name="genstubs" depends="build" description="generate stubs for RMI interfaces ">
+		<!-- genrate stubs for RemoteObjects of cc,agent and dsut-->
+		<rmic base="${build.dir}" classname="gods.agent.AgentRemote" />
+		<rmic base="${build.dir}" classname="gods.cc.ControlCenterRemote" />
+		<rmic base="${build.dir}" classname="gods.arch.remote.AbstractRemoteModuleProxy" />
+		<rmic base="${build.dir}" classname="gods.arch.remote.AbstractRemoteModule" />
+	</target>
+
+	<target name="deploy" depends="build,dist" description="copy code to deplyment folder ">
+		<!-- Deploy binaries, scripts and config files into deploy.dir -->
+		<copy preservelastmodified="true" todir="${deploy.dir}/classes">
+			<fileset dir="${build.dir}" />
+		</copy>
+		<copy preservelastmodified="true" todir="${deploy.dir}/config">
+			<fileset dir="./config" />
+		</copy>
+		<copy preservelastmodified="true" todir="${deploy.dir}/javapolicies">
+			<fileset dir="./javapolicies" />
+		</copy>
+		<copy preservelastmodified="true" todir="${deploy.dir}/scripts">
+			<fileset dir="./scripts" />
+		</copy>
+		<copy preservelastmodified="true" todir="${deploy.dir}/lib">
+			<fileset dir="./lib" />
+		</copy>
+		<copy preservelastmodified="true" todir="${deploy.dir}/utilities">
+			<fileset dir="./utilities">
+				<exclude name="scrap" />
+			</fileset>
+		</copy>
+		<copy preservelastmodified="true" todir="${deploy.dir}/" file="./doc/user_guide/guide.pdf">
+			<!--<fileset dir="./doc/user_guide" file="guide.pdf" />-->
+		</copy>
+		<exec executable="chmod" failonerror="true">
+			<arg line="-R 777 ${deploy.dir}/scripts" />
+		</exec>
+		<exec executable="chmod" failonerror="true">
+			<arg line="-R 777 ${deploy.dir}/utilities" />
+		</exec>
+	</target>
+
+	<target name="dist" depends="build" description="generate the distribution">
+		<!-- Put everything in ${build} into the jar files -->
+		<jar jarfile="${dist.dir}/gods.jar" basedir="${build.dir}" update="true" />
+	</target>
+
+	<target name="javadoc" description="Creating Javadoc Documentation">
+
+		<mkdir dir="${doc.dir}" />
+
+		<javadoc destdir="${doc.dir}" author="true" version="true" use="true" windowtitle="GODS Documentation" packagenames="*" header="&lt;b&gt;GODS: Global Observatory&lt;br&gt;for Distributed Systems&lt;/b&gt;" footer="&lt;b&gt;GODS: Global Observatory&lt;br&gt;for Distributed Systems&lt;/b&gt;" bottom="Submit bugs and feature requests to &lt;a href=mailto:gods@sics.se&gt;gods@sics.se&lt;/a&gt;" classpath="${classpath}">
+			<sourcepath>
+				<pathelement location="${src.dir}" />
+			</sourcepath>
+			<link offline="true" href="${javadoc.core.linkexternal}" packagelistloc="${javadoc.core.packagelist}" />
+		</javadoc>
+	</target>
+
+	</project>

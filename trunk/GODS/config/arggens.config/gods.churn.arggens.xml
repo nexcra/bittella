@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<argumentgenerators>
+
+    <argumentgenerator displayName="DksUniformlyDistributedIds">gods.churn.arggens.DksUniformlyDistributedArgsGenerator</argumentgenerator>
+    <argumentgenerator displayName="DksFixedIntervalIds">gods.churn.arggens.DksFixedIntervalArgsGenerator</argumentgenerator>
+    <argumentgenerator displayName="DksRandomIds">gods.churn.arggens.DksRandomArgsGenerator</argumentgenerator>
+
+</argumentgenerators>

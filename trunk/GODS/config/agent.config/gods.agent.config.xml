@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <comment>Agent Configuration Parameters</comment>
+    <!-- All Paths are relative to gods.agent.home as sepcified in System properties before launching GodsAgent  -->
+
+    <!-- Application Churn Scripts  -->
+    <entry key="gods.agent.launch.application.script">scripts/launch-application.sh</entry>
+    <entry key="gods.agent.stop.application.script">scripts/stop-application.sh</entry>
+    <entry key="gods.agent.kill.application.script">scripts/kill-application.sh</entry>
+
+</properties>

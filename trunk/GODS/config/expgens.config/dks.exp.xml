@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+    <comment>GODS Experiment Generation Parameters</comment>
+
+    <!-- Path to the directory where a folder with experiment.name will be created  -->
+    <entry key="experiment.dir.path">/home/ozair/workspace/gods-www/experiments/</entry>
+
+    <!-- All files related to this experiment will be stored in a folder with-->
+    <!-- this name appended to the EXPERIMENT.DIR.PATH  -->
+    <entry key="experiment.name">dks.joins.100</entry>
+    
+    <!-- Fully qualified Java Class name of the ChurnEventGenerator-->
+    <entry key="experiment.gen.class">gods.experiment.generators.JoinEventGenerator</entry>
+
+    <!-- Time period of the experiment (seconds) -->
+    <entry key="totaltime.int">300</entry>
+
+    <!-- Seed for pseudo-random number generation -->
+    <entry key="seed.int">500</entry>
+
+    <!-- No. of virtual nodes -->
+    <entry key="slots.int">500</entry>
+
+    <!-- Network Model Folder -->
+    <entry key="network.model.path">/home/ozair/workspace/gods-www/models/mesh500.1</entry>
+
+    <!-- Application home -->
+    <entry key="app.home.path">/home/ozair/workspace/Programs/NewDKS/</entry>
+
+    <!-- Applications home on the machines hosting virtual nodes -->
+    <entry key="app.remote.home">/home/gods/dks/</entry>
+
+    <!-- Application deploy script relative to APP.HOME.PATH -->
+    <entry key="app.deploy.script">deploydks.sh</entry>
+
+    <!-- Application init/cleanup script relative to APP.REMOTE.HOME -->
+    <entry key="app.init.script">initdks.sh</entry>
+
+    <!-- Application launch script relative to APP.REMOTE.HOME-->
+    <entry key="app.launch.script">launch-dks.sh</entry>
+    
+    <!-- Application log file on remote machine relative to APP.REMOTE.HOME -->
+    <entry key="app.remote.log">logs/dks.log</entry>
+
+    <!-- Argument Generator Class for this Application-->
+    <!-- The value should be the "displayName" of the classes registered as ArgumentGenerators in gods.churn.arggens.xml-->
+    <!-- "void" is also a valid value in case an application does not need any arguments -->
+    <entry key="app.arggen.displayname">DksRandomIds</entry>
+
+    <!-- Required only if the property "APP.ARGGEN.CLASS" is not "void" -->
+    <entry key="app.arggen.config.file"
+        >/home/ozair/workspace/gods-www/config/arggens.config/dks.uniformlydist.idparams.xml</entry>
+
+    <!-- Application kill signal -->
+    <entry key="app.kill.signal.int">12</entry>
+
+    <!-- Application stop signal -->
+    <entry key="app.stop.signal.int">10</entry>
+
+</properties>
