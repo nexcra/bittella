@@ -14,6 +14,9 @@ import java.net.UnknownHostException;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.BufferedInputStream;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -25,11 +28,12 @@ import java.net.URLConnection;
 public class Connection2 extends Connection {
 
     private String meta_data;
-    
-    public Connection2(byte[] id, TorrentFile t, String save_path, String local_addr) {
+    private boolean extended;
+
+    public Connection2(byte[] id, TorrentFile t, String save_path, String local_addr, boolean extended) {
 
         super(id, t, save_path, local_addr);
-
+        this.extended = extended;
     }
 
     /**
@@ -67,20 +71,27 @@ public class Connection2 extends Connection {
 
                     try {
                         this.end = true;
-                        HandshakeManager hm = new HandshakeManager(this.torrentf,this.idf,this.dat_file);
-                        //if(hm.startListening(6881, 6889)){
-                            hm.updatePeerList(peerL);
-                            boolean finished = hm.blockUntilCompletion();
-                            if(finished && this.saveMetaData(-1, -1, -1, true)){
-                                Crawler.incCounter();
-                                System.out.println("New IP set fetched: " + Crawler.count);
-                            }
-                        //}
+                        boolean finished = false;
 
+                        if (!extended) {
+                            finished = this.savePeers(peerL);
+                        } else {
+                            HandshakeManager hm = new HandshakeManager(this.torrentf, this.idf, this.dat_file);
+                            hm.updatePeerList(peerL);
+                            finished = hm.blockUntilCompletion();
+                        }
+
+                        if (finished && this.saveMetaData(-1, -1, -1, true)) {
+                            Crawler.incCounter();
+                            System.out.println("New IP set fetched: " + Crawler.count);
+                            System.gc();
+                            break;
+                        }
 
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                         e.printStackTrace();
+                        System.gc();
                     }
 
                 } else { //if numwant < peerList.size
@@ -190,10 +201,10 @@ public class Connection2 extends Connection {
                     }
                 }//end if instanceof
             }//end if failure_reason
-            
-            if(this.first){
+
+            if (this.first) {
                 first = false;
-                if (!this.saveMetaData(complete, incomplete, downloaded,false)) {
+                if (!this.saveMetaData(complete, incomplete, downloaded, false)) {
                     return null;
                 }
             }
@@ -243,19 +254,19 @@ public class Connection2 extends Connection {
         } catch (UnknownHostException uhe) {
             System.out.println("Tracker not available... Retrying...");
         } catch (IOException ioe) {
-            System.out.println("Tracker unreachable... Retrying " + ioe.getMessage()+"@"+t.announceURL);
+            System.out.println("Tracker unreachable... Retrying " + ioe.getMessage() + "@" + t.announceURL);
         } catch (Exception e) {
             System.out.println("Internal error");
         }
         return null;
     }
 
-    private boolean saveMetaData(long complete, long incomplete, long downloaded,boolean onFile) {
-        
-        if(!onFile){
+    private boolean saveMetaData(long complete, long incomplete, long downloaded, boolean onFile) {
+
+        if (!onFile) {
             String torrentID = this.dat_file.getName();
             torrentID = torrentID.substring(0, torrentID.indexOf('.'));
-            long timestamp = System.currentTimeMillis()/1000;
+            long timestamp = System.currentTimeMillis() / 1000;
             long created = this.torrentf.creationDate;
             int piece_length = this.torrentf.pieceLength;
             int num_files = this.torrentf.length.size();
@@ -264,8 +275,32 @@ public class Connection2 extends Connection {
                     timestamp + "\t" + created + "\t" + total_length + "\t" + num_files + "\t" + piece_length);
             return true;
 
-        }else{
+        } else {
             return Crawler.saveMetaData(this.meta_data);
         }
+    }
+
+    private boolean savePeers(LinkedHashMap peerList) {
+
+        Iterator it = peerList.values().iterator();
+        PrintWriter pw = null;
+        
+        try{
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(this.dat_file)));
+        }catch(IOException ioe){
+            System.out.println(ioe.getMessage());
+            return false;
+        }
+
+        while (it.hasNext()) {
+            Peer p = (Peer) it.next();
+            if (!p.getIP().equals(this.local_addr)) {
+                pw.println(p.getIP() + "\t" + p.getPort());
+            }
+        }
+
+        pw.flush();
+        pw.close();
+        return true;
     }
 }
