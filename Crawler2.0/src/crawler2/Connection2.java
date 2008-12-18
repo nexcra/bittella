@@ -67,7 +67,7 @@ public class Connection2 extends Connection {
                         }
                     }
                 }catch(Exception e){
-                    System.out.println(e.getMessage());
+                    System.out.println("Run-It: "+e.getMessage());
                     System.gc();
                 }
 
