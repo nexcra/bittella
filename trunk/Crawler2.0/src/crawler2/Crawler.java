@@ -59,7 +59,7 @@ public class Crawler {
             Crawler.base_url = param.get("-p");
         }
         if (param.containsKey("-d")) {
-            output_folder = param.get("-d")+"/"+timet+"/";
+            output_folder = param.get("-d");
         }
         if (param.containsKey("-l")) {
             last_file = Long.parseLong(param.get("-l"));
@@ -74,6 +74,7 @@ public class Crawler {
             local_addr = param.get("-a");
         }
         
+        output_folder = output_folder +"/"+timet+"/";
         File temp = new File(output_folder);
         temp.mkdirs();
         Crawler.meta = new File(output_folder+"../"+"meta_info_"+timet+".dat");
@@ -172,6 +173,17 @@ public class Crawler {
 
         } catch (IOException e) {
             System.out.println("FetchTorrent: " + e.getMessage());
+            //e.printStackTrace();
+            try {
+                br.close();
+                bw.flush();
+                bw.close();
+                temp.delete();
+            } catch (Exception ea) {
+            }
+            return null;
+        } catch (Exception e2){
+            System.out.println("FetchTorrent: "+e2.getMessage());
             //e.printStackTrace();
             try {
                 br.close();

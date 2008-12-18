@@ -194,14 +194,20 @@ public class Connection2 extends Connection {
                 } else if (peers instanceof byte[]) {
                     byte[] p = ((byte[]) peers);
                     for (int i = 0; i < p.length; i += 6) {
-                        Peer peer = new Peer();
-                        peer.setIP(Utils.byteToUnsignedInt(p[i]) + "." +
-                                Utils.byteToUnsignedInt(p[i + 1]) + "." +
-                                Utils.byteToUnsignedInt(p[i + 2]) + "." +
-                                Utils.byteToUnsignedInt(p[i + 3]));
-                        peer.setPort(Utils.byteArrayToInt(Utils.subArray(p,
-                                i + 4, 2)));
-                        l.put(peer.toString(), peer);
+                        try{
+                            Peer peer = new Peer();
+                            peer.setIP(Utils.byteToUnsignedInt(p[i]) + "." +
+                                    Utils.byteToUnsignedInt(p[i + 1]) + "." +
+                                    Utils.byteToUnsignedInt(p[i + 2]) + "." +
+                                    Utils.byteToUnsignedInt(p[i + 3]));
+                            peer.setPort(Utils.byteArrayToInt(Utils.subArray(p,
+                                    i + 4, 2)));
+                            l.put(peer.toString(), peer);
+                           }catch(ArrayIndexOutOfBoundsException aio){
+                               System.out.println("processResponse: "+aio.getMessage());
+                               num_want--;
+
+                           }
                     }
                 }//end if instanceof
             }//end if failure_reason
