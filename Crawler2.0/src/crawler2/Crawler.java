@@ -60,8 +60,6 @@ public class Crawler {
         }
         if (param.containsKey("-d")) {
             output_folder = param.get("-d")+"/"+timet+"/";
-            File temp = new File(output_folder);
-            temp.mkdirs();
         }
         if (param.containsKey("-l")) {
             last_file = Long.parseLong(param.get("-l"));
@@ -75,7 +73,9 @@ public class Crawler {
         if (param.containsKey("-a")) {
             local_addr = param.get("-a");
         }
-
+        
+        File temp = new File(output_folder);
+        temp.mkdirs();
         Crawler.meta = new File(output_folder+"../"+"meta_info_"+timet+".dat");
                     
         while (Crawler.count <= max_files && init_file > last_file) {
