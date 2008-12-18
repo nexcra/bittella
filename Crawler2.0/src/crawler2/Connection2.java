@@ -55,17 +55,21 @@ public class Connection2 extends Connection {
             System.gc();
             if (auxL != null) {
 
-                Iterator it = auxL.keySet().iterator();
-                if(it == null) continue;
-                while (it.hasNext()) {
-                    String key = (String) it.next();
+                try{
+                    Iterator it = auxL.keySet().iterator();
+                    if(it == null) continue;
+                    while (it.hasNext()) {
+                        String key = (String) it.next();
 
-                    if (!peerL.containsKey(key)) {
-                        peerL.put(key, auxL.get(key));
-                        tryNB = 0;
+                        if (!peerL.containsKey(key)) {
+                            peerL.put(key, auxL.get(key));
+                            tryNB = 0;
+                        }
                     }
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                    System.gc();
                 }
-
 
                 if (peerL.size() >= this.num_want) {
 
