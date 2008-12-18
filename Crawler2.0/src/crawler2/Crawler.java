@@ -36,9 +36,10 @@ public class Crawler {
         long max_files = Long.MAX_VALUE;
         long last_file = 0;
         String output_folder = "./";
-        boolean meta_file = false;
-
-        if (args.length < 1 || args.length > 11 || args.length % 2 != 1) {
+        boolean ext_info = false; //whether extended info
+        long timet = System.currentTimeMillis()/1000;
+        
+        if (args.length < 3 || args.length > 13 || args.length % 2 != 1) {
             Crawler.errMessage();
             System.exit(1);
         }
@@ -58,7 +59,9 @@ public class Crawler {
             Crawler.base_url = param.get("-p");
         }
         if (param.containsKey("-d")) {
-            output_folder = param.get("-d");
+            output_folder = param.get("-d")+"/"+timet+"/";
+            File temp = new File(output_folder);
+            temp.mkdirs();
         }
         if (param.containsKey("-l")) {
             last_file = Long.parseLong(param.get("-l"));
@@ -67,13 +70,14 @@ public class Crawler {
             max_files = Long.parseLong(param.get("-m"));
         }
         if (param.containsKey("-e")) {
-            Crawler.meta = new File(param.get("-e"));
-            meta_file = true;
+            ext_info = new Boolean(param.get("-e"));
         }
         if (param.containsKey("-a")) {
             local_addr = param.get("-a");
         }
 
+        Crawler.meta = new File(output_folder+"../"+"meta_info_"+timet+".dat");
+                    
         while (Crawler.count <= max_files && init_file > last_file) {
 
             File q = Crawler.fetchTorrent(init_file);
@@ -86,14 +90,7 @@ public class Crawler {
                 if (t != null) {
 
                     byte[] id = Utils.generateID();
-                    String length = Crawler.checkLength(t.total_length);
-                    Connection c = null;
-
-                    if (!meta_file) {
-                        c = new Connection(id, t, output_folder + init_file + "_" + length + ".dat", local_addr);
-                    } else {
-                        c = new Connection2(id, t, output_folder + init_file + ".dat", local_addr);
-                    }
+                    Connection c = new Connection2(id, t, output_folder +init_file + ".dat", local_addr, ext_info);
                     c.start();
 
                     try {
@@ -121,23 +118,23 @@ public class Crawler {
     private static void errMessage() {
         System.err.println(
                 "Usage:" +
-                "\tjava -jar Crawler2.0.jar [OPTIONS] <init_file>");
+                "\tjava -jar Crawler2.0.jar [OPTIONS] -e <true/false> <init_file>");
         System.err.print("\n");
         System.err.println("  init_file\t Initial Torrent file ID.");
         System.err.println("\t\t The program continues running through the torrent list decreasing this value.");
+        System.err.println("  -e <tr/fal>\t Extended peer's information. It can be included in any order with other options.");
+        System.err.println("\t\t If \"true\", in addition to the peer IP:PORT info, type (i.e. seed, leecher, unknown) and bitfield are grabbed");
         System.err.println("<<OPTIONS>>");
         System.err.println("  -p <url>\t Base URL of the torrent directory. Default: http://www.mininova.org/get/");
         System.err.println("  -d <folder>\t Output folder for generated files. Default: Current Folder");
         System.err.println("  -l <id>\t Last Torrent file ID to be fetched and processed");
         System.err.println("  -m <#>\t Maximum amount of Torrent files to be processed");
         System.err.println("\t\t Program will exit when this amount of torrents have been succesfully processed");
-        System.err.println("  -e <folder>\t Extended torrent information");
-        System.err.println("\t\t In addition to the peer list, meta info per Torrent file is stored in the given file.");
         System.err.println("  -a <ip_addr>\t Specify local \"public\" IP address");
-        System.err.println("\t\t Use this option if you want to filter your own IP address from results.");
-        System.err.println("\t\t Using \'-e\' option, this in not necessary unless you're running a BT Client on ports 6881-6889 of your \"public\" interface.\n");
+        System.err.println("\t\t Use this option if you want to filter \"ip_addr\" IP address from results.");
+        System.err.println("\t\t Note: Using \'-e\' option, your IP will not be recorded unless you're running a BT Client\n");
         System.err.println("Example: Process from file ID 209473 to ID 190670 a max. of 500 torrents fetched from piratebay.org, \n         storing meta information and using the current folder.\n");
-        System.err.println("\t java -jar Crawler2.0.jar -p http://piratebay.org/get/ -d ./ -l 190670 -m 500 -e torrent_file.dat 209473\n\n");
+        System.err.println("\t java -jar Crawler2.0.jar -p http://piratebay.org/get/ -d ./ -l 190670 -m 500 -e true 209473\n\n");
     }
 
     private static File fetchTorrent(long o) {
