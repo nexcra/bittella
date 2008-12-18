@@ -56,7 +56,7 @@ public class Connection2 extends Connection {
             if (auxL != null) {
 
                 Iterator it = auxL.keySet().iterator();
-
+                if(it == null) continue;
                 while (it.hasNext()) {
                     String key = (String) it.next();
 
