@@ -84,7 +84,11 @@ public class Connection2 extends Connection {
                             hm.updatePeerList(peerL);
                             finished = hm.blockUntilCompletion();
                         }
-
+                        
+                        if (!finished){
+                            finished = this.savePeers(peerL);
+                        }
+                        
                         if (finished && this.saveMetaData(-1, -1, -1, true)) {
                             Crawler.incCounter();
                             System.out.println("New IP set fetched: " + Crawler.count);
@@ -296,7 +300,7 @@ public class Connection2 extends Connection {
         PrintWriter pw = null;
         
         try{
-            pw = new PrintWriter(new BufferedWriter(new FileWriter(this.dat_file)));
+            pw = new PrintWriter(new BufferedWriter(new FileWriter(this.dat_file,false)));
         }catch(IOException ioe){
             System.out.println(ioe.getMessage());
             return false;
