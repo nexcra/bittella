@@ -95,8 +95,8 @@ public class Crawler {
                     c.start();
 
                     try {
+                        Crawler.openCon();
                         synchronized (Crawler.class) {
-                            Crawler.openCon();
                             while (Crawler.open_con >= 10) {
                                 Crawler.class.wait(10000);
                             }
@@ -230,14 +230,17 @@ public class Crawler {
 
     protected static synchronized void releaseCon() {
         Crawler.open_con--;
-        Crawler.class.notify();
+        Crawler.class.notifyAll();
     }
 
     protected static synchronized void openCon() {
         Crawler.open_con++;
+        System.out.println(Crawler.open_con+" Open Conections");
+        Crawler.class.notifyAll();
     }
 
     protected static synchronized void incCounter() {
         Crawler.count++;
+        Crawler.class.notifyAll();
     }
 }
