@@ -75,7 +75,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
     private LinkedHashMap<String, Peer> peerList = null;
     private TreeMap<String, DownloadTask> task = null;
     private LinkedHashMap<String, BitSet> peerAvailabilies = null;
-
+    //private AvPieces<String,BitSet> peerAvailabilies = null;
     //LinkedHashMap downloaders = new LinkedHashMap<String, Integer>(4);
     LinkedHashMap unchoken = new LinkedHashMap<String, Integer>();
     private long lastTrackerContact = 0;

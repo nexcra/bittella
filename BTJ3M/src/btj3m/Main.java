@@ -22,7 +22,7 @@ public class Main {
                 System.err.println(
                         "Incorrect use, please provide the path of the torrent file...\r\n" +
                         "\r\nUsage:\r\n"+
-                        "Main <torrent_file_path");
+                        "Main <torrent_file_path> [<save_path>] [<special_chocking> <min_unchocked>]");
 
                 System.exit(1);
             }
@@ -30,8 +30,13 @@ public class Main {
             if(args.length > 1)
                 Constants.SAVEPATH = args[1];
             if (t != null) {
-                boolean enabled = Boolean.parseBoolean(args[2]);
-                int unb = Integer.parseInt(args[3]);
+                boolean enabled = false;
+                int unb = 4;
+                if(args.length > 2){
+                    enabled = Boolean.parseBoolean(args[2]);
+                    unb = Integer.parseInt(args[3]);
+                }
+                
                 DwManager dm = new DwManager(t, Utils.generateID(),enabled,unb);
                 dm.startListening(6881, 6889);
                 dm.startTrackerUpdate();
