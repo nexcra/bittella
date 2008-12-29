@@ -93,7 +93,7 @@ public class Connection2 extends Connection {
                             Crawler.incCounter();
                             System.out.println("New IP set fetched: " + Crawler.count);
                             System.gc();
-                            break;
+                            continue;
                         }
 
                     } catch (Exception e) {
