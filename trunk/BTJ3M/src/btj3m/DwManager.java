@@ -41,7 +41,6 @@ import jBittorrentAPI.*;
 import java.util.*;
 import java.io.*;
 import java.net.Socket;
-import java.net.InetAddress;
 
 /**
  * Object that manages all concurrent downloads. It chooses which piece to request
@@ -52,33 +51,21 @@ public class DwManager implements DTListener, PeerUpdateListener,
 
     // Client ID
     private byte[] clientID;
-
     private TorrentFile torrent = null;
-
     private int maxConnectionNumber = 100;
-
     private int nbOfFiles = 0;
     private long length = 0;
     private long left = 0;
     private Piece[] pieceList;
-    private BitSet isComplete;
-    private BitSet isRequested;
     private int nbPieces;
     private RandomAccessFile[] output_files;
-
     private PeerUpdater pu = null;
     private ConnectionListener cl = null;
-
     private List unchokeList = new LinkedList();
-
-    //private List<Peer> peerList = null;
     private LinkedHashMap<String, Peer> peerList = null;
     private TreeMap<String, DownloadTask> task = null;
-    private LinkedHashMap<String, BitSet> peerAvailabilies = null;
-    //private AvPieces<String,BitSet> peerAvailabilies = null;
-    //LinkedHashMap downloaders = new LinkedHashMap<String, Integer>(4);
+    private AvPieces peerAv = null;
     LinkedHashMap unchoken = new LinkedHashMap<String, Integer>();
-    private long lastTrackerContact = 0;
     private long lastUnchoking = 0;
     private short optimisticUnchoke = 3;
 
@@ -101,22 +88,15 @@ public class DwManager implements DTListener, PeerUpdateListener,
         this.uAlg = new BTUnchokeNum();
         this.uAlg.setup(60*1024, 120*1024);
         this.peerList = new LinkedHashMap<String, Peer>();
-        //this.peerList = new LinkedList<Peer>();
         this.task = new TreeMap<String, DownloadTask>();
-        this.peerAvailabilies = new LinkedHashMap<String, BitSet>();
-
         this.torrent = torrent;
-        this.nbPieces = torrent.piece_hash_values_as_binary.size();
+        this.nbPieces = this.torrent.piece_hash_values_as_binary.size();
+        this.peerAv = new AvPieces(this.nbPieces);
         this.pieceList = new Piece[this.nbPieces];
         this.nbOfFiles = this.torrent.length.size();
-
-        this.isComplete = new BitSet(nbPieces);
-        this.isRequested = new BitSet(nbPieces);
         this.output_files = new RandomAccessFile[this.nbOfFiles];
-
         this.length = this.torrent.total_length;
         this.left = this.length;
-
         this.checkTempFiles();
 
         /**
@@ -151,9 +131,8 @@ public class DwManager implements DTListener, PeerUpdateListener,
                                      intValue(),
                                      16384, (byte[]) torrent.
                                      piece_hash_values_as_binary.get(i), tm);
-            //System.out.println("Piece " + i + " is complete: " + this.testComplete(i));
             if (this.testComplete(i)) {
-                this.setComplete(i, true);
+                this.peerAv.setComplete(i, true);
                 this.left -= this.pieceList[i].getLength();
             }
         }
@@ -186,15 +165,9 @@ public class DwManager implements DTListener, PeerUpdateListener,
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (this.isComplete())
+            if (this.peerAv.isComplete())
                 System.out.println("\r\nSharing... Press Ctrl+C to stop client");
         }
-        /*
-                 new IOManager().readUserInput(
-                "\r\n*****************************************\r\n" +
-                "* Press ENTER to stop sharing the files *\r\n" +
-                "*****************************************");
-         */
     }
 
     /**
@@ -312,7 +285,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
      */
     public synchronized void save() {
         synchronized (this) {
-            synchronized (this.isComplete) {
+            synchronized (this.peerAv.getCompletedSet()) {
                 byte[] data = new byte[0];
                 for (int i = 0; i < this.nbPieces; i++) {
                     if (this.pieceList[i] == null) {
@@ -347,23 +320,6 @@ public class DwManager implements DTListener, PeerUpdateListener,
         }
     }
 
-    /**
-     * Check if the current download is complete
-     * @return boolean
-     */
-    public synchronized boolean isComplete() {
-        synchronized (this.isComplete) {
-            return (this.isComplete.cardinality() == this.nbPieces);
-        }
-    }
-
-    /**
-     * Returns the number of pieces currently requested to peers
-     * @return int
-     */
-    public synchronized int cardinalityR() {
-        return this.isRequested.cardinality();
-    }
 
     /**
      * Returns the piece with the given index
@@ -376,64 +332,6 @@ public class DwManager implements DTListener, PeerUpdateListener,
         }
     }
 
-    /**
-     * Check if the piece with the given index is complete and verified
-     * @param piece The piece index
-     * @return boolean
-     */
-    public synchronized boolean isPieceComplete(int piece) {
-        synchronized (this.isComplete) {
-            return this.isComplete.get(piece);
-        }
-    }
-
-    /**
-     * Check if the piece with the given index is requested by a peer
-     * @param piece The piece index
-     * @return boolean
-     */
-    public synchronized boolean isPieceRequested(int piece) {
-        synchronized (this.isRequested) {
-            return this.isRequested.get(piece);
-        }
-    }
-
-    /**
-     * Mark a piece as complete or not according to the parameters
-     * @param piece The index of the piece to be updated
-     * @param is True if the piece is now complete, false otherwise
-     */
-    public synchronized void setComplete(int piece, boolean is) {
-        synchronized (this.isComplete) {
-            this.isComplete.set(piece, is);
-        }
-    }
-
-    /**
-     * Mark a piece as requested or not according to the parameters
-     * @param piece The index of the piece to be updated
-     * @param is True if the piece is now requested, false otherwise
-     */
-
-    public synchronized void setRequested(int piece, boolean is) {
-        synchronized (this.isRequested) {
-            this.isRequested.set(piece, is);
-        }
-    }
-
-    /**
-     * Returns a String representing the piece being requested by peers.
-     * Used only for pretty-printing.
-     * @return String
-     */
-    public synchronized String requestedBits() {
-        String s = "";
-        synchronized (this.isRequested) {
-            for (int i = 0; i < this.nbPieces; i++)
-                s += this.isRequested.get(i) ? 1 : 0;
-        }
-        return s;
-    }
 
     /**
      * Returns the index of the piece that could be downloaded by the peer in parameter
@@ -441,26 +339,21 @@ public class DwManager implements DTListener, PeerUpdateListener,
      * @return int The index of the piece to request
      */
     private synchronized int choosePiece2Download(String id) {
-        synchronized (this.isComplete) {
+        synchronized (this.peerAv.getCompletedSet()) {
             int index = 0;
-            ArrayList<Integer> possible = new ArrayList<Integer>(this.nbPieces);
-            for (int i = 0; i < this.nbPieces; i++) {
-                if ((!this.isPieceRequested(i) ||
-                     (this.isComplete.cardinality() > this.nbPieces - 3)) &&
-                    //(this.isRequested.cardinality() == this.nbPieces)) &&
-                    (!this.isPieceComplete(i)) &&
-                    this.peerAvailabilies.get(id) != null) {
-
-                    if (this.peerAvailabilies.get(id).get(i))
-                        possible.add(i);
-                }
-            }
-            //System.out.println(this.isRequested.cardinality()+" "+this.isComplete.cardinality()+" " + possible.size());
+            ArrayList<Integer> possible = this.peerAv.calculatePossible(id);
+            
             if (possible.size() > 0) {
-                Random r = new Random(System.currentTimeMillis());
-                index = possible.get(r.nextInt(possible.size()));
-                this.setRequested(index, true);
-                return (index);
+                if(this.peerAv.getCompleted() < 5.0f || this.peerAv.getCompleted() > 95.0f){
+                    Random r = new Random(System.currentTimeMillis());
+                    index = possible.get(r.nextInt(possible.size()));                      
+                }else{
+                    int[] pos = this.peerAv.rarest(possible);
+                    index = pos[0];
+                }
+
+                this.peerAv.setRequested(index, true);
+                return index;
             }
             return -1;
         }
@@ -488,7 +381,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
             //System.err.println("Connection could not be established to " + id + ". Host unknown...");
 
         }
-        this.peerAvailabilies.remove(id);
+        this.peerAv.remove(id);
         this.task.remove(id);
         this.peerList.remove(id);
         //System.err.flush();
@@ -506,15 +399,15 @@ public class DwManager implements DTListener, PeerUpdateListener,
      */
     public synchronized void pieceCompleted(String peerID, int i,
                                             boolean complete) {
-        synchronized (this.isRequested) {
-            this.isRequested.clear(i);
+        synchronized (this.peerAv.getRequestedSet()) {
+            this.peerAv.setRequested(i,false);
         }
-        synchronized (this.isComplete) {
-            if (complete && !this.isPieceComplete(i)) {
+        synchronized (this.peerAv.getCompletedSet()) {
+            if (complete && !this.peerAv.isPieceComplete(i)) {
                 pu.updateParameters(this.torrent.pieceLength, 0, "");
-                this.isComplete.set(i, complete);
+                this.peerAv.setComplete(i, complete);
                 float totaldl = (float) (((float) (100.0)) *
-                                         ((float) (this.isComplete.cardinality())) /
+                                         ((float) (this.peerAv.cardinalityC())) /
                                          ((float) (this.nbPieces)));
 
                 for (Iterator it = this.task.keySet().iterator();
@@ -532,14 +425,10 @@ public class DwManager implements DTListener, PeerUpdateListener,
 
             } else {
 
-                //this.pieceList[i].data = new byte[0];
             }
 
-            if (this.isComplete.cardinality() == this.nbPieces) {
-                //System.out.println("Download completed, saving file...");
-                //this.save();
-                //this.task.clear();
-                //this.end();
+            if (this.peerAv.cardinalityC() == this.nbPieces) {
+
                 System.out.println("Task completed");
                 this.notify();
             }
@@ -552,7 +441,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
      * @param requested boolean
      */
     public synchronized void pieceRequested(int i, boolean requested) {
-        this.isRequested.set(i, requested);
+        this.peerAv.setRequested(i, requested);
     }
 
     /**
@@ -570,7 +459,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
             int nbChoked = 0;
             this.unchoken.clear();
             List<Peer> l = new LinkedList<Peer>(this.peerList.values());
-            if (!this.isComplete())
+            if (!this.peerAv.isComplete())
                 Collections.sort(l, new DLRateComparator());
             else
                 Collections.sort(l, new ULRateComparator());
@@ -674,7 +563,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
      */
     public synchronized void peerRequest(String peerID, int piece, int begin,
                                          int length) {
-        if (this.isPieceComplete(piece)) {
+        if (this.peerAv.isPieceComplete(piece)) {
             DownloadTask dt = this.task.get(peerID);
             if (dt != null) {
                 dt.ms.addMessageToQueue(new Message_PP(
@@ -748,9 +637,9 @@ public class DwManager implements DTListener, PeerUpdateListener,
      * @param has BitSet
      */
     public synchronized void peerAvailability(String peerID, BitSet has) {
-        this.peerAvailabilies.put(peerID, has);
+        this.peerAv.put(peerID, has);
         BitSet interest = (BitSet) (has.clone());
-        interest.andNot(this.isComplete);
+        interest.andNot(this.peerAv.getCompletedSet());
         DownloadTask dt = this.task.get(peerID);
         if (dt != null) {
             if (interest.cardinality() > 0 &&
@@ -767,7 +656,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
         DownloadTask dt = new DownloadTask(p,
                                            this.torrent.info_hash_as_binary,
                                            this.clientID, true,
-                                           this.getBitField());
+                                           this.peerAv.getBitField());
         dt.addDTListener(this);
         dt.start();
     }
@@ -837,7 +726,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
             if (!this.task.containsKey(id)) {
                 DownloadTask dt = new DownloadTask(null,
                         this.torrent.info_hash_as_binary,
-                        this.clientID, false, this.getBitField(), s);
+                        this.clientID, false, this.peerAv.getBitField(), s);
                 dt.addDTListener(this);
                 this.peerList.put(dt.getPeer().toString(), dt.getPeer());
                 this.task.put(dt.getPeer().toString(), dt);
@@ -846,29 +735,6 @@ public class DwManager implements DTListener, PeerUpdateListener,
         }
     }
 
-    /**
-     * Compute the bitfield byte array from the isComplete BitSet
-     * @return byte[]
-     */
-    public byte[] getBitField() {
-        int l = (int) Math.ceil((double)this.nbPieces / 8.0);
-        byte[] bitfield = new byte[l];
-        for (int i = 0; i < this.nbPieces; i++)
-            if (this.isComplete.get(i)) {
-                bitfield[i / 8] |= 1 << (7 - i % 8);
-            }
-        return bitfield;
-    }
-
-    public float getCompleted() {
-        try {
-            return (float) (((float) (100.0)) * ((float)
-                                                 (this.isComplete.cardinality())) /
-                            ((float) (this.nbPieces)));
-        } catch (Exception e) {
-            return 0.00f;
-        }
-    }
 
     public float getDLRate() {
         try {
