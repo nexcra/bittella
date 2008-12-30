@@ -46,7 +46,7 @@ import java.net.Socket;
  * Object that manages all concurrent downloads. It chooses which piece to request
  * to which peer.
  */
-public class DwManager implements DTListener, PeerUpdateListener,
+public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         ConListenerInterface {
 
     // Client ID
@@ -73,6 +73,8 @@ public class DwManager implements DTListener, PeerUpdateListener,
     private int iUnchokedPeers = 5;
     private boolean enabled = false;
     private BTUnchokeNum uAlg;
+    private boolean end = false;
+    private byte[] b = new byte[0];
     
     /**
      * Create a new manager according to the given torrent and using the client id provided
@@ -81,7 +83,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
      * @param enabled Whether the special choking algorithm is enabled or not
      * @param iUP Initial number of unchoked connections
      */
-    public DwManager(TorrentFile torrent, final byte[] clientID,boolean enabled,int iUP) {
+    public DwManager(TorrentFile torrent, final byte[] clientID,AvPieces peerAv,boolean enabled,int iUP){
         this.clientID = clientID;
         this.enabled = enabled;
         this.iUnchokedPeers = iUP;
@@ -91,7 +93,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
         this.task = new TreeMap<String, DownloadTask>();
         this.torrent = torrent;
         this.nbPieces = this.torrent.piece_hash_values_as_binary.size();
-        this.peerAv = new AvPieces(this.nbPieces);
+        this.peerAv = peerAv;
         this.pieceList = new Piece[this.nbPieces];
         this.nbOfFiles = this.torrent.length.size();
         this.output_files = new RandomAccessFile[this.nbOfFiles];
@@ -151,11 +153,13 @@ public class DwManager implements DTListener, PeerUpdateListener,
      * Periodically call the unchokePeers method. This is an infinite loop.
      * User have to exit with Ctrl+C, which is not good... Todo is change this
      * method...
+     * 
      */
-    public void blockUntilCompletion() {
-        byte[] b = new byte[0];
+    @Override
+    public void run() {
+        
 
-        while (true) {
+        while (!this.end) {
             try {
                 synchronized (b) {
                     b.wait(10000);
@@ -165,11 +169,25 @@ public class DwManager implements DTListener, PeerUpdateListener,
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (this.peerAv.isComplete())
-                System.out.println("\r\nSharing... Press Ctrl+C to stop client");
+            if (this.peerAv.isComplete()) this.closeTempFiles();
+                //System.out.println("\r\nSharing... Press Ctrl+C to stop client");
         }
     }
+    
+    public void end(){
+       synchronized(b){
+           this.end = true;
+           Iterator<DownloadTask> it = this.task.values().iterator();
+           while(it.hasNext()){
+               DownloadTask dt = it.next();
+               if(dt!=null) dt.end();
+           }
+           this.closeTempFiles();
+           b.notifyAll();
+       }    
+    }
 
+    
     /**
      * Create and start the peer updater to retrieve new peers sharing the file
      */
@@ -338,13 +356,13 @@ public class DwManager implements DTListener, PeerUpdateListener,
      * @param id The id of the peer that wants to download
      * @return int The index of the piece to request
      */
-    private synchronized int choosePiece2Download(String id) {
+    private synchronized int choosePiece2Download(String id, boolean rarest) {
         synchronized (this.peerAv.getCompletedSet()) {
             int index = 0;
             ArrayList<Integer> possible = this.peerAv.calculatePossible(id);
             
             if (possible.size() > 0) {
-                if(this.peerAv.getCompleted() < 5.0f || this.peerAv.getCompleted() > 95.0f){
+                if(!rarest){
                     Random r = new Random(System.currentTimeMillis());
                     index = possible.get(r.nextInt(possible.size()));                      
                 }else{
@@ -465,7 +483,7 @@ public class DwManager implements DTListener, PeerUpdateListener,
                 Collections.sort(l, new ULRateComparator());
                 
             int[] aux = new int[]{4,1};
-            if(this.enabled) aux = uAlg.establishUnchokedNum(l);
+            if(this.enabled) aux = uAlg.establishUnchokedNum(this.getDLRate(),this.getULRate());
             for (Iterator it = l.iterator(); it.hasNext(); ) {
                 Peer p = (Peer) it.next();
                 if (p.getDLRate(false) > 0)
@@ -547,9 +565,23 @@ public class DwManager implements DTListener, PeerUpdateListener,
         if (System.currentTimeMillis() - this.lastUnchoking > 10000)
             this.unchokePeers();
 
-        int piece2request = this.choosePiece2Download(peerID);
-        if (piece2request != -1)
-            this.task.get(peerID).requestPiece(this.pieceList[piece2request]);
+        if(this.peerAv.getCompleted() < 5.0f){
+            int piece2request = this.choosePiece2Download(peerID,false);
+            if (piece2request != -1)
+                this.task.get(peerID).requestPiece(this.pieceList[piece2request]);        
+        }else if(this.peerAv.getCompleted() > 95.0f){
+            ArrayList<Integer> pending = this.peerAv.calculatePossible(peerID);
+            if(pending==null || pending.size()==0) return;
+            for(int i=0;i<pending.size();i++){
+                int piece = pending.get(i);
+                this.task.get(peerID).requestPiece(this.pieceList[piece]);
+            }
+        }else{
+            int piece2request = this.choosePiece2Download(peerID,true);
+            if (piece2request != -1)
+                this.task.get(peerID).requestPiece(this.pieceList[piece2request]);
+        }
+
     }
 
     /**
