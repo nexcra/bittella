@@ -16,9 +16,9 @@ package btj3m;
  * @author JMCamacho
  */
 
-import jBittorrentAPI.*;
-import java.util.Iterator;
-import java.util.List;
+//import jBittorrentAPI.*;
+//import java.util.Iterator;
+//import java.util.List;
 
 
 
@@ -32,8 +32,8 @@ public class BTUnchokeNum {
         private static final int EQ_STATE = 1;
         private static final int DEC_STATE = 2;
         
-        private long itsMaxUR;
-        private long itsMaxDR;
+        private double itsMaxUR;
+        private double itsMaxDR;
         private long lastExecutionTime = -1;
         private double lastDownloadRate = -1.0;
         private double lastUploadRate = -1.0;
@@ -86,19 +86,19 @@ public class BTUnchokeNum {
 	 */
 
     
-	public int[] establishUnchokedNum(List<Peer> theContacts) {
+	public int[] establishUnchokedNum(double downldR, double upldR) {
 		if (! this.isSetup()) {
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
-		if (theContacts.isEmpty())
+		if (downldR < 0 || upldR < 0)
 			//return new int[]{currentRU,currentOU};
                         return new int[]{4,1};
                 
         
-                long currentDR = downloadRate(theContacts);
-                long currentUR = uploadRate(theContacts);
+                double currentDR = downldR;
+                double currentUR = upldR;
 
-                long aaux = (System.currentTimeMillis()-this.lastExecutionTime)/1000;
+                float aaux = (System.currentTimeMillis()-this.lastExecutionTime)/1000;
                 this.lastExecutionTime = System.currentTimeMillis();
                 
                 if(currentDR > 0.3*this.itsMaxDR) steadystate = true;
@@ -118,7 +118,7 @@ public class BTUnchokeNum {
 	}
 
        
-	public void setup(long maxUR, long maxDR) {
+	public void setup(double maxUR, double maxDR) {
 
 		this.itsIsSetup = true;
                 this.itsMaxUR = maxUR;
@@ -184,44 +184,6 @@ public class BTUnchokeNum {
                         lastDownloadRate = currentDR;
                         lastUploadRate = currentUR;
                 }
-        }
-        
-        /** This method returns total download rate obtained during the last 30 seg in
-         *bytes per second.
-         *
-         *@return double Download Rate in packets per second.
-         */
-        
-        private long downloadRate(List<Peer> contacts){
-            
-            long bytes = 0;
-            Iterator it = contacts.iterator();
-            
-                while(it.hasNext()){
-                    Peer p = (Peer)it.next();
-                    bytes += (long) p.getDLRate(false);                                   
-                }            
-
-            double t = (System.currentTimeMillis()-lastExecutionTime)/1000;
-
-            System.out.println("DOWNLOADRATE "+(bytes/t)+" "+System.currentTimeMillis());
-            return bytes;
-
-        }
-
-        
-        private long uploadRate(List<Peer> contacts){
-            
-            long bytes = 0;
-            Iterator it = contacts.iterator();
-            
-            while(it.hasNext()){         
-                Peer p = (Peer) it.next();
-                bytes+= (long) p.getULRate(false);
-            }
-            
-            return bytes;
-
         }
          
         
