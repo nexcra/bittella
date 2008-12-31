@@ -74,7 +74,6 @@ public class Connection2 extends Connection {
                 if (peerL.size() >= this.num_want) {
 
                     try {
-                        this.end = true;
                         boolean finished = false;
 
                         if (!extended) {
@@ -92,7 +91,7 @@ public class Connection2 extends Connection {
                         if (finished && this.saveMetaData(-1, -1, -1, true)) {
                             Crawler.incCounter();
                             System.out.println("New IP set fetched: " + Crawler.count);
-                            System.gc();
+                            this.end = true;
                             continue;
                         }
 
