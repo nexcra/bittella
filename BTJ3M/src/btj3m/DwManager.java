@@ -169,7 +169,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            if (this.peerAv.isComplete()) this.closeTempFiles();
+            //if (this.peerAv.isComplete()) 
                 //System.out.println("\r\nSharing... Press Ctrl+C to stop client");
         }
     }
@@ -448,6 +448,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
             if (this.peerAv.cardinalityC() == this.nbPieces) {
 
                 System.out.println("Task completed");
+                this.closeTempFiles();
                 this.notify();
             }
         }
