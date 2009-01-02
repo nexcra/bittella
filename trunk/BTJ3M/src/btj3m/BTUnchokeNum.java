@@ -42,6 +42,7 @@ public class BTUnchokeNum {
         private int currentOU;
         private double uthreshold = itsMaxUR*0.1;
         private double dthreshold = itsMaxDR*0.1;
+        private boolean activated = false;
 
         private static java.util.HashMap<String,Integer> hits = new java.util.HashMap<String,Integer>();
         private static java.util.HashMap<String,Integer> transitions = new java.util.HashMap<String,Integer>();
@@ -90,7 +91,7 @@ public class BTUnchokeNum {
 		if (! this.isSetup()) {
 			throw new RuntimeException("You have to setup this algorithm first!");
 		}
-		if (downldR < 0 || upldR < 0)
+		if (downldR < 0 || upldR < 0 || !activated)
 			//return new int[]{currentRU,currentOU};
                         return new int[]{4,1};
                 
@@ -118,13 +119,14 @@ public class BTUnchokeNum {
 	}
 
        
-	public void setup(double maxUR, double maxDR) {
+	public void setup(double maxUR, double maxDR, boolean activated, int initU) {
 
 		this.itsIsSetup = true;
                 this.itsMaxUR = maxUR;
                 this.itsMaxDR = maxDR;
                 this.pulse.put(this.toString(),new java.util.Vector());
-                this.currentRU = 4;
+                this.currentRU = initU;
+                this.activated = activated;
 	}
 
         
