@@ -34,13 +34,13 @@
  * More information about Java Bittorrent API:
  *    http://sourceforge.net/projects/bitext/
  */
-
 package btj3m;
 
 import jBittorrentAPI.*;
 import java.util.*;
 import java.io.*;
 import java.net.Socket;
+import javax.swing.event.EventListenerList;
 
 /**
  * Object that manages all concurrent downloads. It chooses which piece to request
@@ -67,15 +67,12 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
     private AvPieces peerAv = null;
     LinkedHashMap unchoken = new LinkedHashMap<String, Integer>();
     private long lastUnchoking = 0;
-    private short optimisticUnchoke = 3;
-
-    //New added attributes
-    private int iUnchokedPeers = 5;
-    private boolean enabled = false;
+    private short optimisticUnchoke = 3;    //New added attributes
     private BTUnchokeNum uAlg;
     private boolean end = false;
     private byte[] b = new byte[0];
-    
+    private final EventListenerList listeners;
+
     /**
      * Create a new manager according to the given torrent and using the client id provided
      * @param torrent TorrentFile
@@ -83,12 +80,9 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      * @param enabled Whether the special choking algorithm is enabled or not
      * @param iUP Initial number of unchoked connections
      */
-    public DwManager(TorrentFile torrent, final byte[] clientID,AvPieces peerAv,boolean enabled,int iUP){
+    public DwManager(TorrentFile torrent, final byte[] clientID, AvPieces peerAv, BTUnchokeNum uAlg) {
         this.clientID = clientID;
-        this.enabled = enabled;
-        this.iUnchokedPeers = iUP;
-        this.uAlg = new BTUnchokeNum();
-        this.uAlg.setup(60*1024, 120*1024);
+        this.uAlg = uAlg;
         this.peerList = new LinkedHashMap<String, Peer>();
         this.task = new TreeMap<String, DownloadTask>();
         this.torrent = torrent;
@@ -112,32 +106,29 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
             do {
                 tm.put(file, fileoffset);
                 if (fileoffset + this.torrent.pieceLength - pieceoffset >=
-                    (Integer) (torrent.length.get(file)) &&
-                    i != this.nbPieces - 1) {
-                    pieceoffset += ((Integer) (torrent.length.get(file))).
-                            intValue() - fileoffset;
+                        (Integer) (torrent.length.get(file)) &&
+                        i != this.nbPieces - 1) {
+                    pieceoffset += ((Integer) (torrent.length.get(file))).intValue() - fileoffset;
                     file++;
                     fileoffset = 0;
-                    if (pieceoffset == this.torrent.pieceLength)
+                    if (pieceoffset == this.torrent.pieceLength) {
                         break;
+                    }
                 } else {
                     fileoffset += this.torrent.pieceLength - pieceoffset;
                     break;
                 }
             } while (true);
             pieceList[i] = new Piece(i,
-                                     (i != this.nbPieces - 1) ?
-                                     this.torrent.pieceLength :
-                                     ((Long) (this.length %
-                                              this.torrent.pieceLength)).
-                                     intValue(),
-                                     16384, (byte[]) torrent.
-                                     piece_hash_values_as_binary.get(i), tm);
+                    (i != this.nbPieces - 1) ? this.torrent.pieceLength : ((Long) (this.length %
+                    this.torrent.pieceLength)).intValue(),
+                    16384, (byte[]) torrent.piece_hash_values_as_binary.get(i), tm);
             if (this.testComplete(i)) {
                 this.peerAv.setComplete(i, true);
                 this.left -= this.pieceList[i].getLength();
             }
         }
+        listeners = new EventListenerList();
         this.lastUnchoking = System.currentTimeMillis();
     }
 
@@ -157,7 +148,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      */
     @Override
     public void run() {
-        
+
 
         while (!this.end) {
             try {
@@ -169,25 +160,26 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //if (this.peerAv.isComplete()) 
-                //System.out.println("\r\nSharing... Press Ctrl+C to stop client");
+        //if (this.peerAv.isComplete()) 
+        //System.out.println("\r\nSharing... Press Ctrl+C to stop client");
         }
     }
-    
-    public void end(){
-       synchronized(b){
-           this.end = true;
-           Iterator<DownloadTask> it = this.task.values().iterator();
-           while(it.hasNext()){
-               DownloadTask dt = it.next();
-               if(dt!=null) dt.end();
-           }
-           this.closeTempFiles();
-           b.notifyAll();
-       }    
+
+    public void end() {
+        synchronized (b) {
+            this.end = true;
+            Iterator<DownloadTask> it = this.task.values().iterator();
+            while (it.hasNext()) {
+                DownloadTask dt = it.next();
+                if (dt != null) {
+                    dt.end();
+                }
+            }
+            this.closeTempFiles();
+            b.notifyAll();
+        }
     }
 
-    
     /**
      * Create and start the peer updater to retrieve new peers sharing the file
      */
@@ -230,12 +222,13 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      * Close all open files
      */
     public void closeTempFiles() {
-        for (int i = 0; i < this.output_files.length; i++)
+        for (int i = 0; i < this.output_files.length; i++) {
             try {
                 this.output_files[i].close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
     }
 
     /**
@@ -247,14 +240,15 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      */
     public synchronized int checkTempFiles() {
         String saveas = Constants.SAVEPATH; // Should be configurable
-        if (this.nbOfFiles > 1)
+        if (this.nbOfFiles > 1) {
             saveas += this.torrent.saveAs + "/";
+        }
         new File(saveas).mkdirs();
         for (int i = 0; i < this.nbOfFiles; i++) {
             File temp = new File(saveas + ((String) (this.torrent.name.get(i))));
             try {
                 this.output_files[i] = new RandomAccessFile(temp, "rw");
-                this.output_files[i].setLength((Integer)this.torrent.length.get(
+                this.output_files[i].setLength((Integer) this.torrent.length.get(
                         i));
             } catch (IOException ioe) {
                 System.err.println("Could not create temp files");
@@ -273,18 +267,13 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         byte[] data = this.pieceList[piece].data();
         int remainingData = data.length;
         for (Iterator it = this.pieceList[piece].getFileAndOffset().keySet().
-                           iterator(); it.hasNext(); ) {
+                iterator(); it.hasNext();) {
             try {
                 Integer file = (Integer) (it.next());
-                int remaining = ((Integer)this.torrent.length.get(file.intValue())).
-                                intValue()
-                                -
-                                ((Integer) (this.pieceList[piece].
-                                            getFileAndOffset().
-                                            get(file))).intValue();
-                this.output_files[file.intValue()].seek(((Integer)
-                        (this.pieceList[piece].getFileAndOffset().get(file))).
-                        intValue());
+                int remaining = ((Integer) this.torrent.length.get(file.intValue())).intValue() -
+                        ((Integer) (this.pieceList[piece].getFileAndOffset().
+                        get(file))).intValue();
+                this.output_files[file.intValue()].seek(((Integer) (this.pieceList[piece].getFileAndOffset().get(file))).intValue());
                 this.output_files[file.intValue()].write(data,
                         data.length - remainingData,
                         (remaining < remainingData) ? remaining : remainingData);
@@ -307,37 +296,34 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
                 byte[] data = new byte[0];
                 for (int i = 0; i < this.nbPieces; i++) {
                     if (this.pieceList[i] == null) {
-
                     } else {
                         data = Utils.concat(data, this.pieceList[i].data());
                     }
                 }
                 String saveAs = Constants.SAVEPATH;
                 int offset = 0;
-                if (this.nbOfFiles > 1)
+                if (this.nbOfFiles > 1) {
                     saveAs += this.torrent.saveAs + "/";
+                }
                 for (int i = 0; i < this.nbOfFiles; i++) {
                     try {
                         new File(saveAs).mkdirs();
                         FileOutputStream fos = new FileOutputStream(saveAs +
                                 ((String) (this.torrent.name.get(i))));
                         fos.write(Utils.subArray(data, offset,
-                                                 ((Integer) (this.torrent.
-                                length.get(i))).intValue()));
+                                ((Integer) (this.torrent.length.get(i))).intValue()));
                         fos.flush();
                         fos.close();
-                        offset += ((Integer) (this.torrent.length.get(i))).
-                                intValue();
+                        offset += ((Integer) (this.torrent.length.get(i))).intValue();
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                         System.err.println("Error when saving the file " +
-                                           ((String) (this.torrent.name.get(i))));
+                                ((String) (this.torrent.name.get(i))));
                     }
                 }
             }
         }
     }
-
 
     /**
      * Returns the piece with the given index
@@ -350,7 +336,6 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         }
     }
 
-
     /**
      * Returns the index of the piece that could be downloaded by the peer in parameter
      * @param id The id of the peer that wants to download
@@ -360,12 +345,12 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         synchronized (this.peerAv.getCompletedSet()) {
             int index = 0;
             ArrayList<Integer> possible = this.peerAv.calculatePossible(id);
-            
+
             if (possible.size() > 0) {
-                if(!rarest){
+                if (!rarest) {
                     Random r = new Random(System.currentTimeMillis());
-                    index = possible.get(r.nextInt(possible.size()));                      
-                }else{
+                    index = possible.get(r.nextInt(possible.size()));
+                } else {
                     int[] pos = this.peerAv.rarest(possible);
                     index = pos[0];
                 }
@@ -377,7 +362,6 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         }
     }
 
-
     /**
      * Removes a task and peer after the task sends a completion message.
      * Completion can be caused by an error (bad request, ...) or simply by the
@@ -387,22 +371,22 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      */
     public synchronized void taskCompleted(String id, int reason) {
         switch (reason) {
-        case DownloadTask.CONNECTION_REFUSED:
+            case DownloadTask.CONNECTION_REFUSED:
 
-            //System.err.println("Connection refused by host " + id);
-            break;
-        case DownloadTask.MALFORMED_MESSAGE:
+                //System.err.println("Connection refused by host " + id);
+                break;
+            case DownloadTask.MALFORMED_MESSAGE:
 
-            //System.err.println("Malformed message from " + id + ". Task ended...");
-            break;
-        case DownloadTask.UNKNOWN_HOST:
+                //System.err.println("Malformed message from " + id + ". Task ended...");
+                break;
+            case DownloadTask.UNKNOWN_HOST:
             //System.err.println("Connection could not be established to " + id + ". Host unknown...");
 
         }
         this.peerAv.remove(id);
         this.task.remove(id);
         this.peerList.remove(id);
-        //System.err.flush();
+    //System.err.flush();
     }
 
     /**
@@ -416,33 +400,34 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      * @param complete boolean
      */
     public synchronized void pieceCompleted(String peerID, int i,
-                                            boolean complete) {
+            boolean complete) {
         synchronized (this.peerAv.getRequestedSet()) {
-            this.peerAv.setRequested(i,false);
+            this.peerAv.setRequested(i, false);
         }
         synchronized (this.peerAv.getCompletedSet()) {
             if (complete && !this.peerAv.isPieceComplete(i)) {
                 pu.updateParameters(this.torrent.pieceLength, 0, "");
                 this.peerAv.setComplete(i, complete);
                 float totaldl = (float) (((float) (100.0)) *
-                                         ((float) (this.peerAv.cardinalityC())) /
-                                         ((float) (this.nbPieces)));
+                        ((float) (this.peerAv.cardinalityC())) /
+                        ((float) (this.nbPieces)));
 
                 for (Iterator it = this.task.keySet().iterator();
-                                   it.hasNext(); )
+                        it.hasNext();) {
                     try {
                         this.task.get(it.next()).ms.addMessageToQueue(
                                 new Message_PP(PeerProtocol.HAVE,
-                                               Utils.intToByteArray(i), 1));
-                    } catch (NullPointerException npe) {}
+                                Utils.intToByteArray(i), 1));
+                    } catch (NullPointerException npe) {
+                    }
+                }
                 System.out.println("Piece completed by " + peerID +
-                                   " : " + i + " (Total dl = " + totaldl +
-                                   "% )");
+                        " : " + i + " (Total dl = " + totaldl +
+                        "% )");
                 this.savePiece(i);
                 this.getPieceBlock(i, 0, 15000);
 
             } else {
-
             }
 
             if (this.peerAv.cardinalityC() == this.nbPieces) {
@@ -471,34 +456,34 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      * optimisticUnchoke method, which unchoke a peer no matter its download rate,
      * in a try to find a better source
      */
-    private synchronized void unchokePeers() {
+    protected synchronized void unchokePeers() {
         synchronized (this.task) {
             int nbNotInterested = 0;
             int nbDownloaders = 0;
             int nbChoked = 0;
             this.unchoken.clear();
             List<Peer> l = new LinkedList<Peer>(this.peerList.values());
-            if (!this.peerAv.isComplete())
+            if (!this.peerAv.isComplete()) {
                 Collections.sort(l, new DLRateComparator());
-            else
+            } else {
                 Collections.sort(l, new ULRateComparator());
-                
-            int[] aux = new int[]{4,1};
-            if(this.enabled) aux = uAlg.establishUnchokedNum(this.getDLRate(),this.getULRate());
-            for (Iterator it = l.iterator(); it.hasNext(); ) {
+            }
+            int[] aux = uAlg.establishUnchokedNum(this.getDLRate(), this.getULRate());
+            for (Iterator it = l.iterator(); it.hasNext();) {
                 Peer p = (Peer) it.next();
-                if (p.getDLRate(false) > 0)
+                if (p.getDLRate(false) > 0) {
                     System.out.println(p + " rate: " +
-                                       p.getDLRate(true) / (1024 * 10) +
-                                       "ko/s");
-
+                            p.getDLRate(true) / (1024 * 10) +
+                            "ko/s");
+                }
                 DownloadTask dt = this.task.get(p.toString());
-                if (nbDownloaders < (aux[0]+aux[1]) && dt != null) {
+                if (nbDownloaders < (aux[0] + aux[1]) && dt != null) {
                     if (!p.isInterested()) {
                         this.unchoken.put(p.toString(), p);
-                        if (p.isChoked())
+                        if (p.isChoked()) {
                             dt.ms.addMessageToQueue(
                                     new Message_PP(PeerProtocol.UNCHOKE));
+                        }
                         p.setChoked(false);
 
                         while (this.unchokeList.remove(p));
@@ -508,8 +493,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
                         dt.ms.addMessageToQueue(
                                 new Message_PP(PeerProtocol.UNCHOKE));
                         p.setChoked(false);
-                        while (this.unchokeList.remove(p))
-                            ;
+                        while (this.unchokeList.remove(p));
                         nbDownloaders++;
                     }
 
@@ -519,8 +503,9 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
                                 new Message_PP(PeerProtocol.CHOKE));
                         p.setChoked(true);
                     }
-                    if (!this.unchokeList.contains(p))
+                    if (!this.unchokeList.contains(p)) {
                         this.unchokeList.add(p);
+                    }
                     nbChoked++;
                 }
                 p = null;
@@ -538,22 +523,69 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         if (!this.unchokeList.isEmpty()) {
             Peer p = null;
             do {
-                p = (Peer)this.unchokeList.remove(0);
+                p = (Peer) this.unchokeList.remove(0);
                 synchronized (this.task) {
                     DownloadTask dt = this.task.get(p.toString());
                     if (dt != null) {
-                        dt.ms.addMessageToQueue(new Message_PP(PeerProtocol.
-                                UNCHOKE));
+                        dt.ms.addMessageToQueue(new Message_PP(PeerProtocol.UNCHOKE));
                         p.setChoked(false);
                         this.unchoken.put(p.toString(), p);
                         System.out.println(p + " optimistically unchoken...");
-                    } else
+                    } else {
                         p = null;
+                    }
                     dt = null;
                 }
             } while ((p == null) && (!this.unchokeList.isEmpty()));
             p = null;
         }
+    }
+
+    public void unchokePeer(Peer p, boolean unchoking) {
+
+        synchronized (this.task) {
+
+            DownloadTask dt = this.task.get(p.toString());
+
+            if (unchoking) {
+                if (p.getDLRate(false) > 0) {
+                    System.out.println(p + " rate: " +
+                            p.getDLRate(true) / (1024 * 10) +
+                            "ko/s");
+                }
+
+                if (!p.isInterested()) {
+                    this.unchoken.put(p.toString(), p);
+                    if (p.isChoked()) {
+                        dt.ms.addMessageToQueue(
+                                new Message_PP(PeerProtocol.UNCHOKE));
+                    }
+                    p.setChoked(false);
+
+                    while (this.unchokeList.remove(p));
+
+                } else if (p.isChoked()) {
+                    this.unchoken.put(p.toString(), p);
+                    dt.ms.addMessageToQueue(
+                            new Message_PP(PeerProtocol.UNCHOKE));
+                    p.setChoked(false);
+                    while (this.unchokeList.remove(p));
+
+                }
+
+            } else {
+                if (!p.isChoked()) {
+                    dt.ms.addMessageToQueue(
+                            new Message_PP(PeerProtocol.CHOKE));
+                    p.setChoked(true);
+                }
+                if (!this.unchokeList.contains(p)) {
+                    this.unchokeList.add(p);
+                }
+            }
+        }
+
+
     }
 
     /**
@@ -563,24 +595,28 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      * @param peerID String
      */
     public synchronized void peerReady(String peerID) {
-        if (System.currentTimeMillis() - this.lastUnchoking > 10000)
+        if (System.currentTimeMillis() - this.lastUnchoking > 10000) {
             this.unchokePeers();
-
-        if(this.peerAv.getCompleted() < 5.0f){
-            int piece2request = this.choosePiece2Download(peerID,false);
-            if (piece2request != -1)
-                this.task.get(peerID).requestPiece(this.pieceList[piece2request]);        
-        }else if(this.peerAv.getCompleted() > 95.0f){
+        }
+        if (this.peerAv.getCompleted() < 5.0f) {
+            int piece2request = this.choosePiece2Download(peerID, false);
+            if (piece2request != -1) {
+                this.task.get(peerID).requestPiece(this.pieceList[piece2request]);
+            }
+        } else if (this.peerAv.getCompleted() > 95.0f) {
             ArrayList<Integer> pending = this.peerAv.calculatePossible(peerID);
-            if(pending==null || pending.size()==0) return;
-            for(int i=0;i<pending.size();i++){
+            if (pending == null || pending.size() == 0) {
+                return;
+            }
+            for (int i = 0; i < pending.size(); i++) {
                 int piece = pending.get(i);
                 this.task.get(peerID).requestPiece(this.pieceList[piece]);
             }
-        }else{
-            int piece2request = this.choosePiece2Download(peerID,true);
-            if (piece2request != -1)
+        } else {
+            int piece2request = this.choosePiece2Download(peerID, true);
+            if (piece2request != -1) {
                 this.task.get(peerID).requestPiece(this.pieceList[piece2request]);
+            }
         }
 
     }
@@ -595,15 +631,15 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
      * @param length int
      */
     public synchronized void peerRequest(String peerID, int piece, int begin,
-                                         int length) {
+            int length) {
         if (this.peerAv.isPieceComplete(piece)) {
             DownloadTask dt = this.task.get(peerID);
             if (dt != null) {
                 dt.ms.addMessageToQueue(new Message_PP(
                         PeerProtocol.PIECE,
                         Utils.concat(Utils.intToByteArray(piece),
-                                     Utils.concat(Utils.intToByteArray(begin),
-                                                  this.getPieceBlock(piece,
+                        Utils.concat(Utils.intToByteArray(begin),
+                        this.getPieceBlock(piece,
                         begin,
                         length)))));
                 dt.peer.setULRate(length);
@@ -613,7 +649,8 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         } else {
             try {
                 this.task.get(peerID).end();
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
             this.task.remove(peerID);
             this.peerList.remove(peerID);
             this.unchoken.remove(peerID);
@@ -630,18 +667,13 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         byte[] data = new byte[this.pieceList[piece].getLength()];
         int remainingData = data.length;
         for (Iterator it = this.pieceList[piece].getFileAndOffset().keySet().
-                           iterator(); it.hasNext(); ) {
+                iterator(); it.hasNext();) {
             try {
                 Integer file = (Integer) (it.next());
-                int remaining = ((Integer)this.torrent.length.get(file.intValue())).
-                                intValue()
-                                -
-                                ((Integer) (this.pieceList[piece].
-                                            getFileAndOffset().
-                                            get(file))).intValue();
-                this.output_files[file.intValue()].seek(((Integer)
-                        (this.pieceList[piece].getFileAndOffset().get(file))).
-                        intValue());
+                int remaining = ((Integer) this.torrent.length.get(file.intValue())).intValue() -
+                        ((Integer) (this.pieceList[piece].getFileAndOffset().
+                        get(file))).intValue();
+                this.output_files[file.intValue()].seek(((Integer) (this.pieceList[piece].getFileAndOffset().get(file))).intValue());
                 this.output_files[file.intValue()].read(data,
                         data.length - remainingData,
                         (remaining < remainingData) ? remaining : remainingData);
@@ -676,7 +708,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         DownloadTask dt = this.task.get(peerID);
         if (dt != null) {
             if (interest.cardinality() > 0 &&
-                !dt.peer.isInteresting()) {
+                    !dt.peer.isInteresting()) {
                 dt.ms.addMessageToQueue(new Message_PP(
                         PeerProtocol.INTERESTED, 2));
                 dt.peer.setInteresting(true);
@@ -687,9 +719,9 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
 
     public synchronized void connect(Peer p) {
         DownloadTask dt = new DownloadTask(p,
-                                           this.torrent.info_hash_as_binary,
-                                           this.clientID, true,
-                                           this.peerAv.getBitField());
+                this.torrent.info_hash_as_binary,
+                this.clientID, true,
+                this.peerAv.getBitField());
         dt.addDTListener(this);
         dt.start();
     }
@@ -712,7 +744,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         synchronized (this.task) {
             //this.peerList.putAll(list);
             Set keyset = list.keySet();
-            for (Iterator i = keyset.iterator(); i.hasNext(); ) {
+            for (Iterator i = keyset.iterator(); i.hasNext();) {
                 String key = (String) i.next();
                 if (!this.task.containsKey(key)) {
                     Peer p = (Peer) list.get(key);
@@ -722,7 +754,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
             }
         }
         System.out.println("Peer List updated from tracker with " + list.size() +
-                           " peers");
+                " peers");
     }
 
     /**
@@ -755,7 +787,7 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         synchronized (this.task) {
 
             String id = s.getInetAddress().getHostAddress() +
-                        ":" + s.getPort();
+                    ":" + s.getPort();
             if (!this.task.containsKey(id)) {
                 DownloadTask dt = new DownloadTask(null,
                         this.torrent.info_hash_as_binary,
@@ -768,17 +800,16 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         }
     }
 
-
     public float getDLRate() {
         try {
             float rate = 0.00f;
             List<Peer> l = new LinkedList<Peer>(this.peerList.values());
 
-            for (Iterator it = l.iterator(); it.hasNext(); ) {
+            for (Iterator it = l.iterator(); it.hasNext();) {
                 Peer p = (Peer) it.next();
-                if (p.getDLRate(false) > 0)
+                if (p.getDLRate(false) > 0) {
                     rate = rate + p.getDLRate(true);
-
+                }
             }
             return rate / (1024 * 10);
         } catch (Exception e) {
@@ -791,11 +822,11 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
             float rate = 0.00f;
             List<Peer> l = new LinkedList<Peer>(this.peerList.values());
 
-            for (Iterator it = l.iterator(); it.hasNext(); ) {
+            for (Iterator it = l.iterator(); it.hasNext();) {
                 Peer p = (Peer) it.next();
-                if (p.getULRate(false) > 0)
+                if (p.getULRate(false) > 0) {
                     rate = rate + p.getULRate(true);
-
+                }
             }
             return rate / (1024 * 10);
         } catch (Exception e) {
@@ -803,5 +834,51 @@ public class DwManager extends Thread implements DTListener, PeerUpdateListener,
         }
     }
 
+    public synchronized void addDMListener(DMListener listener) {
+        listeners.add(DMListener.class, listener);
+    }
+
+    public synchronized void removeDMListener(DMListener listener) {
+        listeners.remove(DMListener.class, listener);
+    }
+
+    public synchronized DMListener[] getDMListeners() {
+        return listeners.getListeners(DMListener.class);
+    }
+
+    public synchronized void fireList(LinkedHashMap list) {
+        DMListener[] enlisted = this.getDMListeners();
+        for (int i = 0; i < enlisted.length; i++) {
+            enlisted[i].peerListUpdated(this, list);
+        }
+    }
+
+    public synchronized void fireHasSet(String peerID) {
+        DMListener[] enlisted = this.getDMListeners();
+        for (int i = 0; i < enlisted.length; i++) {
+            enlisted[i].hasSetUpdated(this.peerList.get(peerID), this);
+        }
+    }
+
+    public synchronized void fireConEvent(String peerID, int event) {
+        DMListener[] enlisted = this.getDMListeners();
+        for (int i = 0; i < enlisted.length; i++) {
+            enlisted[i].connectionUpdated(this.peerList.get(peerID),this,event);
+        }
+    }
+
+    public synchronized void firePieceEvent(String peerID,int event,int piece){
+        DMListener[] enlisted = this.getDMListeners();
+        for (int i = 0; i < enlisted.length; i++) {
+            enlisted[i].pieceUpdated(this.peerList.get(peerID), this, event, piece);
+        }        
+    }
+
+    public synchronized void fireUnchoke(){
+                DMListener[] enlisted = this.getDMListeners();
+        for (int i = 0; i < enlisted.length; i++) {
+            enlisted[i].peersUnchoke(this);
+        }
+    }
 
 }
