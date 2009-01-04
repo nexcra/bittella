@@ -16,6 +16,18 @@ import java.util.EventListener;
 
 public interface DMListener extends EventListener{
 
+    public static final int CON_COMP = -1;
+    public static final int PIECE_UNREQ = -2;
+    public static final int CON_NOT_INTERESTING = -3;
+    public static final int CON_NOT_INTERESTED = -4;
+    
+    public static final int PIECE_COMP = 0;
+    public static final int CON_READY = 1;
+    public static final int PIECE_REQ = 2;
+    public static final int CON_INTERESTING = 3;
+    public static final int CON_INTERESTED = 4;
+    public static final int CON_ACTIVE = 5;
+    
     /**
      * This method is called everytime one or more peers are discovered. Peers
      * can be found either by means of the tracker list or a peer contact us or
@@ -62,4 +74,5 @@ public interface DMListener extends EventListener{
      */
     public void peersUnchoke(DwManager dwm);
     
+    public void dwSeeding(DwManager dwm);
 }

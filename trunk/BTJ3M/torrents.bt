@@ -1,0 +1,7 @@
+# Example file of torrents to download. Every row is composed by these fields
+# separated by a comma
+#
+# <Path_to_Torrent_File> <Max_Upload_Rate> <Max_Download_Rate> [<Save_Path>] [<Enabled>] [<Initial_Unchoked>]
+#
+../Sams.Teach.Yourself.C.plus.plus.in.One.Hour.a.Day.6th.Edition.Jul.2008.eBook-BBL.torrent,20480,3000000,../,false,4
+#../UK Hard dance - This Is Good [mininova].torrent

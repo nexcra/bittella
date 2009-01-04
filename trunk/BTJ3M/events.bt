@@ -1,0 +1,6 @@
+#Example of events file. Events can be either  START,STOP OR END.
+#
+# <Events>,<Delay>,<Torrent>
+START,3000,../Sams.Teach.Yourself.C.plus.plus.in.One.Hour.a.Day.6th.Edition.Jul.2008.eBook-BBL.torrent
+STOP,6000,../Sams.Teach.Yourself.C.plus.plus.in.One.Hour.a.Day.6th.Edition.Jul.2008.eBook-BBL.torrent
+END,7000,../Sams.Teach.Yourself.C.plus.plus.in.One.Hour.a.Day.6th.Edition.Jul.2008.eBook-BBL.torrent
