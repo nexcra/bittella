@@ -1,0 +1,375 @@
+
+
+# Introduction #
+
+This is a brief tutorial on ModelNet deployment in a PCs cluster and its use to emulate P2P applications developed in Java.
+
+The ModelNet's emulation software runs on hosts with FreeBSD OS, hereafter we will refer to this hosts as **emulators**. Emulators support the core of the network, so to speak, routing nodes and their interconnections. Issues related with topology network generation are covered later on. On the other hand, this core is meant to interconnect edge nodes. P2P applications have their application logic fully distributed in those edge nodes and therefore no applications parties such as servers are assumed to be in the core. This _virtual_ edge nodes are refered as **virtual nodes** and the hosts were they are emulated are called **application hosts** or simply **hosts**.
+
+The tutorial begins with a detailed description of emulators setup with FreeBSD and ModelNet. Afterwards, hosts will be configured using a Linux Ubuntu distribution and downloading ModelNet package from author's repository. Finally, some considerations about ModelNet usage involving Java and VMWare are discussed and some hints are provided in order to avoid troubles in experiments to be carried out.
+
+
+# Emulators #
+
+## FreeBSD Installation ##
+
+ModelNet was written to run over FreeBSD 4.x kernels that are officially supported no longer. When it comes to deploy the testbed there are only two main choices, either installing 4.x or 6.x releases. By the time this tutorial is written, FreeBSD 6.3 and 7.0 are the _current_ releases of this OS. Unfortunately, as the time passes, these releases are likely to be considered as _old_ releases. ISO images for CDs of _old_ releases can be found at [FreeBSD-Archive](ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/) website, choose your platform and scroll down to the bottom to find the [ISO-IMAGES](ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/old-releases/i386/ISO-IMAGES/) link, then choose your desired release number.
+
+
+  * FreeBSD 4.x: This is a priori the best choice because the software was originally developed for this platform. Download the ISO image, install you OS bearing in mind that:
+    1. Kern-Developer configuration is enough to liven up our goals.
+    1. It must work as a Gateway.
+    1. NFS partitions are interesting since you are likely to share info among PCs.
+    1. Linux compatibility should be disabled to avoid compilation mistakes.
+    1. SSH utilities are a handful of interesting tools as well.
+    1. Root account is enough.
+> However, using this release you are likely to need some technical support with you Gigabit Ethernet NIC because more recent devices are not recognized directly during the installation.
+
+  * FreeBSD 6.x: Installing this kernel needs that you bear in mind the same considerations as for the 4.x release. Support for Ethernet interfaces is more extense however your ModelNet code requires certain modificaitons that are explained in Section XXXX.
+
+### Kernel Compilation ###
+
+A modifcation of the kernel is recommended by ModelNet authors. After modifying the source files you need to recompile the kernel. This modification is not so complicated and can be carried out easily following these steps,
+
+---
+
+  1. Go to the folder `/sys/i386/conf/`
+  1. Using an editor like _vi_ add the `options  HZ=10000` line to the `GENERIC` file.
+  1. Save your changes and exit the editor. Type as root `config GENERIC`.
+  1. Move to the folder `../../compile/GENERIC`
+  1. Type as root `make`. When the process finishes type as root `cp kernel /` to deploy the new compiled kernel.
+  1. Reboot your system to make the changes available.
+
+---
+
+
+You can check that your changes have made effect by typing,
+```
+sysctl kern.clockrate
+```
+
+### Required Software ###
+
+ModelNet requires some additional packages to run properly. Most of these packages can be fetched from the FreeBSD-Archive repository, some other need to be compiled and installed from source code.
+
+Once the system is running, since 4.x is and old-release (so is likely to be 6.x in a few months), the repository environment variable must be modified to point to the release repository, otherwise system will try to install packages from the _current_ release leading to version conflicts. This can be done by executing as root,
+```
+setenv PACKAGESITE ftp://ftp-archive.freebsd.org/pub/FreeBSD-Archive/ports/i386/packages-4.8-release/Latest/
+```
+
+Where _i386_ can be replaced by your PC architecture (i.e. amd64, sparc, etc.) and digits _4.8_ can be replace by another release, for instance _6.2_. Now we can install packages via repository for the chosen release. Type the following commands in your terminal (Note: if you get a weird `command not found` message try to `whereis` your command, sometimes FreeBSD fails to set the PATH variable).
+```
+pkg_add -r wget gmake bash
+pkg_add -r perl sudo
+pkg_add -r p5-XML-Simple linuxthreads libgnugetopt boost xerces-c2
+```
+
+Now, if you chose release _4.x_ you can install the _perl Graph_ library from the repository using the following command (Note: It is advisable that you compile it from source code)
+```
+pkg_add -r Graph
+```
+
+Nevertheless, if your choice was _6.x_ or you are keen on compiling your libraries from source, you need the `Graph-0.20105.tar.gz` and `Heap-0.80.tar.gz` tarballs. They can be fetched from the local copy hosted at this project site under the tab _Downloads_ or you can look them up through the [CPAN site](http://www.cpan.org//) or the perl packages [searcher](http://search.cpan.org). ATTENTION: Newer releases of the packages higher than 0.20105 will not work with ModelNet. Install the packages by typing,
+```
+tar -xvzf Graph-0.20105.tar.gz
+tar -xvzf Heap-0.80.tar.gz
+cd Heap-0.80
+perl Makefile.PL
+gmake
+gmake install
+cd ../Graph-0.20105
+perl Makefile.PL
+gmake
+gmake install
+```
+
+So far we have seen how to install the required packages to run ModelNet. Additional tools can be useful for you such as the Authd and Gexec tools. Former provides cluster-wide authentication by generating and distributing public key among cluster hosts, latter allows administrators and users to run commands remotely on cluster hosts (i.e. you can run a command in every machine in the cluster at once or specify which hosts will execute the command from a single computer). The `libe` package must be installed first, it can be found in the repositories and fetched using _pkg__add_ command. Authd and Gexec source code and instructions can be found at [AUTHD site](http://www.theether.org/authd/) and [GEXEC site](http://www.theether.org/gexec/) respectively. Do not forget to run the Audthd and Gexec deamons at the host you choose as a server.
+
+## Installing using 4.x releases ##
+
+Download the source code either from the _Downloads_ tab of this project or from authors repository by typing,
+```
+wget http://sysnet.ucsd.edu/modelnet/modelnet-0.99.tar.gz
+```
+
+Compile and install the code folling these instructions,
+```
+tar -xvzf modelnet-0.99.tar.gz
+cd modelnet-0.99
+mkdir freebsd
+cd freebsd
+../configure -with-fbsdsys=/sys/
+gmake
+gmake install
+```
+
+Depending on your OS installation additional packages such as _gcc_ might be required by the _configure_ command. The option `-with-fbsdsys=` is used in case that you want to compile `modelnet.ko` kernel module with your current kernel sources, but you can skip it and use the already built module.
+
+## Installing using 6.x releases ##
+
+Two patches can be found along the web to compile and run ModelNet on 6.x releases. At ModelNet site you can find easily a patch file and apply it to the source code, then compile the sources as depicted in the previous section.
+
+A valuable alternative to this patch is the source modification that can be found at the _EVERGROW_ project web site. There you can download the file `src.tar.gz` (also available through the Downloads tab). Apply the patch as follows,
+```
+tar -xvzf modelnet-0.99.tar.gz
+tar -xvzf src.tar.gz
+rm -rf ./modelnet-0.99/module/*
+cp ./src/* ./modelnet-0.99/module/
+```
+```
+cd modelnet-0.99
+mkdir freebsd
+cd freebsd
+../configure [-with-fbsdsys=/sys/]
+gmake
+gmake install
+```
+
+Depending on your OS installation you may get two compilation error at the `libipaddr.c` file at lines 960 and 1012. These are due to some versioning issues of the _unistd.h_ and _netbd.h_ libraries, both featured by the OS kernel. `libipaddr.c` library is crucial at _hosts_, yet it is not used at the server because 23rd bit in the IP address does not have to be fliped at the emulator (so has to be at the host to avoid packets to go through the local loop, see Section X.X for further details). Therefore, if we carry out the following steps to avoid compilation errors, we can be sure at the same time that our modification will not affect the emulator operation,
+  1. Go to the folder `./modelnet-0.99/src/`, there is you `libipaddr.c` file.
+  1. Backup you `libipaddr.c` file (i.e. copy it to `libipaddr.c.backup`).
+  1. Go to line 960 and change the first argument of the `gethostbyaddr()` function type from `char*` to `void*`
+  1. Go to line 1012 and comment the whole `gethostbyaddr()` function.
+  1. Save your changes
+  1. Run again the `configure`, `gmake` and `gmake install` instructions.
+
+
+
+# Hosts #
+
+## Installing ModelNet on Debian/Ubuntu ##
+
+The fastest way to get your hosts machines running ModelNet is to install a [debian](http://www.debian.org/) or debian-based Linux distribution such as [ubuntu](http://www.ubuntu.com/). I have managed to install ModelNet successfully on Debian 3.1 _Sarge_ and Ubuntu 7.1 _Feisty Fawn_.  As with FreeBSD you have to take into account some considerations prior to your OS installation,
+  * Unless you application or testbench needs graphical interface, you do not need to install a X system.
+  * If you are planning to install ModelNet from built packages you do not need the kernel sources either.
+  * Some extra packages can be useful for you (e.g. ssh, open-ssl, make, gcc, etc.).
+
+Authors tested ModelNet hosts using a Debian 3.1 'Sarge' distribution. This version has already been deprecated and replaced by the 4.0 version. This has some considerations to bear in mind. `libxerces21-dev` for _stable_ release and `libxerces23-dev` for _testing_ releases of Debian are no longer available and are replaced by a new library. Unfortunately these libraries are used by ModelNet and they must be installed at the time ModelNet sources want to be compiled.
+
+Hence, I you fancy building ModelNet from sources you can install Debian 3.1 Sarge release via an ISO image and either download _.deb_ package or build from source code the following libraries,
+  * libxerces21-dev
+  * libboost-graph-dev
+  * libxml-simple-perl
+  * libssl-dev
+  * libgraph-perl 0.20105
+  * libheap-perl 0.80
+  * ModelNet
+  * Optional, Authd and Gexec
+
+Because listed packages have more dependencies, downloading every source code package manually can be a pain. A more friendly and faster way to install ModelNet is to install it from pre-built or built packages (typically .deb or .pkg) available through repositories. If you plan to use this approach, a few lines must be added to your `/etc/apt/source.list` file. This can be done during the installation of the OS or later on.
+(Note: location of `source.list` file might be different, if so, have a look to you Aptitude or similar package manager documentation to find how to add a new repository entry).
+```
+# Debian Archive package repository. Here packages for old stable distributions are available
+deb http://archive.debian.org/debian Debian-3.1 main
+deb-src http://archive.debian.org/debian Debian-3.1 main
+
+# Optional, here security updates can be found for Sarge.
+# deb http://security.debian.org/ oldstable/updates main
+
+# ModelNet package and required software from third parties
+deb http://issg.cs.duke.edu/modelnet/debian stable main
+deb-src http://issg.cs.duke.edu/modelnet/debian stable main
+```
+
+Once you update your repository list with something like
+```
+sudo apt-get update
+```
+You can install the packages listed before. At least I have managed to do this in Ubuntu 7.10 without troubles. Actually, if you run the following command in your terminal as root,
+```
+sudo apt-get install modelnet
+```
+Automatically, ModelNet and all its dependencies are installed. That is why it is highly recommendable to use this option to install ModelNet on your host machines. If your are going to generate the .model and .route file, you need the Heap and Graph packages mentioned in the FreeBSD section. If your using Debian 3.1 Sarge they are installed along with ModelNet. However if you are using Ubuntu or any other Linux distribution you will have to compile them as described in the FreeBSD installation section. (Note: this time use `make` instead of `gmake` command).
+
+
+Depending on your OS installation two additional symbolic links may be required. (Note: in Debian 3.1 Sarge and Ubuntu 7.10 Feisty this is not necessary).
+```
+sudo ln -s /usr/bin/deployhost /usr/local/bin 
+sudo ln -s /usr/bin/vnrunhost /usr/local/bin
+```
+
+# Setting Up the Cluster #
+
+Once you have the ModelNet software install in your cluster machines, there are still some tasks to carry out before we can use to test your applications and obtain results.
+
+  * Modify your _sudoers_ file by means of `sudo visudo` command and include the following lines in your file,
+```
+root ALL=(ALL) ALL
+Host_Alias MODELHOSTS = modelnet101, modelnet102, modelnet103, modelnet104, modelnet105, modelnet106, mickey.csee.usf.edu
+User_Alias MODELERS = username 1, username 2, ...., username n
+Cmnd_Alias MODELCMDS = /sbin/ifconfig, /sbin/route, \
+/usr/bin/vnrun, /usr/bin/vnrunhost, /usr/bin/gexec \
+/sbin/kldload, /sbin/kldunload, /sbin/ipfw, /sbin/sysctl, \
+/usr/local/bin/modelload, /usr/local/bin/ipfwload
+MODELERS MODELHOSTS = NOPASSWD: MODELCMDS
+```
+
+Replace modelnetXXX and mickey.csee.usf.edu with the hostname of your cluster computers, username X with your usernames declared in the cluster machines. Reboot the system after modify your configuratio file. This modification might save you some precious time when remote invoking some commands from one cluster machine to another. If you have just a few machines this is not strictly necessary.
+
+  * Add the hostnames of your cluster machines to the `/etc/hosts` file. For each machine add the LAN IP address and the hostname. Those host names must be the same as those used in the ModelNet host file that will be described in the following section.
+  * In FreeBSD, you can choose you IP address for you Ethernet NIC at boot time by modifying the `/etc/rc.conf` file. If there is already a line with,
+```
+ifconfig_ZZZZ="DHCP"
+```
+where '_ZZZZ_' is you Ethernet interface name (e.g. lnc0, eth0), then remove it, and add this line,
+```
+ifconfig_ZZZZ="inet XXX.XXX.XXX.XXX netmask YYY.YYY.YYY.YYY"
+```
+where '_ZZZZ_' is again your NIC name, '_XXX.XXX.XXX.XXX_' is your desired IP address for this host and '_YYY.YYY.YYY.YYY_' is the netmask that you choose for this LAN.
+
+  * You can do the same in Linux adding the following lines to your `/etc/network/interfaces` file.
+```
+auto ZZZZ
+iface ZZZZ inet static
+address XXX.XXX.XXX.XXX
+netmask YYY.YYY.YYY.YYY
+```
+
+  * It is more than advisable that you enable your SSH Deamon (sshd) in your machines in order to copy the configuration files from one machine to another.
+  * However, if you successfully set up the Authd and Gexec services this might not be necessary since you can run commands and copy files using those services.
+
+
+# Running a Simple Example: Testing your Setup #
+
+The more effective way to test your cluster is to deploy in it a simple scenario. This example is reproduced here but it is extracted from the `Modelnet_Report_2006.pdf` that can be found at Patrik Bless website and it is also listed under the _Downloads_ tab. For the sake of clarity, some details are omited here such as the snapshot of the routing tables, therefore I encourage you to read carefully the cited document.
+
+Our cluster is formed by three machines. `pandora` is the machine running ModelNet on FreeBSD and it is going to be used as _emulator_. Other two hosts (`host1` and `host2`) are going to be the _hosts_ running the virtual nodes. All of them are connected in a LAN segment using Gigabit NIC and a hub. First of all, we need to reflect this _real_ topology in an XML file (e.g. `sample.hosts`). The file must be formated as follows to indicate ModelNet the cluster's topology.
+```
+<?xml version="1.0" encoding="ISO-8859-1"?> 
+<hardware> 
+<emul hostname="pandora"/> 
+<host hostname="host1"/> 
+<host hostname="host2"/> 
+</hardware>
+```
+
+A second file with the _virtual_ topology must be created. You can write this file manually, since is another XML file or you can use a handy topology generator such as Inet or BRITE. ModelNet software provides a script called `inet2xml` that translate an entire topology generated with Inet to a graph. This file is called the _graph_ file (e.g. `sample.graph`). In this file you can specify _vertices_ (i.e. graph's nodes) and _edges_.
+
+Each vertex can be defined as a virtual node (edge node) or as a gateway (router inside the core network). Each vertex has an identifier (attribute int\_idx) and additionally, those vertex defined as virtual nodes has a _virtual node identifier_ (attribute int\_vn).
+
+Edges are virtual links between vertex. Source, destionation and transmission sense are specified along with the `specs` attribute. Latter can be one out of those link types defined in the GT-IMT nomenclature:
+
+  * client-stub
+  * stub-stub
+  * stub-transit
+  * transit-transit
+
+Optionally, some link features can be defined here. Those characteristics defined in each edge element affect to that element. Use the `specs` elements to define characteristics for a set of edges. Following XML code depicts the virtual network specification.
+```
+<?xml version="1.0" encoding="ISO-8859-1"?> 
+  <topology> 
+    <vertices> 
+      <vertex int_idx="0" role="gateway" /> 
+      <vertex int_idx="1" role="gateway" /> 
+      <vertex int_idx="2" role="virtnode" int_vn="0" /> 
+      <vertex int_idx="3" role="virtnode" int_vn="1" /> 
+      <vertex int_idx="4" role="virtnode" int_vn="2" /> 
+    </vertices> 
+    <edges> 
+      <edge int_dst="1" int_src="2" int_idx="0" specs="client-stub" 
+        int_delayms="1" /> 
+      <edge int_dst="2" int_src="1" int_idx="1" specs="client-stub" 
+        dbl_kbps="768" /> 
+      <edge int_dst="1" int_src="3" int_idx="2" specs="client-stub" 
+        dbl_kbps="768" /> 
+      <edge int_dst="3" int_src="1" int_idx="3" specs="client-stub" /> 
+      <edge int_dst="0" int_src="4" int_idx="4" specs="client-stub" /> 
+      <edge int_dst="4" int_src="0" int_idx="5" specs="client-stub" /> 
+      <edge int_dst="1" dbl_len="1" int_src="0" int_idx="0" specs="stub-stub" /> 
+      <edge int_dst="0" dbl_len="1" int_src="1" int_idx="1" specs="stub-stub" /> 
+    </edges> 
+    <specs > 
+      <client-stub dbl_plr="0" dbl_kbps="64" int_delayms="100" int_qlen="10" /> 
+      <stub-stub dbl_plr="0" dbl_kbps="1000" int_delayms="20" int_qlen="10" /> 
+    </specs> 
+  </topology> 
+```
+
+The virtual topology has two virtual nodes (0 and 2) connected to a gateway node (int\_idx=0) which in turn is connected to a second gateway node (int\_idx=1), allowing traffic between virtual nodes 0 and 2 and virtual node 1.
+
+As in a real network, routing tables must be set up in the virtual nodes and gateways to carry out proper packages routing. That routing tables are calculated with the `allpairs` tool, as a result a file is generated (e.g. sample.route). Finally, we need a forth file, the _model_ file (e.g. sample.model). This file is generated automatically using the `mkmodel` tool. This file contains the required information to modify the real routing tables at emulators and hosts machines, create virtual NIC interfaces which correspond to the virtual nodes interfaces and establish the routing tables at the core nodes. Here are the steps to obtain the deployment files.(Note: Remember to modify the `sample.hosts` file in such a way that your hostsname replace the `pandora`,`host1` and `host2` names).
+```
+allpairs sample.graph > sample.route
+mkmodel sample.graph sample.hosts > sample.model
+```
+
+If you managed to run Authd and Gexec, you can deploy this model in the entire cluster by running the following command,
+```
+deploy sample.model sample.route
+```
+
+If you have just a few machines in your cluster and you want to deploy and run ModelNet in your machines one by one, type on each machine the following command,
+```
+deployhost sample.model sample.route
+```
+
+Finally, we need to perform some checkouts to be sure that everything went right.
+  * Things to check on virtual node (ie. edge host):
+    * Check ifconfig for the IPs of the virtnodes listed in the sample.model file
+    * Check the route to the forwarded is set for 10.0.0.0/8
+
+  * Things to check on the forwarder:
+    * `kldstat` says module is loaded.
+    * `modelstat` says module has hops.
+    * Check `ipfw list` for modelnet rules
+      * `00100 pipe 1 ip from any to 10.0.0.0/8 in`
+      * `00200 pipe 1 udp from any to me port 5347`
+    * Check that `sysctl -a -N|grep modelnet` has modelnet entries
+    * Check for routes to edge nodes, for example:
+      * `10/30              172.16.21.11       UGS         0       37    em0`
+      * `10.0.0.4/30        172.16.21.12       UGS         0       24    em0`
+
+  * Run connectivity test with vnhostrun.  On VN 0 run something like:
+    * `vnrunhost 0 sample.model ssh 10.0.0.5 date` or,
+    * `vnrunhost 1 sample.model iperf -s` at _host2_ and `vnrunhost 0 sample.model iperf -c 10.0.0.5` at _host1_
+  * During test, `tcpdump` on forwarder (i.e. emulator) should see packets for `10.0.0.1`, and counters in `modelstat` should go up.
+
+# Running a More Complex Example #
+
+If your testing was successful in the previous section, what is described in this section is a simple way to generate a much larger network topology using an automatic topology generator. Because there is a script available which converts from a Inet topology generated file to a XML ModelNet graph file, Inet is preferred as a network generator.
+
+The network that we need is an autonomous system randomly distributed which counts for 4000 inner nodes and 100 client/edge nodes. Client nodes are gathered in two stubs to connect to the core network, and links between client nodes and the core network have a bandwidth of 64 kbps with a null losses probability.
+Also, the real topology does not change in this example, so that the sample.hosts file does not have to be changed. Type the following line in your terminal to generate the topology (Note: be sure that `inet` and `inet2xml` executables are in your path).
+```
+inet -n 4000| inet2xml -p 100 among 2 stub client-stub 64 100 0 > sample.graph
+```
+
+Now you can follow the same procedure as for the simple example to deploy the virtual network. In the end of the deployment, virtual IP addresses ranging from 10.0.0.0/26 must point to host1 real IP address in your routing table. Virtual IP addresses within the range 10.0.0.64/26 must point to host2.
+
+
+# Running Java Applications on ModelNet #
+
+Recent versions of the Java Virtual Machine and Java Editions keep up with the latest changes in networking standards such as IPv6. Unfortunately, ModelNet does not support IPv6, probably because we have available the whole IPv4 range of addresses, which seems more than enough to emulate network protocols.
+
+ModelNet modifies the normal path of a SDU at the sending node. For instance, when a new TCP segment has to be sent from the virtual node with IP 10.0.0.1 to the virtual node with IP 10.0.0.2. Let's suppose that both virtual nodes are running at the real host `host1`, thus the normal routing procedure would identify that the destination node is also in the local host and it would have routed the packet through the local loop, such that the packet would have never reached the emulator `pandora` and emulated delays, packet queuing, packet dropping would not have been suffered by the TCP segment.
+
+ModelNet uses a modify kernel library to route packets, the `libipaddr.so` library on sending changes the 23rd-bit of the destination IP address. By doing so, the routing procedure will not identify the destination address as local to the sending host and it will forward the packet to the _emulator_ host.
+On arrival, the emulator will flip the 23rd-bit of both, source and destination virtual IP addresses and it will route the packet through the virtual core network to the border router connected to the destination virtual host. Note that in this case, the packet will be forwarded from the emulator to the same real host from which it was received firstly, because that real host is running at the same time the source and the destination virtual nodes. With this mechanishm ModelNet ensures that every packet is routed through the emulated core network and none is sent through the local loop not passing through the emulator.
+
+If the model was deployed appropriately, any application that opens a socket should pass its TCP segments (or UDP datagrams) towards the modified IP level. As mentioned, Java implementation can deal with both network layers, IPv4 and IPv6 and an interesting behaviour of recent versions is that IPv6 layer is default as network layer. Hence, if your kernel supports IPv6, their libraries are used by Java applications instead of IPv4 libraries. Due to `libipaddr.so` module replaces only the standard IPv4 libraries but it is not a substitute for the IPv6 ones, Java does not make use of `libipaddr.so`!
+
+There are two workarounds to fix this issue and to allow Java applications to run on top of ModelNet. The fist one and maybe the less attractive for most users is to remove the IPv6 support from the kernel. If you have already install you OS you are likely to dismiss this option. On the other hand, if you have not installed your OS yet, you can always disable this feature during the installation process.
+
+The second workaround is much more elegant, you just have to add the following option tag when you invoke the JVM,
+```
+java -Djava.net.preferIPv4Stack=true YourMainClass 
+```
+
+# Virtual Clustering using VMWare #
+
+VMWare is a useful software to run serveral virtual machines with different operating systems in the same physical host. With VMWare you get the same OS features as if you would install the OS in a real machine. Since VMWare Workstation Version 5 was released, several virtual machines can be connected in a private LAN segment, those sets of virtual machines are refered by VMWare as _"teams"_. Therefore, it seems clear that a VMWare environment with _teams_ support meets exactly the requirements to set up a _virtual_ ModelNet cluster. This can be useful to test your ModelNet setup in a virtual way before you spend some valuable money in hardware equipment.
+
+Creating a VMWare machine is not so different from installing an OS in a real machine. You can run through the steps described in the previous sections to deploy your ModelNet testbed. So far, VMWare seems a cheap and valuable solution for our purposes, however I must warn you about some pitfalls.
+
+  1. Although VMWare is extremely optimized to run your OS and obtain nearly the same response as if you were running it natively, when deploying large-scale networks using several VMWare virtual machines to run several ModelNet _emulators_ and _hosts_, performace might slow down depending on you physical machine resources leading to measurement mistakes (e.g. higher end-to-end delays due to processes blocked while attempting to access the CPU at the emulator).
+
+  1. ModelNet patches somehow the TCP/IP stack of your OS and create several virtual NIC and routing tables. Libraries required to launch an execution using ModelNet may have been compiled using information from the NIC driver, which in this case it is not a real driver. The hardware presented to you OS during the installation is _virtual hardware_ and not a physical hardware. Therefore, the modifications carried out by ModelNet during deployment phase may not cause any effect on your virtual machine.
+
+In my particular case, I tried to set up a virtual cluster using VMWare Workstation 6.5 for Linux (Ubuntu) and VMWare Fusion for Mac OSX. Using both platforms, installation and configuration of the virtual cluster was fine, all the checkouts where successful, however when I tried to test my deployment I got a weird message at the emulator machine, which said,
+```
+emulate_nxthop: hop=0, emulator!=NULL, srcip(0x100800a) dstip(0x500000a)
+It is likely that the routing table is corrupt.
+Or you're receiving stale VN traffic.
+```
+
+Successful virtual clustering has been reported using VMWare Workstation and Server Versions 5.0 and 1.5 respectively. I have not tried the VMWare Server 1.5, but I managed to setup a small cluster of Virtual Machines using VMWare Workstation 5.5 following the steps described on previous sections.
